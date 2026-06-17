@@ -28,9 +28,9 @@
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(5,12,25,.60) 0%,
-      rgba(5,12,25,.72) 55%,
-      rgba(5,12,25,.82) 100%
+      rgba(5,12,25,.20) 0%,
+      rgba(5,12,25,.34) 55%,
+      rgba(5,12,25,.50) 100%
     );
   }
   .reg-hero-content {
