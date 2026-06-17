@@ -1,8 +1,9 @@
+# Deny direct access to sensitive files
+<FilesMatch "^(db|mail_config|logger|rate_limit|session_guard)\.php$">
+    Require all denied
+</FilesMatch>
 
-
-# php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php83” package as the default “PHP” programming language.
-<IfModule mime_module>
-  AddHandler application/x-httpd-ea-php83 .php .php8 .phtml
-</IfModule>
-# php -- END cPanel-generated handler, do not edit
+# Deny access to dot-files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
