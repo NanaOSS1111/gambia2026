@@ -704,9 +704,9 @@ $regStatusInfo = is_registration_open($pdo);
     </div>
   </div>
   <?php if (!empty($countryLabels)): ?>
-  <div class="chart-card" style="margin-bottom:28px;">
-    <div class="chart-title">Approved Delegates by Country</div>
-    <div class="chart-wrap" style="height:<?= max(40, count($countryLabels) * 28) ?>px;">
+  <div class="chart-card" style="margin-bottom:28px;padding:14px 20px;">
+    <div class="chart-title" style="margin-bottom:8px;">Approved Delegates by Country</div>
+    <div class="chart-wrap" style="height:<?= max(30, count($countryLabels) * 26) ?>px;">
       <canvas id="chartCountry"></canvas>
     </div>
   </div>
