@@ -76,7 +76,7 @@ function nomination_letter_html(array $data): string {
   .salute    { margin-bottom: 6px; font-size: 10pt; }
   p          { margin: 0 0 6px 0; text-align: justify; font-size: 10pt; }
   .sign-area { margin-top: 14px; font-size: 10pt; }
-  .part2     { margin-top: 18px; border-top: 2px solid #0a2540; padding-top: 10px; }
+  .part2     { page-break-before: always; border-top: 2px solid #0a2540; padding-top: 10px; margin-top: 0; }
   .part2-title { font-size: 12pt; font-weight: bold; color: #0a2540; margin-bottom: 6px; }
   .decl-title  { font-weight: bold; margin-bottom: 5px; font-size: 10.5pt; }
   .blank { border-bottom: 1px solid #333; display: inline-block; width: 200px; }
