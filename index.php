@@ -1560,11 +1560,8 @@ function markErrors(form, errors) {
       fetch('check_duplicate.php?first=' + encodeURIComponent(first) + '&last=' + encodeURIComponent(last))
         .then(function(r){ return r.json(); })
         .then(function(data) {
-          if (data.matches && data.matches.length > 0) {
-            var list = data.matches.map(function(m) {
-              return '<strong>' + m.name + '</strong> (' + m.org + ') — <em>' + m.status + '</em>';
-            }).join('<br>');
-            warn.innerHTML = '&#9888; A registration with a similar name already exists:<br>' + list + '<br><span style="font-size:12px;">If this is a different person, you may continue.</span>';
+          if (data.matches && data.matches > 0) {
+            warn.innerHTML = '&#9888; A registration with a similar name already exists. If this is a different person, you may continue.';
             warn.style.display = 'block';
           } else {
             warn.style.display = 'none';

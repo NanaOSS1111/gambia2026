@@ -25,10 +25,4 @@ $stmt = $pdo->prepare(
 $stmt->execute([$first, $last, $first, $last]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$matches = array_map(fn($r) => [
-    'name' => htmlspecialchars($r['first_name'] . ' ' . $r['last_name']),
-    'org'  => htmlspecialchars($r['organisation_name']),
-    'status' => $r['status'],
-], $rows);
-
-echo json_encode(['matches' => $matches]);
+echo json_encode(['matches' => count($rows)]);
