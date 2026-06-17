@@ -707,7 +707,7 @@ $regStatusInfo = is_registration_open($pdo);
   <div class="chart-grid" style="grid-template-columns:1fr 1fr;margin-bottom:28px;">
     <div class="chart-card">
       <div class="chart-title">Approved Delegates by Country</div>
-      <div class="chart-wrap" style="height:<?= max(160, count($countryLabels) * 30) ?>px;">
+      <div class="chart-wrap" style="height:<?= max(60, count($countryLabels) * 32) ?>px;">
         <canvas id="chartCountry"></canvas>
       </div>
     </div>
@@ -1240,6 +1240,7 @@ document.addEventListener('DOMContentLoaded', function() {
           borderColor: '#0d6e8c',
           borderWidth: 1,
           borderRadius: 4,
+          maxBarThickness: 18,
         }]
       },
       options: {
