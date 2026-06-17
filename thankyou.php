@@ -20,7 +20,7 @@
   .reg-hero {
     position: relative;
     width: 100%;
-    background: url('asset/the-gambia-bloHpsZyi90-unsplash.jpg') center 40% / cover no-repeat;
+    background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
     background-color: #0a1e33;
   }
   .reg-hero-overlay {
