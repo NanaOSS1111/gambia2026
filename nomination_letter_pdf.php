@@ -230,26 +230,28 @@ function nomination_letter_html(array $data): string {
 </html>";
 }
 
-/* ── Request handler ─────────────────────────────────────── */
-session_start();
-if (!isset($_SESSION['admin'])) {
-    http_response_code(403); exit('Access denied.');
+/* ── Request handler (only when accessed directly) ───────── */
+if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    session_start();
+    if (!isset($_SESSION['admin'])) {
+        http_response_code(403); exit('Access denied.');
+    }
+
+    require_once __DIR__ . '/db.php';
+
+    $id = (int)($_GET['id'] ?? 0);
+    if (!$id) { http_response_code(400); exit('Missing id.'); }
+
+    $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id = ? LIMIT 1");
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) { http_response_code(404); exit('Registration not found.'); }
+
+    $ref = 'GAM26-' . str_pad($row['id'], 5, '0', STR_PAD_LEFT);
+    $pdf = build_nomination_letter_pdf($row);
+
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="NominationLetter-' . $ref . '.pdf"');
+    header('Content-Length: ' . strlen($pdf));
+    echo $pdf;
 }
-
-require_once __DIR__ . '/db.php';
-
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { http_response_code(400); exit('Missing id.'); }
-
-$stmt = $pdo->prepare("SELECT * FROM registrations WHERE id = ? LIMIT 1");
-$stmt->execute([$id]);
-$row = $stmt->fetch();
-if (!$row) { http_response_code(404); exit('Registration not found.'); }
-
-$ref = 'GAM26-' . str_pad($row['id'], 5, '0', STR_PAD_LEFT);
-$pdf = build_nomination_letter_pdf($row);
-
-header('Content-Type: application/pdf');
-header('Content-Disposition: inline; filename="NominationLetter-' . $ref . '.pdf"');
-header('Content-Length: ' . strlen($pdf));
-echo $pdf;
