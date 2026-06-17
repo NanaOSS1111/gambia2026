@@ -186,28 +186,37 @@ function nomination_letter_html(array $data): string {
 
     <p style='margin-top:10px;'><b>Default:</b> Any false statement, misconduct, or breach of this Agreement for any reason on my part will constitute default. Failure to meet any of the obligations stated in this Agreement, including the regulations of the host organization and the terms and conditions detailed in the Award Selection Guide for the Management of nominees, will lead to my immediate termination. If so, I will have to return to the organizers all materials, gadgets, symbols, finance paid on my behalf in the context of this Agreement, and the necessary procedures will be instituted without further notice or delay.</p>
 
-    <!-- Three signature blocks stacked -->
-    <table class='sign3-table'>
+    <!-- Three signature blocks side by side -->
+    <table style='width:100%;margin-top:12px;font-size:9pt;border-collapse:collapse;'>
       <tr>
-        <td>
-          <div class='sign-blank'>&nbsp;</div>
+        <td style='width:33%;padding-right:10px;vertical-align:top;'>
+          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
           <div><b>Signature (Shortlisted Nominee)</b></div>
-          <div>Name: <span class='blank-sm'>&nbsp;$fullName&nbsp;</span></div>
-          <div>Position: 2026 Earth Hour Award Nominee</div>
+          <table style='width:100%;font-size:9pt;'><tr>
+            <td style='white-space:nowrap;padding-right:4px;'>Name: $fullName</td>
+          </tr><tr>
+            <td style='text-align:right;white-space:nowrap;'>Position: 2026 Earth Hour Award Nominee</td>
+          </tr></table>
+        </td>
+        <td style='width:33%;padding:0 5px;vertical-align:top;'>
+          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
+          <div><b>Signature (2026 Award Selection Committee)</b></div>
+          <table style='width:100%;font-size:9pt;'><tr>
+            <td style='white-space:nowrap;'>Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          </tr><tr>
+            <td style='text-align:right;white-space:nowrap;'>Position: Team Lead</td>
+          </tr></table>
+        </td>
+        <td style='width:34%;padding-left:10px;vertical-align:top;'>
+          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
+          <div><b>Signature (NGO Coalition for Social Development)</b></div>
+          <table style='width:100%;font-size:9pt;'><tr>
+            <td style='white-space:nowrap;'>Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          </tr><tr>
+            <td style='text-align:right;white-space:nowrap;'>Position: The Chair / GCO</td>
+          </tr></table>
         </td>
       </tr>
-      <tr><td style='padding-top:18px;'>
-          <div class='sign-blank'>&nbsp;</div>
-          <div><b>Signature (2026 Award Selection Committee)</b></div>
-          <div>Name: <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-          <div>Position: Team Lead</div>
-      </td></tr>
-      <tr><td style='padding-top:18px;'>
-          <div class='sign-blank'>&nbsp;</div>
-          <div><b>Signature (NGO Coalition for Social Development)</b></div>
-          <div>Name: <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-          <div>Position: The Chair / GCO</div>
-      </td></tr>
     </table>
   </div>
 
