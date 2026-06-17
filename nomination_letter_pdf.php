@@ -59,33 +59,33 @@ function nomination_letter_html(array $data): string {
 <html lang='en'>
 <head><meta charset='UTF-8'>
 <style>
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.55; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.35; }
   table { border-collapse: collapse; }
   .page { padding: 6mm 18mm 12mm 18mm; }
   .lh-table  { width: 100%; margin-bottom: 8px; }
   .lh-logo-l { width: 44%; vertical-align: middle; padding-right: 16px; }
-  .lh-contact { vertical-align: middle; text-align: left; font-size: 8.5pt; color: #1a56db; line-height: 1.7; }
+  .lh-contact { vertical-align: middle; text-align: left; font-size: 8.5pt; color: #1a56db; line-height: 1.45; }
   .divider   { border: none; border-top: 2.5px solid #0a2540; margin: 6px 0 14px 0; }
-  .top-table { width: 100%; margin-bottom: 22px; }
+  .top-table { width: 100%; margin-bottom: 14px; }
   .date-cell { vertical-align: top; font-size: 10pt; padding-top: 2px; width: 38%; }
-  .addr-cell { vertical-align: top; text-align: right; font-size: 9.5pt; line-height: 1.6; width: 62%; padding-left: 30%; }
+  .addr-cell { vertical-align: top; text-align: right; font-size: 9.5pt; line-height: 1.35; width: 62%; padding-left: 30%; }
   a, .link   { color: #1a56db; text-decoration: underline; }
-  .notif     { margin-bottom: 4px; font-size: 10pt; }
+  .notif     { margin-bottom: 3px; font-size: 10pt; }
   .notif-red { color: #c0392b; font-weight: bold; }
-  .ref-line  { margin-bottom: 16px; font-size: 10pt; }
-  .salute    { margin-bottom: 10px; font-size: 10pt; }
-  p          { margin: 0 0 10px 0; text-align: justify; font-size: 10pt; }
-  .sign-area { margin-top: 24px; font-size: 10pt; }
-  .part2     { margin-top: 28px; border-top: 2px solid #0a2540; padding-top: 14px; }
-  .part2-title { font-size: 12pt; font-weight: bold; color: #0a2540; margin-bottom: 10px; }
-  .decl-title  { font-weight: bold; margin-bottom: 8px; font-size: 10.5pt; }
+  .ref-line  { margin-bottom: 10px; font-size: 10pt; }
+  .salute    { margin-bottom: 6px; font-size: 10pt; }
+  p          { margin: 0 0 6px 0; text-align: justify; font-size: 10pt; }
+  .sign-area { margin-top: 14px; font-size: 10pt; }
+  .part2     { margin-top: 18px; border-top: 2px solid #0a2540; padding-top: 10px; }
+  .part2-title { font-size: 12pt; font-weight: bold; color: #0a2540; margin-bottom: 6px; }
+  .decl-title  { font-weight: bold; margin-bottom: 5px; font-size: 10.5pt; }
   .blank { border-bottom: 1px solid #333; display: inline-block; width: 200px; }
   .blank-sm { border-bottom: 1px solid #333; display: inline-block; width: 120px; }
-  ol li { margin-bottom: 5px; font-size: 10pt; }
-  .sign3-table { width: 100%; margin-top: 18px; font-size: 9.5pt; }
+  ol li { margin-bottom: 3px; font-size: 10pt; }
+  .sign3-table { width: 100%; margin-top: 12px; font-size: 9.5pt; }
   .sign3-table td { vertical-align: top; padding-right: 12px; }
-  .sign-blank { border-bottom: 1px solid #333; margin-bottom: 4px; height: 24px; }
-  .footer-bar { margin-top: 20px; border-top: 1px solid #0a2540; padding-top: 6px; font-size: 7.5pt; color: #555; text-align: center; }
+  .sign-blank { border-bottom: 1px solid #333; margin-bottom: 3px; height: 20px; }
+  .footer-bar { margin-top: 14px; border-top: 1px solid #0a2540; padding-top: 6px; font-size: 7.5pt; color: #555; text-align: center; }
 </style>
 </head>
 <body>

@@ -25,7 +25,10 @@ function email_header_html(): string {
           <td width='110' style='vertical-align:middle;'>
             <img src='cid:org_logo' alt='Organization' width='110' height='31' style='width:110px;height:31px;display:block;'>
           </td>
-          <td style='text-align:center;vertical-align:middle;padding:0 10px;'></td>
+          <td style='text-align:center;vertical-align:middle;padding:0 10px;'>
+              <div style='font-size:15px;font-weight:700;color:#0a2540;letter-spacing:.04em;line-height:1.2;'>GAMBIA</div>
+              <div style='font-size:15px;font-weight:700;color:#e0603a;letter-spacing:.04em;'>2026</div>
+            </td>
           <td width='64' style='vertical-align:middle;text-align:right;'>
             <img src='cid:nat_seal' alt='National Seal' width='52' height='52' style='width:52px;height:52px;display:block;margin-left:auto;'>
           </td>
