@@ -271,6 +271,15 @@ $genderRows = $pdo->query(
 $genderLabels = array_column($genderRows, 'g');
 $genderCounts = array_map('intval', array_column($genderRows, 'n'));
 
+// By country — top 15 approved delegates
+$countryRows = $pdo->query(
+    "SELECT COALESCE(NULLIF(TRIM(passport_nationality),''), 'Not specified') AS c, COUNT(*) AS n
+     FROM registrations WHERE status = 'approved'
+     GROUP BY c ORDER BY n DESC LIMIT 15"
+)->fetchAll(PDO::FETCH_ASSOC);
+$countryLabels = array_column($countryRows, 'c');
+$countryCounts = array_map('intval', array_column($countryRows, 'n'));
+
 /* ── Current registration status ─────────────────────────── */
 $regNowOpen    = get_setting($pdo, 'registration_open', '1') === '1';
 $regDeadline   = get_setting($pdo, 'registration_deadline', '');
@@ -694,6 +703,14 @@ $regStatusInfo = is_registration_open($pdo);
       <div class="chart-wrap"><canvas id="chartGender"></canvas></div>
     </div>
   </div>
+  <?php if (!empty($countryLabels)): ?>
+  <div class="chart-card" style="margin-bottom:28px;">
+    <div class="chart-title">Approved Delegates by Country</div>
+    <div class="chart-wrap" style="height:<?= max(160, count($countryLabels) * 28) ?>px;">
+      <canvas id="chartCountry"></canvas>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- Main table card -->
   <div class="card">
@@ -1201,6 +1218,35 @@ document.addEventListener('DOMContentLoaded', function() {
               }
             }
           }
+        }
+      }
+    });
+  }
+
+  var countryEl = document.getElementById('chartCountry');
+  if (countryEl) {
+    var countryLabels = <?= json_encode($countryLabels) ?>;
+    var countryCounts = <?= json_encode($countryCounts) ?>;
+    new Chart(countryEl, {
+      type: 'bar',
+      data: {
+        labels: countryLabels,
+        datasets: [{
+          label: 'Delegates',
+          data: countryCounts,
+          backgroundColor: 'rgba(13,110,140,.75)',
+          borderColor: '#0d6e8c',
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { font: { size: 11 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,.05)' } },
+          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
         }
       }
     });

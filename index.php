@@ -4,6 +4,13 @@ require_once 'mail_config.php';
 require_once 'db.php';
 require_once 'settings.php';
 $regStatus = is_registration_open($pdo);
+
+// Delegate counter for hero
+$counterRow = $pdo->query(
+    "SELECT COUNT(*) AS total, COUNT(DISTINCT passport_nationality) AS countries FROM registrations WHERE status = 'approved'"
+)->fetch();
+$approvedCount  = (int)($counterRow['total']     ?? 0);
+$countryCount   = (int)($counterRow['countries'] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,6 +82,31 @@ $regStatus = is_registration_open($pdo);
     font-style: italic;
     font-weight: 700;
   }
+  .delegate-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 18px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(6px);
+    border-radius: 40px;
+    padding: 8px 22px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .01em;
+  }
+  .delegate-counter .dc-num {
+    font-size: 17px;
+    font-weight: 700;
+    color: #e0603a;
+  }
+  .delegate-counter .dc-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(255,255,255,.25);
+  }
   .reg-hero-subtitle {
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 17px;
@@ -103,6 +135,7 @@ $regStatus = is_registration_open($pdo);
     .reg-hero-title    { font-size: 44px; }
     .reg-hero-subtitle { font-size: 15px; }
     .reg-hero-content  { padding: 28px 16px 18px; }
+    .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
     .cd-sep   { font-size: 26px; padding-top: 12px; }
@@ -790,6 +823,15 @@ $regStatus = is_registration_open($pdo);
         <span class="cd-lbl">Seconds</span>
       </div>
     </div>
+    <?php if ($approvedCount > 0): ?>
+    <div class="delegate-counter">
+      <span><span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> approved</span>
+      <?php if ($countryCount > 1): ?>
+      <span class="dc-sep"></span>
+      <span>from <span class="dc-num"><?= $countryCount ?></span> countr<?= $countryCount !== 1 ? 'ies' : 'y' ?></span>
+      <?php endif; ?>
+    </div>
+    <?php endif; ?>
   </div>
 </div>
 

@@ -4,6 +4,7 @@ require_once 'session_guard.php';
 if (!isset($_SESSION['admin'])) { header('Location: admin.php'); exit; }
 
 require_once 'db.php';
+require_once 'mail_config.php';
 require_once 'mailer.php';
 require_once 'logger.php';
 
@@ -297,6 +298,17 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
         </button>
+      <?php endif; ?>
+      <?php if ($status === 'approved'): ?>
+        <?php $badgeToken = hash_hmac('sha256', $ref, BADGE_SECRET); ?>
+        <a href="badge.php?ref=<?= urlencode($ref) ?>&token=<?= urlencode($badgeToken) ?>" target="_blank" class="btn-action" style="background:#eef6ff;color:#0d6e8c;border-color:#b3d9f0;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+          View Badge
+        </a>
+        <a href="nomination_letter_pdf.php?id=<?= $id ?>" target="_blank" class="btn-action" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Nomination PDF
+        </a>
       <?php endif; ?>
     </div>
   </div>
