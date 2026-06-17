@@ -204,7 +204,7 @@ function nomination_letter_html(array $data): string {
           <table style='width:100%;font-size:9pt;'><tr>
             <td style='white-space:nowrap;'>Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
           </tr><tr>
-            <td style='text-align:right;white-space:nowrap;'>Position: Team Lead</td>
+            <td style='white-space:nowrap;'>Position: Team Lead</td>
           </tr></table>
         </td>
         <td style='width:34%;padding-left:10px;vertical-align:top;'>
