@@ -29,11 +29,11 @@ jobs:
           # Install lftp (available on all GitHub-hosted Ubuntu runners)
           sudo apt-get install -y lftp
 
-          # Mirror local files → remote. --no-delete keeps uploads/, db.php,
-          # and mail_config.php on the server untouched (they are not in the repo).
+          # Mirror local files → remote. By default lftp does NOT delete remote
+          # files, so uploads/, db.php, and mail_config.php on the server are safe.
           lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
             set sftp:auto-confirm yes;
             set net:max-retries 3;
-            mirror --reverse --no-delete --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php . ${SFTP_PATH};
+            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php . ${SFTP_PATH};
             quit
           "
