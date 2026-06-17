@@ -109,7 +109,7 @@ if ($departure < $arrival) {
     err('Departure Date cannot be before your Arrival Date.');
 }
 
-// ── Duplicate check — email AND phone ─────────────────────
+// ── Duplicate check — email, phone, name+company, passport ──
 $email   = strtolower(trim($_POST['email']));
 $phone   = trim($_POST['contact_number']);
 
@@ -123,6 +123,27 @@ $dupPhone = $pdo->prepare("SELECT id FROM registrations WHERE contact_number = ?
 $dupPhone->execute([$phone]);
 if ($dupPhone->fetch()) {
     err('This phone number is already registered. Each delegate may only register once.');
+}
+
+// Same full name + same organisation = same person re-registering
+$dupName = $pdo->prepare(
+    "SELECT id FROM registrations
+     WHERE LOWER(first_name) = LOWER(?) AND LOWER(last_name) = LOWER(?) AND LOWER(organisation_name) = LOWER(?)"
+);
+$dupName->execute([
+    trim($_POST['first_name']),
+    trim($_POST['last_name']),
+    trim($_POST['organisation_name']),
+]);
+if ($dupName->fetch()) {
+    err('A registration already exists for this name and organisation. If you believe this is an error please contact the Secretariat.');
+}
+
+// Same passport number = same person regardless of name/email
+$dupPassport = $pdo->prepare("SELECT id FROM registrations WHERE passport_number = ?");
+$dupPassport->execute([trim($_POST['passport_number'])]);
+if ($dupPassport->fetch()) {
+    err('This passport number is already registered. Each delegate may only register once.');
 }
 
 // ── File uploads ──────────────────────────────────────────
