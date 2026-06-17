@@ -1,0 +1,39 @@
+name: Deploy to one.com
+
+on:
+  push:
+    branches:
+      - main          # deploy automatically on every push to main
+
+  workflow_dispatch:  # also allow manual trigger from the GitHub Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Deploy via SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASS: ${{ secrets.SFTP_PASS }}
+          SFTP_PATH: ${{ secrets.SFTP_PATH }}
+        run: |
+          # Install lftp (available on all GitHub-hosted Ubuntu runners)
+          sudo apt-get install -y lftp
+
+          # Mirror local files → remote. --no-delete keeps uploads/, db.php,
+          # and mail_config.php on the server untouched (they are not in the repo).
+          lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mirror --reverse --no-delete --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php . ${SFTP_PATH};
+            quit
+          "
