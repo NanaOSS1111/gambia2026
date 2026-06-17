@@ -825,7 +825,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     </div>
     <?php if ($approvedCount > 0): ?>
     <div class="delegate-counter">
-      <span><span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> approved</span>
+      <span>You and <span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> are attending Gambia 2026</span>
       <?php if ($countryCount > 1): ?>
       <span class="dc-sep"></span>
       <span>from <span class="dc-num"><?= $countryCount ?></span> countr<?= $countryCount !== 1 ? 'ies' : 'y' ?></span>
