@@ -17,10 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') err('Invalid request.');
 $regStatus = is_registration_open($pdo);
 if (!$regStatus['open']) err('Registration is currently closed. Please check back later.');
 
-// Rate limiting — by email + phone (not IP, to avoid blocking shared networks)
+// Rate limit identifiers — recorded only after a successful insert below
 $rl_email = strtolower(trim($_POST['email'] ?? ''));
 $rl_phone = trim($_POST['contact_number'] ?? '');
-check_rate_limit($pdo, $rl_email, $rl_phone);
 
 // ── CSRF ──────────────────────────────────────────────────
 if (
