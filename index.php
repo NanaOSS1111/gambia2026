@@ -1109,7 +1109,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <h2>Mandatory Documents</h2>
         </div>
         <div class="reg-section-desc">
-          Only duly nominated participants from Parties to the Convention and accredited Observer organizations may participate. Please submit the relevant document to support your accreditation. Each participant must register individually. Max file size: 2 MB.
+          Only duly nominated participants from registered institutions/organizations may participate. Please submit the relevant document to support your application. Each participant must register individually. (Max file size: 2 MB.)
         </div>
         <div class="reg-section-body">
 
@@ -1143,7 +1143,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <h2>Accommodation &amp; Emergency Information</h2>
         </div>
         <div class="reg-section-desc">
-          Participants are responsible for arranging their own accommodation. For logistical and emergency purposes, please provide the information below.
+          Participants are responsible for arranging their own transportation and accommodation. For logistical and emergency purposes, please refer to the information below.
         </div>
         <div class="reg-section-body">
 
@@ -1180,7 +1180,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <h2>Framework Document Endorsement</h2>
         </div>
         <div class="reg-section-desc">
-          On the development of the NGO Framework of Action adopted within the 1st Edition of the GAMBIA 2026 NGO Summit, 12–16 October 2026, Banjul, Republic of The Gambia.
+          On the development of the NGO Framework of Action adopted within the 1st Edition of the NGO Restitution Summit, 12–16 October 2026, Banjul, Republic of The Gambia.
         </div>
         <div class="reg-section-body">
 
@@ -1240,7 +1240,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <div class="checkbox-field" style="margin-bottom:16px;">
             <input type="checkbox" name="terms_conditions" id="terms_conditions" value="1" required>
             <div class="cb-text">
-              I declare that: I am the authorized representative of my organization to receive this Award; I will attend in-person for the Award ceremony; I am a nominee for the 2026 Earth Hour Award in The Gambia; I recognize that the organizer may support my participation with logistics if possible; I recognize that the organizer does not assume any responsibility for my dependents; I authorize the organizer and its partners to obtain and disclose any information concerning me, whether academic, professional, personal or otherwise. <span class="req">*</span>
+              I declare that: I am the authorized representative of my organization/institution to receive the "One Billion Earth Hour Award"; I will attend in-person for the Award ceremony; I am a nominee for the 2026 Earth Hour Award in The Gambia; I recognize that the organizer may support my participation with logistics if possible; I recognize that the organizer does not assume any responsibility for my dependents; I authorize the organizer and its partners to obtain and disclose any information concerning me, whether academic, professional, personal or otherwise. <span class="req">*</span>
             </div>
           </div>
 
@@ -1248,7 +1248,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <div class="checkbox-field" style="margin-bottom:16px;">
             <input type="checkbox" name="undertakings" id="undertakings" value="1" required>
             <div class="cb-text">
-              I undertake to: diligently follow the program and abide by the regulations of the host organization and comply with the terms and conditions detailed in the Selection Guide for the Management of Award Recipients; submit to the organizer any requested report/record relating to my community service and other related work on climate change and social development; attend the award ceremony if my nomination is accepted and return to my country afterward; not participate in any unlawful act in the host country during the period of the award; not submit any request to Immigration, Refugees, and Citizenship for any purpose other than this Agreement. <span class="req">*</span>
+              I undertake to: diligently follow the program and abide by the regulations of the host organization and comply with the terms and conditions detailed in the Selection Guide for the Management of Earth Hour Award Recipients; submit to the organizers any requested report/record relating to my community service and other related work on climate change and social development; attend the award ceremony if my nomination is accepted and return to my country afterward; not participate in any unlawful act in the host country during the period of the award; not submit any request to Immigration, Refugees, and Citizenship for any purpose other than this Agreement. <span class="req">*</span>
             </div>
           </div>
 
@@ -1271,8 +1271,8 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <h2>Confirmation &amp; Acknowledgement</h2>
         </div>
         <div class="reg-section-desc">
-          GAMBIA 2026 represents a deliberate continuation of our collective efforts and a transition toward a more structured, results-oriented phase of collaboration with social development stakeholders.
-          This endorsement signifies our commitment to solidarity, coherence, and principled engagement, which underpin the NGO Coalition and its evolving governance framework.
+          GAMBIA 2026 NGO Summit represents a deliberate continuation of our collective efforts and a transition toward a more structured, results-oriented phase of collaboration with social development stakeholders.
+          This endorsement signifies our commitment to social solidarity, social coherence, and social resilience, which underpin the NGO Coalition and its evolving governance framework.
         </div>
         <div class="reg-section-body">
           <div class="checkbox-field">
