@@ -866,6 +866,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         <a href="#sec-visa">Visa Information</a>
         <a href="#sec-docs">Mandatory Documents</a>
         <a href="#sec-accommodation">Accommodation</a>
+        <a href="#sec-scholarship">Scholarship</a>
         <a href="#sec-conduct">Framework Document</a>
         <a href="#sec-privacy">Data Privacy</a>
         <a href="#sec-insurance">Liabilities</a>
@@ -1174,7 +1175,27 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         </div>
       </div>
 
-      <!-- SECTION 6: FRAMEWORK DOCUMENT -->
+      <!-- SECTION 6: SCHOLARSHIP INFORMATION -->
+      <div class="reg-section" id="sec-scholarship">
+        <div class="reg-section-header">
+          <h2>Scholarship Information</h2>
+        </div>
+        <div class="reg-section-desc">
+          If you require scholarship support to attend the GAMBIA 2026 NGO Summit, please indicate your preference below. Select "Not required" if you do not need support.
+        </div>
+        <div class="reg-section-body">
+          <div class="field">
+            <label>Scholarship Preference</label>
+            <div class="radio-group">
+              <label><input type="radio" name="scholarship" value="" checked> Not required</label>
+              <label><input type="radio" name="scholarship" value="Accommodation"> Accommodation</label>
+              <label><input type="radio" name="scholarship" value="Airfare"> Airfare</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: FRAMEWORK DOCUMENT -->
       <div class="reg-section" id="sec-conduct">
         <div class="reg-section-header">
           <h2>Framework Document Endorsement</h2>
@@ -1210,7 +1231,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         </div>
       </div>
 
-      <!-- SECTION 7: DATA PROTECTION -->
+      <!-- SECTION 8: DATA PROTECTION -->
       <div class="reg-section" id="sec-privacy">
         <div class="reg-section-header">
           <h2>Data Protection &amp; Privacy Notice</h2>
@@ -1228,7 +1249,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         </div>
       </div>
 
-      <!-- SECTION 8: LIABILITIES OF THE SIGNATORY -->
+      <!-- SECTION 9: LIABILITIES OF THE SIGNATORY -->
       <div class="reg-section" id="sec-insurance">
         <div class="reg-section-header">
           <h2>Liabilities of the Signatory</h2>
@@ -1265,7 +1286,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         </div>
       </div>
 
-      <!-- SECTION 9: CONFIRMATION -->
+      <!-- SECTION 10: CONFIRMATION -->
       <div class="reg-section" id="sec-confirmation">
         <div class="reg-section-header">
           <h2>Confirmation &amp; Acknowledgement</h2>
@@ -1346,10 +1367,11 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <div class="prog-step" id="ps-2"><span class="prog-dot"></span>Visa Info</div>
           <div class="prog-step" id="ps-3"><span class="prog-dot"></span>Documents</div>
           <div class="prog-step" id="ps-4"><span class="prog-dot"></span>Accommodation</div>
-          <div class="prog-step" id="ps-5"><span class="prog-dot"></span>Framework</div>
-          <div class="prog-step" id="ps-6"><span class="prog-dot"></span>Data Privacy</div>
-          <div class="prog-step" id="ps-7"><span class="prog-dot"></span>Liabilities</div>
-          <div class="prog-step" id="ps-8"><span class="prog-dot"></span>Confirmation</div>
+          <div class="prog-step" id="ps-5"><span class="prog-dot"></span>Scholarship</div>
+          <div class="prog-step" id="ps-6"><span class="prog-dot"></span>Framework</div>
+          <div class="prog-step" id="ps-7"><span class="prog-dot"></span>Data Privacy</div>
+          <div class="prog-step" id="ps-8"><span class="prog-dot"></span>Liabilities</div>
+          <div class="prog-step" id="ps-9"><span class="prog-dot"></span>Confirmation</div>
         </div>
       </div>
     </div>

@@ -181,6 +181,7 @@ try {
            home_address, passport_nationality, passport_number, passport_expiration,
            passport_file, nomination_letter, is_18_or_older,
            arrival_date, departure_date, address_in_country, contact_number,
+           scholarship,
            code_of_conduct, data_privacy, terms_conditions, undertakings,
            final_confirmation, ip_address)
         VALUES
@@ -189,6 +190,7 @@ try {
            :home_address, :passport_nationality, :passport_number, :passport_expiration,
            :passport_file, :nomination_letter, :is_18_or_older,
            :arrival_date, :departure_date, :address_in_country, :contact_number,
+           :scholarship,
            1, 1, 1, 1, 1, :ip_address)
     ");
 
@@ -215,6 +217,7 @@ try {
         ':departure_date'       => $departureRaw,
         ':address_in_country'   => $s($_POST['address_in_country']),
         ':contact_number'       => $phone,
+        ':scholarship'          => in_array($_POST['scholarship'] ?? '', ['Accommodation', 'Airfare']) ? $_POST['scholarship'] : null,
         ':ip_address'           => $_SERVER['REMOTE_ADDR'] ?? '',
     ]);
 

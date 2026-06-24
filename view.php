@@ -374,6 +374,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
         <div class="f"><span class="f-lbl">Arrival Date</span><span class="f-val"><?= val($r['arrival_date']) ?></span></div>
         <div class="f"><span class="f-lbl">Departure Date</span><span class="f-val"><?= val($r['departure_date']) ?></span></div>
         <div class="f"><span class="f-lbl">Contact Number</span><span class="f-val"><?= val($r['contact_number']) ?></span></div>
+        <div class="f"><span class="f-lbl">Scholarship Preference</span><span class="f-val"><?= val($r['scholarship'] ?? null, 'Not required') ?></span></div>
       </div>
       <div class="fields single" style="margin-top:0;">
         <div class="f"><span class="f-lbl">Address in The Gambia</span><span class="f-val"><?= val($r['address_in_country']) ?></span></div>
