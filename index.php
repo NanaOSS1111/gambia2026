@@ -37,8 +37,19 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero {
     position: relative;
     width: 100%;
+    background-color: #2d3a1e; /* matches image dominant green, no blue flash */
+    overflow: hidden;
+  }
+  .reg-hero-bg {
+    position: absolute;
+    inset: 0;
     background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
-    background-color: #0a1e33;
+    animation: heroZoom 7s cubic-bezier(.25,.46,.45,.94) forwards;
+    will-change: transform;
+  }
+  @keyframes heroZoom {
+    from { transform: scale(1.18); }
+    to   { transform: scale(1);    }
   }
   .reg-hero-overlay {
     position: absolute;
@@ -757,6 +768,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 <style>@keyframes reg-spin{to{transform:rotate(360deg)}}</style>
 
 <div class="reg-hero">
+  <div class="reg-hero-bg"></div>
   <div class="reg-hero-overlay"></div>
   <div class="reg-hero-content">
     <div class="reg-hero-eyebrow">October 12–16, 2026 &nbsp;&bull;&nbsp; Banjul, The Gambia</div>
