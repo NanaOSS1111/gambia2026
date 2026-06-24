@@ -45,9 +45,9 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(5,12,25,.20) 0%,
-      rgba(5,12,25,.34) 55%,
-      rgba(5,12,25,.50) 100%
+      rgba(5,12,25,.08) 0%,
+      rgba(5,12,25,.18) 55%,
+      rgba(5,12,25,.30) 100%
     );
   
   }
