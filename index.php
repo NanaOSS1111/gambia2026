@@ -18,6 +18,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAMBIA 2026 — Delegate Registration</title>
+<link rel="preload" href="asset/medicare.png-scaled.jpg" as="image">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?php if (!empty(RECAPTCHA_SITE_KEY)): ?>
@@ -44,12 +45,15 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     position: absolute;
     inset: 0;
     background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
+    transform: scale(1.18); /* set immediately so no flash at scale(1) before animation runs */
+    transform-origin: center 40%;
     animation: heroZoom 7s cubic-bezier(.25,.46,.45,.94) forwards;
     will-change: transform;
+    backface-visibility: hidden;
   }
   @keyframes heroZoom {
     from { transform: scale(1.18); }
-    to   { transform: scale(1);    }
+    to   { transform: scale(1.06); } /* stop at 1.06 — leaves room for mouse panning */
   }
   .reg-hero-overlay {
     position: absolute;
@@ -1865,6 +1869,33 @@ restoreDraft();
 
   window.addEventListener('scroll', updateProgress, { passive: true });
   updateProgress();
+}());
+
+// ── Hero mouse parallax ───────────────────────────────────
+(function () {
+  var hero = document.querySelector('.reg-hero');
+  var bg   = document.querySelector('.reg-hero-bg');
+  if (!hero || !bg) return;
+
+  var ready = false;
+
+  bg.addEventListener('animationend', function () {
+    ready = true;
+    bg.style.transition = 'transform 0.25s ease-out';
+  });
+
+  hero.addEventListener('mousemove', function (e) {
+    if (!ready) return;
+    var rect = hero.getBoundingClientRect();
+    var x = ((e.clientX - rect.left)  / rect.width  - 0.5) * -28;
+    var y = ((e.clientY - rect.top)   / rect.height - 0.5) * -16;
+    bg.style.transform = 'scale(1.06) translate(' + x + 'px, ' + y + 'px)';
+  });
+
+  hero.addEventListener('mouseleave', function () {
+    if (!ready) return;
+    bg.style.transform = 'scale(1.06) translate(0px, 0px)';
+  });
 }());
 
 // ── Scroll to top ─────────────────────────────────────────
