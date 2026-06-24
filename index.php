@@ -701,79 +701,39 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     text-transform: uppercase;
     padding: 12px 16px;
   }
-  .prog-body {
-    padding: 20px 16px 18px;
+  .prog-bar-section {
+    padding: 12px 16px 16px;
+    border-top: 1px solid #f0f4f8;
+  }
+  .prog-bar-label-row {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 14px;
-  }
-  .prog-ring-wrap {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    flex-shrink: 0;
-  }
-  .prog-ring-wrap svg {
-    width: 120px;
-    height: 120px;
-    transform: rotate(-90deg);
-    display: block;
-  }
-  .prog-track { fill: none; stroke: #e8f0f8; stroke-width: 9; }
-  .prog-fill  {
-    fill: none;
-    stroke: #0d6e8c;
-    stroke-width: 9;
-    stroke-linecap: round;
-    stroke-dasharray: 301.6;
-    stroke-dashoffset: 301.6;
-    transition: stroke-dashoffset .45s cubic-bezier(.4,0,.2,1);
-  }
-  .prog-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .prog-pct-num {
-    font-size: 26px;
-    font-weight: 700;
-    color: #0a2540;
-    line-height: 1;
-  }
-  .prog-pct-lbl {
-    font-size: 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
     font-weight: 600;
     color: #9aaabf;
-    margin-top: 3px;
-    letter-spacing: .05em;
+    text-transform: uppercase;
+    letter-spacing: .07em;
   }
-  .prog-steps {
+  .prog-bar-label-row span:last-child {
+    color: #0d6e8c;
+    font-size: 12px;
+  }
+  .prog-bar-track {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+    height: 6px;
+    background: #e8f0f8;
+    border-radius: 10px;
+    overflow: hidden;
   }
-  .prog-step {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 11px;
-    color: #b8cfe0;
-    line-height: 1.2;
+  .prog-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0d6e8c, #0a2540);
+    border-radius: 10px;
+    transition: width .4s ease;
   }
-  .prog-step.visited { color: #0a2540; }
-  .prog-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #d1dce8;
-    flex-shrink: 0;
-    transition: background .3s;
-  }
-  .prog-step.visited .prog-dot { background: #0d6e8c; }
 
   @media (max-width: 1000px) {
     .reg-layout { grid-template-columns: 1fr; }
@@ -1339,40 +1299,13 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         <strong>Contact</strong>
         <a href="mailto:secretariat@ngocsocd.org">secretariat@ngocsocd.org</a>
       </div>
-    </div>
-
-    <!-- Form progress ring -->
-    <div class="prog-box">
-      <div class="prog-box-title">Form Progress</div>
-      <div class="prog-body">
-        <div class="prog-ring-wrap">
-          <svg viewBox="0 0 120 120">
-            <defs>
-              <linearGradient id="progGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%"   stop-color="#0d6e8c"/>
-                <stop offset="100%" stop-color="#0a2540"/>
-              </linearGradient>
-            </defs>
-            <circle class="prog-track" cx="60" cy="60" r="48"/>
-            <circle class="prog-fill"  cx="60" cy="60" r="48" id="progFill"
-                    style="stroke:url(#progGrad);"/>
-          </svg>
-          <div class="prog-center">
-            <span class="prog-pct-num" id="progNum">0%</span>
-            <span class="prog-pct-lbl">Complete</span>
-          </div>
+      <div class="prog-bar-section">
+        <div class="prog-bar-label-row">
+          <span>Form Progress</span>
+          <span id="progNum">0%</span>
         </div>
-        <div class="prog-steps" id="progSteps">
-          <div class="prog-step" id="ps-0"><span class="prog-dot"></span>Representation</div>
-          <div class="prog-step" id="ps-1"><span class="prog-dot"></span>Personal Data</div>
-          <div class="prog-step" id="ps-2"><span class="prog-dot"></span>Visa Info</div>
-          <div class="prog-step" id="ps-3"><span class="prog-dot"></span>Documents</div>
-          <div class="prog-step" id="ps-4"><span class="prog-dot"></span>Accommodation</div>
-          <div class="prog-step" id="ps-5"><span class="prog-dot"></span>Scholarship</div>
-          <div class="prog-step" id="ps-6"><span class="prog-dot"></span>Framework</div>
-          <div class="prog-step" id="ps-7"><span class="prog-dot"></span>Data Privacy</div>
-          <div class="prog-step" id="ps-8"><span class="prog-dot"></span>Liabilities</div>
-          <div class="prog-step" id="ps-9"><span class="prog-dot"></span>Confirmation</div>
+        <div class="prog-bar-track">
+          <div class="prog-bar-fill" id="progBarFill"></div>
         </div>
       </div>
     </div>
@@ -1900,8 +1833,6 @@ restoreDraft();
     'sec-representation','sec-personal','sec-visa','sec-docs',
     'sec-accommodation','sec-conduct','sec-privacy','sec-insurance','sec-confirmation'
   ];
-  var CIRC = 301.6; // 2π × 48
-
   function updateProgress() {
     var mid = window.scrollY + window.innerHeight * 0.65;
     var done = 0;
@@ -1914,10 +1845,10 @@ restoreDraft();
       if (step) step.classList.toggle('visited', passed);
     });
     var pct  = Math.round((done / SECTION_IDS.length) * 100);
-    var fill = document.getElementById('progFill');
+    var fill = document.getElementById('progBarFill');
     var num  = document.getElementById('progNum');
-    if (fill) fill.style.strokeDashoffset = CIRC * (1 - done / SECTION_IDS.length);
-    if (num)  num.textContent = pct + '%';
+    if (fill) fill.style.width = pct + '%';
+    if (num)  num.textContent  = pct + '%';
   }
 
   window.addEventListener('scroll', updateProgress, { passive: true });
