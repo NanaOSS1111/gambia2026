@@ -33,6 +33,23 @@ function flush_and_continue(string $url): void {
     set_time_limit(120);
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email'])) {
+    $fresh = $pdo->prepare("SELECT * FROM registrations WHERE id=?");
+    $fresh->execute([$id]);
+    $row  = $fresh->fetch();
+    $type = $_POST['resend_email'];
+    if ($type === 'confirmation') {
+        flush_and_continue("view.php?id=$id&resent=confirmation");
+        send_confirmation_email($row);
+    } elseif ($type === 'approval' && $row['status'] === 'approved') {
+        flush_and_continue("view.php?id=$id&resent=approval");
+        send_approval_email($row);
+    } else {
+        header("Location: view.php?id=$id");
+    }
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $newStatus = $_POST['status'];
     $reason    = trim($_POST['reject_reason'] ?? '');
@@ -309,6 +326,26 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Nomination PDF
         </a>
+      <?php endif; ?>
+
+      <!-- Resend emails -->
+      <form method="post" style="display:contents;">
+        <button name="resend_email" value="confirmation" type="submit" class="btn-action" style="background:#fff8e1;color:#92400e;border-color:#fde68a;" onclick="return confirm('Resend confirmation email to <?= htmlspecialchars($r['email']) ?>?')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
+          Resend Confirmation
+        </button>
+        <?php if ($status === 'approved'): ?>
+        <button name="resend_email" value="approval" type="submit" class="btn-action" style="background:#f0fdf4;color:#065f46;border-color:#6ee7b7;" onclick="return confirm('Resend approval email to <?= htmlspecialchars($r['email']) ?>?')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
+          Resend Approval
+        </button>
+        <?php endif; ?>
+      </form>
+
+      <?php if (isset($_GET['resent'])): ?>
+      <span style="font-size:12px;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:6px;padding:5px 12px;">
+        ✓ <?= $_GET['resent'] === 'approval' ? 'Approval' : 'Confirmation' ?> email resent
+      </span>
       <?php endif; ?>
     </div>
   </div>
