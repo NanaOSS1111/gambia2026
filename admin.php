@@ -704,9 +704,9 @@ $regStatusInfo = is_registration_open($pdo);
     </div>
   </div>
   <?php if (!empty($countryLabels)): ?>
-  <div class="chart-card" style="margin-bottom:28px;padding:14px 20px;">
-    <div class="chart-title" style="margin-bottom:8px;">Approved Delegates by Country</div>
-    <div class="chart-wrap" style="height:<?= max(30, count($countryLabels) * 26) ?>px;">
+  <div class="chart-card" style="margin-bottom:28px;">
+    <div class="chart-title">Approved Delegates by Country</div>
+    <div class="chart-wrap" style="height:300px;">
       <canvas id="chartCountry"></canvas>
     </div>
   </div>
@@ -1234,20 +1234,32 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [{
           label: 'Delegates',
           data: countryCounts,
-          backgroundColor: 'rgba(13,110,140,.75)',
-          borderColor: '#0d6e8c',
-          borderWidth: 1,
-          borderRadius: 4,
-          maxBarThickness: 18,
+          backgroundColor: countryLabels.map(function(_, i) {
+            var colors = ['rgba(13,110,140,.8)','rgba(14,165,105,.8)','rgba(220,96,58,.8)','rgba(99,102,241,.8)','rgba(245,158,11,.8)'];
+            return colors[i % colors.length];
+          }),
+          borderWidth: 0,
+          borderRadius: 5,
+          maxBarThickness: 40,
         }]
       },
       options: {
-        indexAxis: 'y',
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.parsed.y + ' delegate' + (ctx.parsed.y !== 1 ? 's' : ''); } } }
+        },
         scales: {
-          x: { beginAtZero: true, ticks: { font: { size: 11 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,.05)' } },
-          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 }, maxRotation: 35, minRotation: 25 }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { font: { size: 11 }, stepSize: 1, precision: 0 },
+            grid: { color: 'rgba(0,0,0,.05)' }
+          }
         }
       }
     });
