@@ -10,7 +10,11 @@ require_once 'mailer.php';
 require_once 'rate_limit.php';
 require_once 'settings.php';
 
-function err($msg) { ob_clean(); echo json_encode(['success' => false, 'message' => $msg]); exit; }
+function err($msg) {
+    ob_clean();
+    echo json_encode(['success' => false, 'message' => $msg, 'csrf_token' => $_SESSION['csrf_token'] ?? '']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') err('Invalid request.');
 
@@ -226,7 +230,7 @@ try {
 
     // Send JSON response to browser first, then send email in background
     ob_clean();
-    echo json_encode(['success' => true, 'id' => $newId, 'message' => 'Registration submitted successfully.']);
+    echo json_encode(['success' => true, 'id' => $newId, 'message' => 'Registration submitted successfully.', 'csrf_token' => $_SESSION['csrf_token'] ?? '']);
     header('Connection: close');
     header('Content-Length: ' . ob_get_length());
     ob_end_flush();

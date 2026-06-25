@@ -1650,6 +1650,11 @@ document.getElementById('regForm').addEventListener('submit', function (e) {
       fetch('process.php', { method: 'POST', body: new FormData(form) })
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        // Keep CSRF token in sync so retries after validation errors still work
+        if (data.csrf_token) {
+          var csrfField = form.querySelector('[name="csrf_token"]');
+          if (csrfField) csrfField.value = data.csrf_token;
+        }
         if (data.success) {
           var ref = 'GAM26-' + String(data.id).padStart(5, '0');
           overlay.style.display = 'none';
