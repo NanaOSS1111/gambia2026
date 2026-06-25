@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registration Submitted — GAMBIA 2026</title>
+<link rel="preload" href="asset/medicare.png-scaled.jpg" as="image">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,79 +17,84 @@
     flex-direction: column;
   }
 
-  /* ── Hero banner (identical to index.php) ───────────────── */
+  /* ── Hero banner ───────────────────────────────────────── */
+  @keyframes heroZoomOut {
+    from { transform: scale(1.18); }
+    to   { transform: scale(1.00); }
+  }
   .reg-hero {
     position: relative;
     width: 100%;
+    overflow: hidden;
+    background-color: #2d3a1e;
+  }
+  .reg-hero-bg {
+    position: absolute;
+    inset: 0;
     background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
-    background-color: #0a1e33;
+    transform: scale(1.18);
+    will-change: transform;
+    animation: heroZoomOut 1.8s cubic-bezier(.22,.61,.36,1) forwards;
   }
   .reg-hero-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(5,12,25,.20) 0%,
-      rgba(5,12,25,.34) 55%,
-      rgba(5,12,25,.50) 100%
+      rgba(5,12,25,.08) 0%,
+      rgba(5,12,25,.18) 55%,
+      rgba(5,12,25,.30) 100%
     );
+    z-index: 1;
   }
   .reg-hero-content {
     position: relative;
-    z-index: 1;
-    padding: 36px 24px 22px;
+    z-index: 2;
+    padding: 52px 24px 44px;
     text-align: center;
     color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  .reg-hero-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: #e0603a;
-    margin-bottom: 10px;
-  }
   .reg-hero-title {
-    font-size: 64px;
+    font-size: clamp(22px, 3.2vw, 42px);
     font-weight: 800;
-    letter-spacing: -.03em;
-    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    line-height: 1.15;
     color: #fff;
-    margin-bottom: 10px;
-  }
-  .reg-hero-title .accent {
-    color: #e0603a;
-    font-style: italic;
-    font-weight: 700;
+    margin-bottom: 14px;
+    max-width: 820px;
+    text-shadow: 0 2px 16px rgba(0,0,0,.35);
   }
   .reg-hero-subtitle {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 17px;
+    font-size: 16px;
     font-style: italic;
-    color: rgba(255,255,255,.82);
-    max-width: 600px;
-    line-height: 1.5;
-    margin-bottom: 22px;
-  }
-  .reg-hero-types {
-    position: relative;
-    z-index: 1;
-    background: rgba(0,0,0,.38);
-    border-top: 1px solid rgba(255,255,255,.1);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    padding: 9px 24px;
-    font-size: 11px;
-    color: rgba(255,255,255,.65);
-    text-align: center;
+    color: rgba(255,255,255,.88);
+    max-width: 720px;
     line-height: 1.6;
-    letter-spacing: .01em;
+    margin-bottom: 0;
+  }
+  .reg-hero-location {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #e0a060;
+    margin-top: 14px;
   }
 
-  /* ── Countdown ──────────────────────────────────────────── */
+  /* ── Countdown bar below hero ──────────────────────────── */
+  .cd-bar {
+    background: #0a2540;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
   .cd-units {
     display: flex;
     align-items: center;
@@ -130,9 +136,9 @@
   }
 
   @media (max-width: 700px) {
-    .reg-hero-title    { font-size: 44px; }
-    .reg-hero-subtitle { font-size: 15px; }
-    .reg-hero-content  { padding: 28px 16px 18px; }
+    .reg-hero-subtitle { font-size: 14px; }
+    .reg-hero-location { font-size: 12px; }
+    .reg-hero-content  { padding: 36px 16px 32px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
     .cd-sep   { font-size: 26px; padding-top: 12px; }
@@ -236,34 +242,38 @@
 
 <!-- ── Hero banner ───────────────────────────────────────── -->
 <div class="reg-hero">
+  <div class="reg-hero-bg"></div>
   <div class="reg-hero-overlay"></div>
   <div class="reg-hero-content">
-    <div class="reg-hero-eyebrow">October 12–16, 2026 &nbsp;&bull;&nbsp; Banjul, The Gambia</div>
-    <h1 class="reg-hero-title">GAMBIA<span class="accent">26</span></h1>
-    <p class="reg-hero-subtitle">Where Civil Society Shapes Global Social Development</p>
-    <div class="cd-units">
-      <div class="cd-block">
-        <span class="cd-num" id="cd-days">00</span>
-        <span class="cd-lbl">Days</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num" id="cd-hours">00</span>
-        <span class="cd-lbl">Hours</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num" id="cd-mins">00</span>
-        <span class="cd-lbl">Minutes</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num" id="cd-secs">00</span>
-        <span class="cd-lbl">Seconds</span>
-      </div>
+    <h1 class="reg-hero-title">&ldquo;Mobilizing Civil Society for Bold Social Development&rdquo;</h1>
+    <p class="reg-hero-subtitle">Restitution of the Second World Social Summit (SWSS) on Social Development Outcome</p>
+    <p class="reg-hero-location">The SDK Conference Centre, Senegambia, The Gambia &nbsp;&bull;&nbsp; October 12–16, 2026</p>
+  </div>
+</div>
+
+<!-- ── Countdown bar below hero ──────────────────────────── -->
+<div class="cd-bar">
+  <div class="cd-units">
+    <div class="cd-block">
+      <span class="cd-num" id="cd-days">00</span>
+      <span class="cd-lbl">Days</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num" id="cd-hours">00</span>
+      <span class="cd-lbl">Hours</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num" id="cd-mins">00</span>
+      <span class="cd-lbl">Minutes</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num" id="cd-secs">00</span>
+      <span class="cd-lbl">Seconds</span>
     </div>
   </div>
-  
 </div>
 
 <!-- ── Thank you card ────────────────────────────────────── -->
