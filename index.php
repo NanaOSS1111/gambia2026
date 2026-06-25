@@ -1,9 +1,21 @@
 <?php
 session_start();
+
+// Prevent page caching — cached HTML contains a stale CSRF token that never
+// matches the visitor's session, causing "Security token mismatch" on first try.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
 require_once 'mail_config.php';
 require_once 'db.php';
 require_once 'settings.php';
 $regStatus = is_registration_open($pdo);
+
+// Generate CSRF token once at the top so it is always in the session
+// before any HTML is sent to the browser.
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
+}
 
 // Delegate counter for hero
 $counterRow = $pdo->query(
@@ -856,8 +868,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     <div id="reg-alert"></div>
 
     <form id="regForm" class="reg-form" enctype="multipart/form-data" novalidate>
-      <?php if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(16)); ?>
-      <input type="hidden" name="csrf_token"      value="<?= $_SESSION['csrf_token'] ?>">
+      <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
       <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
       <div class="reg-info-box" style="margin-bottom:0;">

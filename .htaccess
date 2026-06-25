@@ -1,3 +1,9 @@
+# Prevent server-side caching of PHP pages (avoids stale CSRF tokens)
+<FilesMatch "\.php$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+</FilesMatch>
+
 # Deny direct access to sensitive files
 <FilesMatch "^(db|mail_config|logger|rate_limit|session_guard)\.php$">
     Require all denied
