@@ -91,7 +91,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     text-shadow: 0 2px 16px rgba(0,0,0,.35);
   }
   .reg-hero-location {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     color: #e0603a;
     letter-spacing: .06em;
@@ -158,8 +158,8 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
-    .reg-hero-location { font-size: 12px; }
-    .reg-hero-content  { padding: 56px 16px 48px; }
+    .reg-hero-location { font-size: 14px; }
+  .reg-hero-content  { padding: 56px 16px 48px; }
     .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
@@ -701,12 +701,12 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .cd-block {
     background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.1);
-    border-radius: 8px;
-    padding: 8px 14px 8px;
-    min-width: 60px;
+    border-radius: 6px;
+    padding: 5px 10px 5px;
+    min-width: 46px;
   }
   .cd-num {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 700;
     color: #fff;
     line-height: 1;
@@ -729,16 +729,16 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     100% { opacity: 1; }
   }
   .cd-lbl {
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     letter-spacing: .14em;
     text-transform: uppercase;
     color: rgba(255,255,255,.38);
-    margin-top: 5px;
+    margin-top: 3px;
     display: block;
   }
   .cd-sep {
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 300;
     color: rgba(255,255,255,.2);
     padding-top: 8px;
@@ -804,9 +804,9 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .picture-upload-wrap { grid-template-columns: 1fr; }
     .picture-preview { width: 100%; height: 200px; }
-    .cd-block { min-width: 52px; padding: 7px 10px 6px; }
-    .cd-num   { font-size: 24px; }
-    .cd-sep   { font-size: 18px; }
+    .cd-block { min-width: 40px; padding: 4px 8px 4px; }
+    .cd-num   { font-size: 18px; }
+    .cd-sep   { font-size: 14px; }
   }
 </style>
 </head>

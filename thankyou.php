@@ -71,7 +71,7 @@
     margin-bottom: 0;
   }
   .reg-hero-location {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -99,42 +99,42 @@
     align-items: center;
     background: rgba(255,255,255,.1);
     border: 1px solid rgba(255,255,255,.18);
-    border-radius: 10px;
-    min-width: 72px;
-    padding: 12px 16px 10px;
+    border-radius: 6px;
+    min-width: 46px;
+    padding: 5px 10px 5px;
     backdrop-filter: blur(4px);
   }
   .cd-num {
-    font-size: 34px;
+    font-size: 20px;
     font-weight: 800;
     line-height: 1;
     color: #fff;
     font-variant-numeric: tabular-nums;
   }
   .cd-lbl {
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     letter-spacing: .14em;
     text-transform: uppercase;
     color: rgba(255,255,255,.55);
-    margin-top: 4px;
+    margin-top: 3px;
   }
   .cd-sep {
-    font-size: 28px;
+    font-size: 16px;
     font-weight: 700;
     color: rgba(255,255,255,.4);
     line-height: 1;
-    padding-top: 6px;
+    padding-top: 4px;
     user-select: none;
   }
 
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
-    .reg-hero-location { font-size: 12px; }
+    .reg-hero-location { font-size: 14px; }
     .reg-hero-content  { padding: 36px 16px 32px; }
-    .cd-block { min-width: 62px; padding: 10px 14px 8px; }
-    .cd-num   { font-size: 30px; }
-    .cd-sep   { font-size: 26px; padding-top: 12px; }
+    .cd-block { min-width: 40px; padding: 4px 8px 4px; }
+    .cd-num   { font-size: 18px; }
+    .cd-sep   { font-size: 14px; padding-top: 3px; }
   }
 
   /* ── Page body ──────────────────────────────────────────── */
