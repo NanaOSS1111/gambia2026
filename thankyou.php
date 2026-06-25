@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registration Submitted — GAMBIA 2026</title>
-<link rel="preload" href="asset/medicare.png-scaled.jpg" as="image">
+<link rel="preload" href="asset/gambia-river.jpg" as="image">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,7 +31,7 @@
   .reg-hero-bg {
     position: absolute;
     inset: 0;
-    background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
+    background: url('asset/gambia-river.jpg') center 35% / cover no-repeat;
     transform: scale(1.18);
     will-change: transform;
     animation: heroZoomOut 1.8s cubic-bezier(.22,.61,.36,1) forwards;

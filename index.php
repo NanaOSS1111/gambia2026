@@ -30,7 +30,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAMBIA 2026 — Delegate Registration</title>
-<link rel="preload" href="asset/medicare.png-scaled.jpg" as="image">
+<link rel="preload" href="asset/gambia-river.jpg" as="image">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?php if (!empty(RECAPTCHA_SITE_KEY)): ?>
@@ -56,7 +56,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-bg {
     position: absolute;
     inset: 0;
-    background: url('asset/medicare.png-scaled.jpg') center 40% / cover no-repeat;
+    background: url('asset/gambia-river.jpg') center 35% / cover no-repeat;
     transform: scale(1.18); /* set immediately so no flash at scale(1) before animation runs */
     transform-origin: center 40%;
     animation: heroZoom 7s cubic-bezier(.25,.46,.45,.94) forwards;
