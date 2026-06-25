@@ -72,7 +72,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-content {
     position: relative;
     z-index: 1;
-    padding: 200px 24px 80px;
+    padding: 240px 24px 80px;
     text-align: center;
     color: #fff;
     display: flex;
@@ -159,50 +159,42 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
     .reg-hero-location { font-size: 14px; }
-  .reg-hero-content  { padding: 130px 16px 48px; }
+  .reg-hero-content  { padding: 160px 16px 48px; }
     .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
     .cd-sep   { font-size: 26px; padding-top: 12px; }
   }
 
-  /* ── About toggle ──────────────────────────────────────── */
+  /* ── Intro message card ─────────────────────────────────── */
   .reg-about-toggle {
-    background: #f0f6ff;
-    border: 1px solid #c8daf4;
+    background: #fff;
+    border: 1px solid #e2eaf4;
     border-radius: 10px;
     margin-bottom: 16px;
-    padding: 14px 18px 12px;
-  }
-  .rat-lead {
-    font-size: 13px;
-    color: #4a6080;
-    line-height: 1.7;
-    margin: 0 0 8px;
-  }
-  .rat-more {
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 10px;
   }
-  .rat-more p {
+  .reg-about-toggle p {
     font-size: 13px;
     color: #4a6080;
-    line-height: 1.7;
+    line-height: 1.75;
     margin: 0;
   }
-  .rat-toggle-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 12px;
-    font-weight: 600;
-    color: #0d6e8c;
-    cursor: pointer;
-    letter-spacing: .01em;
+  .reg-about-toggle .rat-greeting {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0a2540;
+    margin: 0;
   }
-  .rat-toggle-btn:hover { text-decoration: underline; }
+  .reg-about-toggle .rat-sign {
+    font-size: 13px;
+    color: #4a6080;
+    margin: 0;
+    line-height: 1.6;
+  }
 
   .reg-notice {
     background: #fff3cd;
@@ -903,14 +895,11 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
       <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
       <div class="reg-about-toggle">
-        <p class="rat-lead">The organizing partners represent a coalition of more than 24 social development organizations committed to advancing inclusive and sustainable development across Africa. Together, we have established this platform to mobilize civil society organizations, community leaders, policymakers, development practitioners, and international partners in shaping an NGO Framework of Action (2026–2030) for social development.</p>
-        <div class="rat-more" id="rat-more" hidden>
-          <p>This gathering provides a unique opportunity to elevate grassroots voices and local experiences to the regional and international stage. It aims to strengthen social solidarity, policy coherence, and community resilience while fostering collaboration around shared development priorities and emerging challenges across the continent.</p>
-          <p>The summit will serve as a catalyst for advocacy, awareness, and action. It seeks to promote dialogue on restitution, social justice, and sustainable development, while accelerating the implementation of the commitments outlined in the 2025 Doha Political Declaration of the Second World Summit for Social Development (SWSS).</p>
-          <p>By bringing together stakeholders from government, civil society, academia, the private sector, and international institutions, the workshop will help transform global commitments into practical solutions and measurable outcomes that benefit communities throughout Africa and beyond.</p>
-          <p>We invite all partners and stakeholders to join us in advancing a collective vision of social progress, equity, and sustainable development for present and future generations.</p>
-        </div>
-        <button type="button" class="rat-toggle-btn" onclick="(function(b){var m=document.getElementById('rat-more');var open=!m.hidden;m.hidden=open;b.textContent=open?'Read more ▾':'Show less ▴';})(this)">Read more &#9662;</button>
+        <p class="rat-greeting">Dear Applicant,</p>
+        <p>We — the organising partners — have established this platform to mobilize civil society organizations, community leaders, policymakers, development and international partners in the development of an NGO Framework of Action (2026–2030) for social development. This gathering provides a unique opportunity to elevate grassroots voices and strengthen social solidarity, policy coherence, and community resilience while fostering collaboration around shared development priorities and emerging social challenges across the continent.</p>
+        <p>This summit will serve as a catalyst for advocacy, awareness, and action to accelerate the implementation of the commitments outlined in the 2025 Doha Political Declaration of the Second World Social Summit (SWSS) for Social Development. It will help to increase transformation of global commitments into practical solutions and measurable outcomes that benefit communities worldwide.</p>
+        <p>We invite all partners and stakeholders to join us in advancing a collective vision of social progress, equity, and development for present and future generations.</p>
+        <p class="rat-sign">Warmly,<br><strong>Organising Team</strong></p>
       </div>
 
       <!-- SECTION 1: REPRESENTATION -->

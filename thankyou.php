@@ -43,7 +43,7 @@
   .reg-hero-content {
     position: relative;
     z-index: 2;
-    padding: 200px 24px 80px;
+    padding: 240px 24px 80px;
     text-align: center;
     color: #fff;
     display: flex;
@@ -131,7 +131,7 @@
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
     .reg-hero-location { font-size: 14px; }
-    .reg-hero-content  { padding: 130px 16px 48px; }
+    .reg-hero-content  { padding: 160px 16px 48px; }
     .cd-block { min-width: 40px; padding: 4px 8px 4px; }
     .cd-num   { font-size: 18px; }
     .cd-sep   { font-size: 14px; padding-top: 3px; }
