@@ -81,7 +81,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-content {
     position: relative;
     z-index: 1;
-    padding: 52px 24px 44px;
+    padding: 90px 24px 80px;
     text-align: center;
     color: #fff;
     display: flex;
@@ -168,11 +168,53 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
     .reg-hero-location { font-size: 12px; }
-    .reg-hero-content  { padding: 36px 16px 32px; }
+    .reg-hero-content  { padding: 56px 16px 48px; }
     .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
     .cd-sep   { font-size: 26px; padding-top: 12px; }
+  }
+
+  /* ── About toggle ──────────────────────────────────────── */
+  .reg-about-toggle {
+    background: #f0f6ff;
+    border: 1px solid #c8daf4;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .reg-about-toggle summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0a2540;
+    letter-spacing: .01em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .reg-about-toggle summary::-webkit-details-marker { display: none; }
+  .rat-arrow {
+    font-size: 10px;
+    color: #5a7fa0;
+    transition: transform .2s;
+  }
+  .reg-about-toggle[open] .rat-arrow { transform: rotate(180deg); }
+  .rat-body {
+    padding: 0 18px 16px;
+    border-top: 1px solid #c8daf4;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rat-body p {
+    font-size: 13px;
+    color: #4a6080;
+    line-height: 1.7;
+    margin: 0;
   }
 
   .reg-notice {
@@ -672,12 +714,12 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .cd-block {
     background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.1);
-    border-radius: 10px;
-    padding: 12px 20px 10px;
-    min-width: 80px;
+    border-radius: 8px;
+    padding: 8px 14px 8px;
+    min-width: 60px;
   }
   .cd-num {
-    font-size: 40px;
+    font-size: 28px;
     font-weight: 700;
     color: #fff;
     line-height: 1;
@@ -700,19 +742,19 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     100% { opacity: 1; }
   }
   .cd-lbl {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: .14em;
     text-transform: uppercase;
     color: rgba(255,255,255,.38);
-    margin-top: 8px;
+    margin-top: 5px;
     display: block;
   }
   .cd-sep {
-    font-size: 34px;
+    font-size: 22px;
     font-weight: 300;
     color: rgba(255,255,255,.2);
-    padding-top: 12px;
+    padding-top: 8px;
     flex-shrink: 0;
     line-height: 1;
     user-select: none;
@@ -775,9 +817,9 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .picture-upload-wrap { grid-template-columns: 1fr; }
     .picture-preview { width: 100%; height: 200px; }
-    .cd-block { min-width: 70px; padding: 14px 16px 10px; }
-    .cd-num   { font-size: 36px; }
-    .cd-sep   { font-size: 32px; }
+    .cd-block { min-width: 52px; padding: 7px 10px 6px; }
+    .cd-num   { font-size: 24px; }
+    .cd-sep   { font-size: 18px; }
   }
 </style>
 </head>
@@ -882,10 +924,16 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
       <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
       <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
-      <div class="reg-info-box" style="margin-bottom:0;">
-        <strong>This registration form is ONLY for the head of delegates of duly Registered organizations (by a country).</strong><br>
-        If you are an individual and want to participate, please contact <a href="mailto:secretariat@ngocsocd.org">secretariat@ngocsocd.org</a>.
-      </div>
+      <details class="reg-about-toggle">
+        <summary>About the Summit &amp; Organizing Partners <span class="rat-arrow">&#9660;</span></summary>
+        <div class="rat-body">
+          <p>The organizing partners represent a coalition of more than 24 social development organizations committed to advancing inclusive and sustainable development across Africa. Together, we have established this platform to mobilize civil society organizations, community leaders, policymakers, development practitioners, and international partners in shaping an NGO Framework of Action (2026–2030) for social development.</p>
+          <p>This gathering provides a unique opportunity to elevate grassroots voices and local experiences to the regional and international stage. It aims to strengthen social solidarity, policy coherence, and community resilience while fostering collaboration around shared development priorities and emerging challenges across the continent.</p>
+          <p>The summit will serve as a catalyst for advocacy, awareness, and action. It seeks to promote dialogue on restitution, social justice, and sustainable development, while accelerating the implementation of the commitments outlined in the 2025 Doha Political Declaration of the Second World Summit for Social Development (SWSS).</p>
+          <p>By bringing together stakeholders from government, civil society, academia, the private sector, and international institutions, the workshop will help transform global commitments into practical solutions and measurable outcomes that benefit communities throughout Africa and beyond.</p>
+          <p>We invite all partners and stakeholders to join us in advancing a collective vision of social progress, equity, and sustainable development for present and future generations.</p>
+        </div>
+      </details>
 
       <div class="reg-info-box warning">
         <span class="icon">⚠️</span>
@@ -1320,8 +1368,6 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     <div class="reg-sidebar-box">
       <div class="reg-sidebar-title">Quick Links</div>
       <nav class="reg-sidebar-nav">
-        <a href="#">Overview</a>
-        <a href="#" class="active">Registration</a>
         <a href="asset/2026-Gambia-Summit-Detail.pdf" target="_blank">2026 Gambia Summit Detail ↓</a>
         <a href="https://ngocsocd.org" target="_blank">GAMBIA 2026 website</a>
         <a href="https://visitthegambia.com/">Host Country webpage</a>
