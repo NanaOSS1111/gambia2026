@@ -18,10 +18,6 @@
   }
 
   /* ── Hero banner ───────────────────────────────────────── */
-  @keyframes heroZoomOut {
-    from { transform: scale(1.18); }
-    to   { transform: scale(1.00); }
-  }
   .reg-hero {
     position: relative;
     width: 100%;
@@ -31,10 +27,7 @@
   .reg-hero-bg {
     position: absolute;
     inset: 0;
-    background: url('asset/gambia-river.jpg') center 35% / cover no-repeat;
-    transform: scale(1.18);
-    will-change: transform;
-    animation: heroZoomOut 1.8s cubic-bezier(.22,.61,.36,1) forwards;
+    background: url('asset/gambia-river.jpg') center center / cover no-repeat;
   }
   .reg-hero-overlay {
     position: absolute;

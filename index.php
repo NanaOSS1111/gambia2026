@@ -56,16 +56,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-bg {
     position: absolute;
     inset: 0;
-    background: url('asset/gambia-river.jpg') center 35% / cover no-repeat;
-    transform: scale(1.18); /* set immediately so no flash at scale(1) before animation runs */
-    transform-origin: center 40%;
-    animation: heroZoom 7s cubic-bezier(.25,.46,.45,.94) forwards;
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-  @keyframes heroZoom {
-    from { transform: scale(1.18); }
-    to   { transform: scale(1.06); } /* stop at 1.06 — leaves room for mouse panning */
+    background: url('asset/gambia-river.jpg') center center / cover no-repeat;
   }
   .reg-hero-overlay {
     position: absolute;
@@ -861,15 +852,6 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
       <span class="cd-lbl">Seconds</span>
     </div>
   </div>
-  <?php if ($approvedCount > 0): ?>
-  <div class="delegate-counter">
-    <span>You and <span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> are attending Gambia 2026</span>
-    <?php if ($countryCount > 1): ?>
-    <span class="dc-sep"></span>
-    <span>from <span class="dc-num"><?= $countryCount ?></span> countr<?= $countryCount !== 1 ? 'ies' : 'y' ?></span>
-    <?php endif; ?>
-  </div>
-  <?php endif; ?>
 </div>
 
 <?php if (!$regStatus['open']): ?>
@@ -1935,32 +1917,6 @@ restoreDraft();
   updateProgress();
 }());
 
-// ── Hero mouse parallax ───────────────────────────────────
-(function () {
-  var hero = document.querySelector('.reg-hero');
-  var bg   = document.querySelector('.reg-hero-bg');
-  if (!hero || !bg) return;
-
-  var ready = false;
-
-  bg.addEventListener('animationend', function () {
-    ready = true;
-    bg.style.transition = 'transform 0.25s ease-out';
-  });
-
-  hero.addEventListener('mousemove', function (e) {
-    if (!ready) return;
-    var rect = hero.getBoundingClientRect();
-    var x = ((e.clientX - rect.left)  / rect.width  - 0.5) * -28;
-    var y = ((e.clientY - rect.top)   / rect.height - 0.5) * -16;
-    bg.style.transform = 'scale(1.06) translate(' + x + 'px, ' + y + 'px)';
-  });
-
-  hero.addEventListener('mouseleave', function () {
-    if (!ready) return;
-    bg.style.transform = 'scale(1.06) translate(0px, 0px)';
-  });
-}());
 
 // ── Scroll to top ─────────────────────────────────────────
 (function () {
