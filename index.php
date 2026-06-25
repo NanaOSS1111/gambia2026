@@ -1332,6 +1332,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
       <nav class="reg-sidebar-nav">
         <a href="asset/2026-Gambia-Summit-Detail.pdf" target="_blank">2026 Gambia Summit Detail ↓</a>
         <a href="https://ngocsocd.org" target="_blank">GAMBIA 2026 website</a>
+        <a href="https://earthhouraward.org/" target="_blank">Earth Hour Award</a>
         <a href="https://visitthegambia.com/">Host Country webpage</a>
         <a href="#">Visa Information</a>
         <a href="https://visitthegambia.com/?page_id=5726">Travel Information</a>
