@@ -181,41 +181,37 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
     border: 1px solid #c8daf4;
     border-radius: 10px;
     margin-bottom: 16px;
-    overflow: hidden;
+    padding: 14px 18px 12px;
   }
-  .reg-about-toggle summary {
-    cursor: pointer;
-    list-style: none;
-    padding: 14px 18px;
+  .rat-lead {
     font-size: 13px;
-    font-weight: 700;
-    color: #0a2540;
-    letter-spacing: .01em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    user-select: none;
+    color: #4a6080;
+    line-height: 1.7;
+    margin: 0 0 8px;
   }
-  .reg-about-toggle summary::-webkit-details-marker { display: none; }
-  .rat-arrow {
-    font-size: 10px;
-    color: #5a7fa0;
-    transition: transform .2s;
-  }
-  .reg-about-toggle[open] .rat-arrow { transform: rotate(180deg); }
-  .rat-body {
-    padding: 0 18px 16px;
-    border-top: 1px solid #c8daf4;
+  .rat-more {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-bottom: 10px;
   }
-  .rat-body p {
+  .rat-more p {
     font-size: 13px;
     color: #4a6080;
     line-height: 1.7;
     margin: 0;
   }
+  .rat-toggle-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0d6e8c;
+    cursor: pointer;
+    letter-spacing: .01em;
+  }
+  .rat-toggle-btn:hover { text-decoration: underline; }
 
   .reg-notice {
     background: #fff3cd;
@@ -924,20 +920,15 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
       <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
       <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
-      <details class="reg-about-toggle">
-        <summary>About the Summit &amp; Organizing Partners <span class="rat-arrow">&#9660;</span></summary>
-        <div class="rat-body">
-          <p>The organizing partners represent a coalition of more than 24 social development organizations committed to advancing inclusive and sustainable development across Africa. Together, we have established this platform to mobilize civil society organizations, community leaders, policymakers, development practitioners, and international partners in shaping an NGO Framework of Action (2026–2030) for social development.</p>
+      <div class="reg-about-toggle">
+        <p class="rat-lead">The organizing partners represent a coalition of more than 24 social development organizations committed to advancing inclusive and sustainable development across Africa. Together, we have established this platform to mobilize civil society organizations, community leaders, policymakers, development practitioners, and international partners in shaping an NGO Framework of Action (2026–2030) for social development.</p>
+        <div class="rat-more" id="rat-more" hidden>
           <p>This gathering provides a unique opportunity to elevate grassroots voices and local experiences to the regional and international stage. It aims to strengthen social solidarity, policy coherence, and community resilience while fostering collaboration around shared development priorities and emerging challenges across the continent.</p>
           <p>The summit will serve as a catalyst for advocacy, awareness, and action. It seeks to promote dialogue on restitution, social justice, and sustainable development, while accelerating the implementation of the commitments outlined in the 2025 Doha Political Declaration of the Second World Summit for Social Development (SWSS).</p>
           <p>By bringing together stakeholders from government, civil society, academia, the private sector, and international institutions, the workshop will help transform global commitments into practical solutions and measurable outcomes that benefit communities throughout Africa and beyond.</p>
           <p>We invite all partners and stakeholders to join us in advancing a collective vision of social progress, equity, and sustainable development for present and future generations.</p>
         </div>
-      </details>
-
-      <div class="reg-info-box warning">
-        <span class="icon">⚠️</span>
-        <span><strong>Participation in this event is moderated.</strong><br>Your registration will have to be approved.</span>
+        <button type="button" class="rat-toggle-btn" onclick="(function(b){var m=document.getElementById('rat-more');var open=!m.hidden;m.hidden=open;b.textContent=open?'Read more ▾':'Show less ▴';})(this)">Read more &#9662;</button>
       </div>
 
       <!-- SECTION 1: REPRESENTATION -->
