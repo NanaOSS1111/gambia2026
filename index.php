@@ -81,39 +81,45 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-content {
     position: relative;
     z-index: 1;
-    padding: 36px 24px 22px;
+    padding: 52px 24px 44px;
     text-align: center;
     color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  .reg-hero-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: #e0603a;
-    margin-bottom: 10px;
-  }
   .reg-hero-title {
-    font-size: 64px;
+    font-size: clamp(22px, 3.2vw, 42px);
     font-weight: 800;
-    letter-spacing: -.03em;
-    line-height: 1;
+    letter-spacing: .04em;
+    line-height: 1.2;
     color: #fff;
-    margin-bottom: 10px;
+    text-transform: uppercase;
+    max-width: 820px;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 16px rgba(0,0,0,.35);
   }
-  .reg-hero-title .accent {
+  .reg-hero-location {
+    font-size: 13px;
+    font-weight: 600;
     color: #e0603a;
-    font-style: italic;
-    font-weight: 700;
+    letter-spacing: .06em;
+    margin-top: 8px;
+    text-shadow: 0 1px 6px rgba(0,0,0,.4);
+  }
+  /* countdown bar below the hero */
+  .cd-bar {
+    background: #0a2540;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
   .delegate-counter {
     display: inline-flex;
     align-items: center;
     gap: 16px;
-    margin-top: 18px;
     background: rgba(255,255,255,.12);
     border: 1px solid rgba(255,255,255,.22);
     backdrop-filter: blur(6px);
@@ -136,12 +142,13 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   }
   .reg-hero-subtitle {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 17px;
+    font-size: 16px;
     font-style: italic;
-    color: rgba(255,255,255,.82);
-    max-width: 600px;
-    line-height: 1.5;
-    margin-bottom: 22px;
+    color: rgba(255,255,255,.88);
+    max-width: 720px;
+    line-height: 1.6;
+    margin-bottom: 0;
+    text-shadow: 0 1px 8px rgba(0,0,0,.3);
   }
   .reg-hero-types {
     position: relative;
@@ -159,9 +166,9 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   }
 
   @media (max-width: 700px) {
-    .reg-hero-title    { font-size: 44px; }
-    .reg-hero-subtitle { font-size: 15px; }
-    .reg-hero-content  { padding: 28px 16px 18px; }
+    .reg-hero-subtitle { font-size: 14px; }
+    .reg-hero-location { font-size: 12px; }
+    .reg-hero-content  { padding: 36px 16px 32px; }
     .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
@@ -787,40 +794,44 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   <div class="reg-hero-bg"></div>
   <div class="reg-hero-overlay"></div>
   <div class="reg-hero-content">
-    <div class="reg-hero-eyebrow">October 12–16, 2026 &nbsp;&bull;&nbsp; Banjul, The Gambia</div>
-    <h1 class="reg-hero-title">GAMBIA<span class="accent">26</span></h1>
-    <p class="reg-hero-subtitle">Where Civil Society Shapes Global Social Development</p>
-    <div class="cd-units">
-      <div class="cd-block">
-        <span class="cd-num" id="cd-days">121</span>
-        <span class="cd-lbl">Days</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num"><span class="cd-digit" id="cd-hours-t">0</span><span class="cd-digit" id="cd-hours-u">0</span></span>
-        <span class="cd-lbl">Hours</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num"><span class="cd-digit" id="cd-mins-t">0</span><span class="cd-digit" id="cd-mins-u">0</span></span>
-        <span class="cd-lbl">Minutes</span>
-      </div>
-      <span class="cd-sep">:</span>
-      <div class="cd-block">
-        <span class="cd-num"><span class="cd-digit" id="cd-secs-t">0</span><span class="cd-digit" id="cd-secs-u">0</span></span>
-        <span class="cd-lbl">Seconds</span>
-      </div>
+    <h1 class="reg-hero-title">&ldquo;Mobilizing Civil Society for Bold Social Development&rdquo;</h1>
+    <p class="reg-hero-subtitle">Restitution of the Second World Social Summit (SWSS) on Social Development Outcome</p>
+    <p class="reg-hero-location">The SDK Conference Centre, Senegambia, The Gambia &nbsp;&bull;&nbsp; October 12–16, 2026</p>
+  </div>
+</div>
+
+<!-- Countdown bar below hero -->
+<div class="cd-bar">
+  <div class="cd-units">
+    <div class="cd-block">
+      <span class="cd-num" id="cd-days">121</span>
+      <span class="cd-lbl">Days</span>
     </div>
-    <?php if ($approvedCount > 0): ?>
-    <div class="delegate-counter">
-      <span>You and <span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> are attending Gambia 2026</span>
-      <?php if ($countryCount > 1): ?>
-      <span class="dc-sep"></span>
-      <span>from <span class="dc-num"><?= $countryCount ?></span> countr<?= $countryCount !== 1 ? 'ies' : 'y' ?></span>
-      <?php endif; ?>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num"><span class="cd-digit" id="cd-hours-t">0</span><span class="cd-digit" id="cd-hours-u">0</span></span>
+      <span class="cd-lbl">Hours</span>
     </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num"><span class="cd-digit" id="cd-mins-t">0</span><span class="cd-digit" id="cd-mins-u">0</span></span>
+      <span class="cd-lbl">Minutes</span>
+    </div>
+    <span class="cd-sep">:</span>
+    <div class="cd-block">
+      <span class="cd-num"><span class="cd-digit" id="cd-secs-t">0</span><span class="cd-digit" id="cd-secs-u">0</span></span>
+      <span class="cd-lbl">Seconds</span>
+    </div>
+  </div>
+  <?php if ($approvedCount > 0): ?>
+  <div class="delegate-counter">
+    <span>You and <span class="dc-num"><?= $approvedCount ?></span> delegate<?= $approvedCount !== 1 ? 's' : '' ?> are attending Gambia 2026</span>
+    <?php if ($countryCount > 1): ?>
+    <span class="dc-sep"></span>
+    <span>from <span class="dc-num"><?= $countryCount ?></span> countr<?= $countryCount !== 1 ? 'ies' : 'y' ?></span>
     <?php endif; ?>
   </div>
+  <?php endif; ?>
 </div>
 
 <?php if (!$regStatus['open']): ?>
