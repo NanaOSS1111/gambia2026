@@ -72,7 +72,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   .reg-hero-content {
     position: relative;
     z-index: 1;
-    padding: 90px 24px 80px;
+    padding: 160px 24px 80px;
     text-align: center;
     color: #fff;
     display: flex;
@@ -159,7 +159,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   @media (max-width: 700px) {
     .reg-hero-subtitle { font-size: 14px; }
     .reg-hero-location { font-size: 14px; }
-  .reg-hero-content  { padding: 56px 16px 48px; }
+  .reg-hero-content  { padding: 100px 16px 48px; }
     .delegate-counter  { font-size: 12px; gap: 10px; }
     .cd-block { min-width: 62px; padding: 10px 14px 8px; }
     .cd-num   { font-size: 30px; }
