@@ -898,6 +898,15 @@ $regStatusInfo = is_registration_open($pdo);
 </div>
 
 <script>
+// ── Logout (global so both the timeout and sign-out button can call it) ──
+function doLogout() {
+  var f = document.createElement('form');
+  f.method = 'POST'; f.action = 'admin.php';
+  var i = document.createElement('input');
+  i.type = 'hidden'; i.name = 'do_logout'; i.value = '1';
+  f.appendChild(i); document.body.appendChild(f); f.submit();
+}
+
 // ── Session timeout: warn at 25 min, auto-logout at 30 min ──
 (function() {
   var TIMEOUT_MS = 30 * 60 * 1000;
@@ -923,14 +932,6 @@ $regStatusInfo = is_registration_open($pdo);
       confirmButtonColor: '#0a2540',
       allowOutsideClick: false,
     }).then(resetTimers);
-  }
-
-  function doLogout() {
-    var f = document.createElement('form');
-    f.method = 'POST'; f.action = 'admin.php';
-    var i = document.createElement('input');
-    i.type = 'hidden'; i.name = 'do_logout'; i.value = '1';
-    f.appendChild(i); document.body.appendChild(f); f.submit();
   }
 
   ['mousemove','keydown','click','scroll'].forEach(function(ev) {
