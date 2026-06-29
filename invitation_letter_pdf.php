@@ -72,6 +72,7 @@ function invitation_letter_html(array $data): string {
   .sign-area { margin-top: 16px; font-size: 10pt; }
   .footer-bar { margin-top: 16px; border-top: 1px solid #0a2540; padding-top: 6px; font-size: 7.5pt; color: #555; text-align: center; }
   .highlight { background: #fff9e6; border: 1px solid #f59e0b; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+  .theme-block { background: #eef2ff; border-left: 3px solid #1a56db; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
 </style>
 </head>
 <body>
@@ -108,39 +109,54 @@ function invitation_letter_html(array $data): string {
   <span style='font-weight:normal;font-size:10pt;text-decoration:none;'>SDK Conference Centre, Senegambia, The Gambia &bull; 12&ndash;16 October 2026</span></div>
 
   <!-- Salutation -->
-  <p>Dear $fullName,</p>
+  <p>Dear $firstName,</p>
 
   <!-- Body -->
-  <p>On behalf of the Organizing Committee of the <b>GAMBIA 2026 NGO Summit</b>, it is our distinct honour and pleasure to extend to you this <b>Official Invitation</b> to participate in the Restitution of the Second World Social Summit (SWSS) on Social Development Outcome.</p>
+  <p>We are honored to extend a formal invitation to you and your esteemed organization to attend <b>GAMBIA 2026: NGO Restitution on the Doha Political Declaration on Social Development</b>. This high-level gathering is convened under the auspices of the Government of The Gambia, NGO Affairs Branch, and will take place in person from <b>October 12&ndash;16, 2026</b>, from 9:00 a.m. to 5:00 p.m. at the <b>SDK Conference Centre in Banjul, The Gambia</b>.</p>
 
-  <p>The summit will be held at the <b>SDK Conference Centre, Senegambia, The Gambia, from 12 to 16 October 2026</b>. This high-level gathering brings together civil society organizations, community leaders, policymakers, development practitioners, and international partners from across Africa and beyond.</p>
-
-  <p>The central objective of the summit is to advance the development of an <b>NGO Framework of Action (2026&ndash;2030) for Social Development</b> and to accelerate implementation of the commitments outlined in the <b>2025 Doha Political Declaration of the Second World Social Summit for Social Development (SWSS)</b>.</p>
-
-  <p>Your participation has been approved and your registration confirmed under reference <b>$ref</b>. Your expertise, leadership, and dedication to social development make you an invaluable contributor to the deliberations and outcomes of this summit.</p>
-
-  <div class='highlight'>
-    <b>Event Details:</b><br>
-    Venue: SDK Conference Centre, Senegambia, The Gambia<br>
-    Dates: 12&ndash;16 October 2026<br>
-    Delegate Reference: $ref<br>
-    Contact: <a href='mailto:secretariat@ngocsocd.org' style='color:#1a56db;'>secretariat@ngocsocd.org</a>
+  <div class='theme-block'>
+    <b>Summit Theme:</b><br>
+    &ldquo;Pathways and Partnerships for the Future after 30 Years: Reinforcing the 2025 Doha Political Declaration in Times of Multiple Global Crises.&rdquo;<br><br>
+    This timely theme highlights the interconnected challenges facing our global community and underscores the urgent need for social solidarity, resilience, and coherent, forward-looking strategies.
   </div>
 
-  <p>The summit will serve as a catalyst for advocacy, awareness, and action, helping to transform global commitments into practical solutions and measurable outcomes that benefit communities throughout Africa and beyond. We are confident that your presence will significantly enrich the quality of our deliberations.</p>
+  <p>The primary objective of GAMBIA 2026 is to develop a comprehensive civil society framework of action to accelerate the implementation of the 2025 Doha Declaration. This summit offers a pivotal opportunity to shift from passive observers of global policy to active architects of its execution. By participating, your organization will help co-create a critical framework for accountability and transformative action, while forging strategic partnerships and mobilizing grassroots commitments to measurable action.</p>
 
-  <p>Please present this letter, together with your delegate reference number, upon arrival at the conference venue for accreditation. Additional logistical information, including the programme schedule and accommodation options, will be communicated in due course.</p>
+  <div class='highlight'>
+    <b>Key Program Highlights:</b><br>
+    &bull;&nbsp;<b>Civil Society Action Week:</b> Dynamic workshops and strategy sessions led by global advocates.<br>
+    &bull;&nbsp;<b>Coalition Leadership:</b> The election of the new Coalition Executive Bureau.<br>
+    &bull;&nbsp;<b>The Earth Hour Award:</b> The official launch of this landmark impact initiative.<br>
+    &bull;&nbsp;<b>Cultural Excursion:</b> An optional, sponsored tour exploring key historical and cultural landmarks across The Gambia.
+  </div>
 
-  <p>We look forward to welcoming you to The Gambia and to what promises to be a landmark event for civil society and social development on the African continent and globally.</p>
+  <p>To facilitate your visa application, please submit this official invitation along with your organization&rsquo;s nomination letter (clearly referencing your registration number) to the Gambian Department of Immigration via email at: <a href='mailto:info.registration@gambia.gov' style='color:#1a56db;'>info.registration@gambia.gov</a>. We strongly encourage you to contact the immigration department as soon as possible to ensure timely processing.</p>
+
+  <p>We look forward to welcoming you to The Gambia this October as we collaborate to advance real-world solutions for global social development.</p>
 
   <!-- Sign-off -->
   <div class='sign-area'>
-    <p style='margin-bottom:6px;'>Yours sincerely,</p>
-    {$sigImg}
-    <p style='margin-bottom:2px;'><b>Melvine Wajiri</b></p>
-    <p style='margin-bottom:2px;'>The Chair, NGO Coalition for Social Development</p>
-    <p>GCO, GAMBIA 2026 Organizing Committee</p>
-    <p style='margin-top:10px;font-style:italic;font-size:9pt;'>&ldquo;Mobilizing Civil Society for Bold Social Development&rdquo;</p>
+    <p style='margin-bottom:10px;'>Yours sincerely,</p>
+    <table width='100%' style='border-collapse:collapse;'>
+      <tr>
+        <td style='width:50%;vertical-align:top;padding-right:12px;'>
+          {$sigImg}
+          <p style='margin-bottom:2px;'><b>Melvine Wajiri</b></p>
+          <p style='margin-bottom:2px;font-size:9pt;'>Chair, NGO Coalition for Social Development</p>
+          <p style='margin-bottom:4px;font-size:9pt;'>GCO, The Earth Hour Award Committee</p>
+          <p style='margin-bottom:1px;font-size:8pt;color:#555;'>211 E 43rd Street, 7th Floor, New York, NY 10017, USA</p>
+          <p style='margin-bottom:1px;font-size:8pt;color:#555;'><a href='mailto:m.wajiri@ngocsocd.org' style='color:#1a56db;'>m.wajiri@ngocsocd.org</a> &nbsp;|&nbsp; +19726840854</p>
+          <p style='font-size:8pt;color:#555;'><a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a> &nbsp;|&nbsp; EIN 99-447-7990</p>
+        </td>
+        <td style='width:50%;vertical-align:top;padding-left:12px;border-left:1px solid #dde0e6;'>
+          <p style='margin-bottom:2px;'><b>Ebrima Jarbo</b></p>
+          <p style='margin-bottom:2px;font-size:9pt;'>Director, NGO Affairs Agency</p>
+          <p style='margin-bottom:4px;font-size:9pt;'>Ministry of Land, Regional Government<br>and Religious Association, The Gambia</p>
+          <p style='margin-bottom:1px;font-size:8pt;color:#555;'><a href='mailto:ebrimajarbo@gmail.com' style='color:#1a56db;'>ebrimajarbo@gmail.com</a></p>
+          <p style='font-size:8pt;color:#555;'>+2207533085</p>
+        </td>
+      </tr>
+    </table>
   </div>
 
   <div class='footer-bar'>

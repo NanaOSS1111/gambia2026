@@ -540,20 +540,37 @@ function invitation_email_html(array $data): string {
   <tr>
     <td style='padding:28px 36px 24px;color:#222222;font-size:14px;line-height:1.7;'>
       <p style='margin:0 0 12px;'>Dear <strong>{$name}</strong>,</p>
-      <p style='margin:0 0 12px;'>On behalf of the Organizing Committee of the <strong>GAMBIA 2026 NGO Summit</strong>, it is our distinct pleasure to extend to you this <strong>Official Invitation</strong> to participate in the Restitution of the Second World Social Summit (SWSS) on Social Development Outcome.</p>
-      <table width='100%' cellpadding='0' cellspacing='0' style='background:#f0f4f8;border-radius:8px;margin:16px 0;'>
-        <tr><td style='padding:14px 20px;font-size:13px;color:#0a2540;line-height:1.8;'>
-          <strong>&#128197; Dates:</strong> 12&ndash;16 October 2026<br>
-          <strong>&#128205; Venue:</strong> SDK Conference Centre, Senegambia, The Gambia<br>
-          <strong>&#127981; Organisation:</strong> {$org}<br>
-          <strong>&#127981; Delegate Ref:</strong> {$ref}
+      <p style='margin:0 0 12px;'>We are honored to extend a formal invitation to you and your esteemed organization to attend <strong>GAMBIA 2026: NGO Restitution on the Doha Political Declaration on Social Development</strong>. This high-level gathering is convened under the auspices of the Government of The Gambia, NGO Affairs Branch, and will take place in person from <strong>October 12&ndash;16, 2026</strong>, from 9:00 a.m. to 5:00 p.m. at the <strong>SDK Conference Centre in Banjul, The Gambia</strong>.</p>
+      <table width='100%' cellpadding='0' cellspacing='0' style='background:#eef2ff;border-left:4px solid #1a56db;border-radius:4px;margin:14px 0;'>
+        <tr><td style='padding:12px 16px;font-size:13px;color:#0a2540;line-height:1.8;'>
+          <strong>Summit Theme:</strong><br>
+          &ldquo;Pathways and Partnerships for the Future after 30 Years: Reinforcing the 2025 Doha Political Declaration in Times of Multiple Global Crises.&rdquo;<br><br>
+          This timely theme highlights the interconnected challenges facing our global community and underscores the urgent need for social solidarity, resilience, and coherent, forward-looking strategies.
         </td></tr>
       </table>
-      <p style='margin:0 0 12px;'>Your registration has been approved and your participation confirmed. Please find your <strong>Official Invitation Letter</strong> attached as a PDF. You will need to present it upon arrival at the venue for accreditation.</p>
-      <p style='margin:0 0 12px;'>Additional logistical information including the programme schedule and accommodation options will be communicated in due course.</p>
-      <p style='margin:0 0 24px;'>We look forward to welcoming you to The Gambia.</p>
-      <p style='margin:0;'>Yours sincerely,<br><strong>GAMBIA 2026 Organizing Committee</strong><br>
-      <a href='mailto:secretariat@ngocsocd.org' style='color:#0a2540;'>secretariat@ngocsocd.org</a></p>
+      <p style='margin:0 0 12px;'>The primary objective of GAMBIA 2026 is to develop a comprehensive civil society framework of action to accelerate the implementation of the 2025 Doha Declaration. This summit offers a pivotal opportunity to shift from passive observers of global policy to active architects of its execution. By participating, your organization will help co-create a critical framework for accountability and transformative action, while forging strategic partnerships and mobilizing grassroots commitments to measurable action.</p>
+      <table width='100%' cellpadding='0' cellspacing='0' style='background:#fff9e6;border:1px solid #f59e0b;border-radius:4px;margin:14px 0;'>
+        <tr><td style='padding:12px 16px;font-size:13px;color:#1a1a1a;line-height:1.9;'>
+          <strong>Key Program Highlights:</strong><br>
+          &bull; <strong>Civil Society Action Week:</strong> Dynamic workshops and strategy sessions led by global advocates.<br>
+          &bull; <strong>Coalition Leadership:</strong> The election of the new Coalition Executive Bureau.<br>
+          &bull; <strong>The Earth Hour Award:</strong> The official launch of this landmark impact initiative.<br>
+          &bull; <strong>Cultural Excursion:</strong> An optional, sponsored tour exploring key historical and cultural landmarks across The Gambia.
+        </td></tr>
+      </table>
+      <table width='100%' cellpadding='0' cellspacing='0' style='background:#f0f4f8;border-radius:6px;margin:14px 0;'>
+        <tr><td style='padding:12px 16px;font-size:13px;color:#0a2540;line-height:1.8;'>
+          <strong>&#128197; Dates:</strong> 12&ndash;16 October 2026&nbsp;&nbsp;|&nbsp;&nbsp;<strong>&#128205; Venue:</strong> SDK Conference Centre, Banjul, The Gambia<br>
+          <strong>Organisation:</strong> {$org}&nbsp;&nbsp;|&nbsp;&nbsp;<strong>Delegate Ref:</strong> {$ref}
+        </td></tr>
+      </table>
+      <p style='margin:0 0 12px;'>To facilitate your visa application, please submit this official invitation along with your organization&rsquo;s nomination letter (clearly referencing your registration number) to the Gambian Department of Immigration via email at: <a href='mailto:info.registration@gambia.gov' style='color:#0a2540;'>info.registration@gambia.gov</a>. We strongly encourage you to contact the immigration department as soon as possible to ensure timely processing.</p>
+      <p style='margin:0 0 12px;'>Please find your <strong>Official Invitation Letter</strong> attached as a PDF — you will need it for your visa application and for accreditation upon arrival.</p>
+      <p style='margin:0 0 24px;'>We look forward to welcoming you to The Gambia this October as we collaborate to advance real-world solutions for global social development.</p>
+      <p style='margin:0;'>Yours sincerely,<br>
+      <strong>Melvine Wajiri</strong> &mdash; Chair, NGO Coalition for Social Development<br>
+      <strong>Ebrima Jarbo</strong> &mdash; Director, NGO Affairs Agency, The Gambia<br>
+      <a href='mailto:m.wajiri@ngocsocd.org' style='color:#0a2540;'>m.wajiri@ngocsocd.org</a> &nbsp;|&nbsp; <a href='https://ngocsocd.org' style='color:#0a2540;'>ngocsocd.org</a></p>
     </td>
   </tr>
   <tr>
@@ -574,22 +591,62 @@ function invitation_email_html(array $data): string {
 function invitation_email_plain(array $data): string {
     $name = trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']);
     $ref  = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
-    return "GAMBIA 2026 — Official Invitation\n"
-        . str_repeat('=', 42) . "\n\n"
+    return "GAMBIA 2026 — Official Invitation Letter\n"
+        . str_repeat('=', 44) . "\n\n"
         . "Dear {$name},\n\n"
-        . "On behalf of the Organizing Committee of the GAMBIA 2026 NGO Summit, we are pleased\n"
-        . "to extend to you this Official Invitation.\n\n"
-        . "Event: GAMBIA 2026 NGO Summit on Social Development\n"
-        . "Dates: 12-16 October 2026\n"
-        . "Venue: SDK Conference Centre, Senegambia, The Gambia\n"
-        . "Delegate Reference: {$ref}\n\n"
-        . "Your Official Invitation Letter is attached as a PDF.\n"
-        . "Please present it upon arrival at the venue for accreditation.\n\n"
-        . "We look forward to welcoming you to The Gambia.\n\n"
-        . "Yours sincerely,\nGAMBIA 2026 Organizing Committee\n"
-        . "secretariat@ngocsocd.org | ngocsocd.org\n\n"
-        . str_repeat('-', 42) . "\n"
-        . "12-16 October 2026 | SDK Conference Centre, Senegambia, The Gambia";
+        . "We are honored to extend a formal invitation to you and your esteemed organization\n"
+        . "to attend GAMBIA 2026: NGO Restitution on the Doha Political Declaration on Social\n"
+        . "Development. This high-level gathering is convened under the auspices of the\n"
+        . "Government of The Gambia, NGO Affairs Branch, and will take place in person from\n"
+        . "October 12-16, 2026, from 9:00 a.m. to 5:00 p.m. at the SDK Conference Centre\n"
+        . "in Banjul, The Gambia.\n\n"
+        . "SUMMIT THEME\n"
+        . str_repeat('-', 44) . "\n"
+        . "\"Pathways and Partnerships for the Future after 30 Years: Reinforcing the 2025\n"
+        . "Doha Political Declaration in Times of Multiple Global Crises.\"\n\n"
+        . "This timely theme highlights the interconnected challenges facing our global\n"
+        . "community and underscores the urgent need for social solidarity, resilience, and\n"
+        . "coherent, forward-looking strategies.\n\n"
+        . "The primary objective of GAMBIA 2026 is to develop a comprehensive civil society\n"
+        . "framework of action to accelerate the implementation of the 2025 Doha Declaration.\n"
+        . "This summit offers a pivotal opportunity to shift from passive observers of global\n"
+        . "policy to active architects of its execution. By participating, your organization\n"
+        . "will help co-create a critical framework for accountability and transformative\n"
+        . "action, while forging strategic partnerships and mobilizing grassroots commitments\n"
+        . "to measurable action.\n\n"
+        . "KEY PROGRAM HIGHLIGHTS\n"
+        . str_repeat('-', 44) . "\n"
+        . "* Civil Society Action Week: Dynamic workshops and strategy sessions led by global advocates.\n"
+        . "* Coalition Leadership: The election of the new Coalition Executive Bureau.\n"
+        . "* The Earth Hour Award: The official launch of this landmark impact initiative.\n"
+        . "* Cultural Excursion: An optional, sponsored tour exploring key historical and\n"
+        . "  cultural landmarks across The Gambia.\n\n"
+        . "EVENT DETAILS\n"
+        . str_repeat('-', 44) . "\n"
+        . "Dates:            12-16 October 2026\n"
+        . "Venue:            SDK Conference Centre, Banjul, The Gambia\n"
+        . "Delegate Ref:     {$ref}\n\n"
+        . "To facilitate your visa application, please submit this official invitation along\n"
+        . "with your organization's nomination letter (clearly referencing your registration\n"
+        . "number) to the Gambian Department of Immigration via email at:\n"
+        . "info.registration@gambia.gov\n"
+        . "We strongly encourage you to contact the immigration department as soon as possible\n"
+        . "to ensure timely processing.\n\n"
+        . "Your Official Invitation Letter is attached as a PDF — please use it for your\n"
+        . "visa application and present it for accreditation upon arrival.\n\n"
+        . "We look forward to welcoming you to The Gambia this October as we collaborate\n"
+        . "to advance real-world solutions for global social development.\n\n"
+        . "Yours sincerely,\n\n"
+        . "Melvine Wajiri\n"
+        . "Chair, NGO Coalition for Social Development\n"
+        . "GCO, The Earth Hour Award Committee\n"
+        . "m.wajiri@ngocsocd.org | +19726840854 | ngocsocd.org\n\n"
+        . "Ebrima Jarbo\n"
+        . "Director, NGO Affairs Agency\n"
+        . "Ministry of Land, Regional Government and Religious Association, The Gambia\n"
+        . "ebrimajarbo@gmail.com | +2207533085\n\n"
+        . str_repeat('-', 44) . "\n"
+        . "12-16 October 2026 | SDK Conference Centre, Banjul, The Gambia";
 }
 
 // ── Badge URL helper ─────────────────────────────────────────────────────────
