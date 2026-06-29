@@ -1678,16 +1678,19 @@ document.getElementById('regForm').addEventListener('submit', function (e) {
 
     var doSubmit = function() {
       overlay.style.display = 'flex';
-      // Always fetch a live CSRF token immediately before submitting so a cached
-      // page token never causes a mismatch, regardless of LiteSpeed behaviour.
-      fetch('csrf-token.php', { credentials: 'same-origin' })
+      // Always fetch a live CSRF token immediately before submitting.
+      // ?_= cache-buster forces a fresh PHP response even if LiteSpeed ignores no-store.
+      fetch('csrf-token.php?_=' + Date.now(), { credentials: 'same-origin' })
         .then(function(r) { return r.json(); })
         .then(function(t) {
           var csrfField = form.querySelector('[name="csrf_token"]');
           if (csrfField && t.csrf_token) csrfField.value = t.csrf_token;
+          doActualSubmit();
         })
-        .catch(function() {}) // network error: proceed with whatever token is in the field
-        .finally(function() { doActualSubmit(); });
+        .catch(function() {
+          hideOverlay();
+          showToast('Connection error', 'Could not verify your session. Please refresh the page and try again.', true);
+        });
     };
 
     var doActualSubmit = function() {
