@@ -3,6 +3,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/mail_config.php';
 require_once __DIR__ . '/confirmation_pdf.php';
 require_once __DIR__ . '/nomination_letter_pdf.php';
+require_once __DIR__ . '/invitation_letter_pdf.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -471,6 +472,124 @@ function email_body_plain(array $data): string {
         . "GAMBIA 2026, Summit Registration Team\n\n"
         . str_repeat('-', 42) . "\n"
         . "12-16 October 2026 | Banjul, Republic of The Gambia";
+}
+
+// ── Invitation email ──────────────────────────────────────
+function send_invitation_email(array $data): bool {
+    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host        = MAIL_HOST;
+        $mail->SMTPAuth    = true;
+        $mail->Username    = MAIL_USERNAME;
+        $mail->Password    = MAIL_PASSWORD;
+        $mail->SMTPSecure  = MAIL_ENCRYPTION;
+        $mail->Port        = MAIL_PORT;
+        $mail->Timeout     = 10;
+        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+        $mail->CharSet     = 'UTF-8';
+        $mail->Encoding    = 'base64';
+        $mail->XMailer     = ' ';
+
+        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+        $mail->addAddress($data['email'], trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']));
+        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
+        attach_email_logos($mail);
+
+        $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Official Invitation — GAMBIA 2026 NGO Summit | ' . $ref;
+        $mail->Body    = invitation_email_html($data);
+        $mail->AltBody = invitation_email_plain($data);
+
+        $pdf = build_invitation_letter_pdf($data);
+        if ($pdf !== '') {
+            $mail->addStringAttachment($pdf, "InvitationLetter_{$ref}.pdf", 'base64', 'application/pdf');
+        }
+
+        $mail->send();
+        return true;
+    } catch (Exception) {
+        error_log('Invitation mailer error: ' . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+function invitation_email_html(array $data): string {
+    $name = htmlspecialchars(trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']));
+    $ref  = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+    $org  = htmlspecialchars($data['organisation_name'] ?? '');
+
+    return "
+<!DOCTYPE html>
+<html lang='en'>
+<head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'></head>
+<body style='margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;'>
+<table width='100%' cellpadding='0' cellspacing='0' style='background:#f5f5f5;padding:40px 16px;'>
+<tr><td align='center'>
+<table width='560' cellpadding='0' cellspacing='0' style='max-width:560px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e0e0e0;'>
+  " . email_header_html() . "
+  <tr>
+    <td style='background:#0a2540;padding:14px 36px;text-align:center;'>
+      <span style='font-size:14px;font-weight:700;color:#fff;letter-spacing:.03em;'>&#9993;&nbsp; OFFICIAL INVITATION — GAMBIA 2026 NGO SUMMIT</span>
+    </td>
+  </tr>
+  <tr>
+    <td style='padding:28px 36px 24px;color:#222222;font-size:14px;line-height:1.7;'>
+      <p style='margin:0 0 12px;'>Dear <strong>{$name}</strong>,</p>
+      <p style='margin:0 0 12px;'>On behalf of the Organizing Committee of the <strong>GAMBIA 2026 NGO Summit</strong>, it is our distinct pleasure to extend to you this <strong>Official Invitation</strong> to participate in the Restitution of the Second World Social Summit (SWSS) on Social Development Outcome.</p>
+      <table width='100%' cellpadding='0' cellspacing='0' style='background:#f0f4f8;border-radius:8px;margin:16px 0;'>
+        <tr><td style='padding:14px 20px;font-size:13px;color:#0a2540;line-height:1.8;'>
+          <strong>&#128197; Dates:</strong> 12&ndash;16 October 2026<br>
+          <strong>&#128205; Venue:</strong> SDK Conference Centre, Senegambia, The Gambia<br>
+          <strong>&#127981; Organisation:</strong> {$org}<br>
+          <strong>&#127981; Delegate Ref:</strong> {$ref}
+        </td></tr>
+      </table>
+      <p style='margin:0 0 12px;'>Your registration has been approved and your participation confirmed. Please find your <strong>Official Invitation Letter</strong> attached as a PDF. You will need to present it upon arrival at the venue for accreditation.</p>
+      <p style='margin:0 0 12px;'>Additional logistical information including the programme schedule and accommodation options will be communicated in due course.</p>
+      <p style='margin:0 0 24px;'>We look forward to welcoming you to The Gambia.</p>
+      <p style='margin:0;'>Yours sincerely,<br><strong>GAMBIA 2026 Organizing Committee</strong><br>
+      <a href='mailto:secretariat@ngocsocd.org' style='color:#0a2540;'>secretariat@ngocsocd.org</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td style='background:#f8f9fa;border-top:1px solid #e8e8e8;padding:18px 36px;text-align:center;'>
+      <p style='margin:0;font-size:11px;color:#999999;line-height:1.6;'>
+        This is an automated message &mdash; please do not reply directly to this email.<br>
+        For queries: <a href='mailto:secretariat@ngocsocd.org' style='color:#0a2540;text-decoration:none;'>secretariat@ngocsocd.org</a>
+        &nbsp;&bull;&nbsp;<a href='https://ngocsocd.org' style='color:#0a2540;text-decoration:none;'>ngocsocd.org</a>
+      </p>
+    </td>
+  </tr>
+</table>
+</td></tr>
+</table>
+</body></html>";
+}
+
+function invitation_email_plain(array $data): string {
+    $name = trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']);
+    $ref  = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+    return "GAMBIA 2026 — Official Invitation\n"
+        . str_repeat('=', 42) . "\n\n"
+        . "Dear {$name},\n\n"
+        . "On behalf of the Organizing Committee of the GAMBIA 2026 NGO Summit, we are pleased\n"
+        . "to extend to you this Official Invitation.\n\n"
+        . "Event: GAMBIA 2026 NGO Summit on Social Development\n"
+        . "Dates: 12-16 October 2026\n"
+        . "Venue: SDK Conference Centre, Senegambia, The Gambia\n"
+        . "Delegate Reference: {$ref}\n\n"
+        . "Your Official Invitation Letter is attached as a PDF.\n"
+        . "Please present it upon arrival at the venue for accreditation.\n\n"
+        . "We look forward to welcoming you to The Gambia.\n\n"
+        . "Yours sincerely,\nGAMBIA 2026 Organizing Committee\n"
+        . "secretariat@ngocsocd.org | ngocsocd.org\n\n"
+        . str_repeat('-', 42) . "\n"
+        . "12-16 October 2026 | SDK Conference Centre, Senegambia, The Gambia";
 }
 
 // ── Badge URL helper ─────────────────────────────────────────────────────────

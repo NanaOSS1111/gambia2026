@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email'])) {
     } elseif ($type === 'approval' && $row['status'] === 'approved') {
         flush_and_continue("view.php?id=$id&resent=approval");
         send_approval_email($row);
+    } elseif ($type === 'invitation' && $row['status'] === 'approved') {
+        flush_and_continue("view.php?id=$id&resent=invitation");
+        send_invitation_email($row);
     } else {
         header("Location: view.php?id=$id");
     }
@@ -328,7 +331,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
         </a>
       <?php endif; ?>
 
-      <!-- Resend emails -->
+      <!-- Resend / invitation emails -->
       <form method="post" style="display:contents;">
         <button name="resend_email" value="confirmation" type="submit" class="btn-action" style="background:#fff8e1;color:#92400e;border-color:#fde68a;" onclick="return confirm('Resend confirmation email to <?= htmlspecialchars($r['email']) ?>?')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
@@ -339,12 +342,21 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
           Resend Approval
         </button>
+        <button name="resend_email" value="invitation" type="submit" class="btn-action" style="background:#ede9fe;color:#5b21b6;border-color:#c4b5fd;" onclick="return confirm('Send invitation letter to <?= htmlspecialchars($r['email']) ?>?')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Send Invitation
+        </button>
+        <a href="invitation_letter_pdf.php?id=<?= $id ?>" target="_blank" class="btn-action" style="background:#f5f3ff;color:#7c3aed;border-color:#ddd6fe;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Invitation PDF
+        </a>
         <?php endif; ?>
       </form>
 
       <?php if (isset($_GET['resent'])): ?>
+      <?php $resentLabels = ['approval' => 'Approval', 'confirmation' => 'Confirmation', 'invitation' => 'Invitation']; ?>
       <span style="font-size:12px;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:6px;padding:5px 12px;">
-        ✓ <?= $_GET['resent'] === 'approval' ? 'Approval' : 'Confirmation' ?> email resent
+        ✓ <?= $resentLabels[$_GET['resent']] ?? 'Email' ?> sent successfully
       </span>
       <?php endif; ?>
     </div>

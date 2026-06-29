@@ -139,6 +139,15 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $_SESSION['flash'] = ['type' => 'info', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' rejected. Notification email' . ($n > 1 ? 's' : '') . ' sent.'];
             flush_and_continue($retUrl);
             foreach ($toEmail as $rrow) send_rejection_email($rrow, $reason);
+        } elseif ($_POST['bulk_action'] === 'invite') {
+            $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
+            $stmt->execute($ids);
+            $toInvite = $stmt->fetchAll();
+            $n = count($toInvite);
+            log_action($pdo, 'bulk_invite', "Sent invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Invitation letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
+            flush_and_continue($retUrl);
+            foreach ($toInvite as $row) send_invitation_email($row);
         } elseif ($_POST['bulk_action'] === 'delete') {
             $pdo->prepare("DELETE FROM registrations WHERE id IN ($ph)")->execute($ids);
             $n = count($ids);
@@ -769,6 +778,7 @@ $regStatusInfo = is_registration_open($pdo);
       <button type="submit" name="bulk_action" value="approve" id="doBulkApprove" style="display:none"></button>
       <button type="submit" name="bulk_action" value="reject"  id="doBulkReject"  style="display:none"></button>
       <button type="submit" name="bulk_action" value="delete"  id="doBulkDelete"  style="display:none"></button>
+      <button type="submit" name="bulk_action" value="invite"  id="doBulkInvite"  style="display:none"></button>
 
       <div class="tbl-wrap">
         <?php if (empty($rows)): ?>
@@ -881,6 +891,7 @@ $regStatusInfo = is_registration_open($pdo);
   <div class="bulk-sep"></div>
   <button class="bbtn bbtn-approve" onclick="triggerBulk('Approve')">✓ Approve</button>
   <button class="bbtn bbtn-reject"  onclick="triggerBulk('Reject')">✕ Reject</button>
+  <button class="bbtn" style="background:#7c3aed;" onclick="triggerBulk('Invite')">✉ Send Invitation</button>
   <button class="bbtn bbtn-delete"  onclick="triggerBulk('Delete')">🗑 Delete</button>
   <button class="bbtn" style="background:#059669;" onclick="exportSelected()">⬇ Export CSV</button>
   <button class="bbtn-cancel"       onclick="clearSelection()">Cancel</button>
