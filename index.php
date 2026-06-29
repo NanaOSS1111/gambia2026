@@ -1678,6 +1678,19 @@ document.getElementById('regForm').addEventListener('submit', function (e) {
 
     var doSubmit = function() {
       overlay.style.display = 'flex';
+      // Always fetch a live CSRF token immediately before submitting so a cached
+      // page token never causes a mismatch, regardless of LiteSpeed behaviour.
+      fetch('csrf-token.php', { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(t) {
+          var csrfField = form.querySelector('[name="csrf_token"]');
+          if (csrfField && t.csrf_token) csrfField.value = t.csrf_token;
+        })
+        .catch(function() {}) // network error: proceed with whatever token is in the field
+        .finally(function() { doActualSubmit(); });
+    };
+
+    var doActualSubmit = function() {
       fetch('process.php', { method: 'POST', body: new FormData(form) })
       .then(function (r) { return r.json(); })
       .then(function (data) {
