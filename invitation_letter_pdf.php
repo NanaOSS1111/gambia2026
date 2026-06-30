@@ -44,11 +44,11 @@ function invitation_letter_html(array $data): string {
     $sig1Src = $enc(__DIR__ . '/asset/signature.png');
     $sig2Src = $enc(__DIR__ . '/asset/sign1.png');
 
-    $b1Img   = $b1Src   ? "<img src='$b1Src'   style='height:68px;width:auto;display:block;'>" : '';
-    $b2Img   = $b2Src   ? "<img src='$b2Src'   style='height:68px;width:auto;display:block;'>" : '';
-    $b3Img   = $b3Src   ? "<img src='$b3Src'   style='height:52px;width:auto;display:block;'>" : '';
-    $sig1Img = $sig1Src ? "<img src='$sig1Src' style='height:50px;width:auto;display:block;margin-bottom:3px;'>" : '';
-    $sig2Img = $sig2Src ? "<img src='$sig2Src' style='height:50px;width:auto;display:block;margin-bottom:3px;'>" : '';
+    $b1Img   = $b1Src   ? "<img src='$b1Src'   style='height:56px;width:auto;display:block;'>" : '';
+    $b2Img   = $b2Src   ? "<img src='$b2Src'   style='height:56px;width:auto;display:block;'>" : '';
+    $b3Img   = $b3Src   ? "<img src='$b3Src'   style='height:40px;width:auto;display:block;'>" : '';
+    $sig1Img = $sig1Src ? "<img src='$sig1Src' style='height:42px;width:auto;display:block;margin-bottom:2px;'>" : '';
+    $sig2Img = $sig2Src ? "<img src='$sig2Src' style='height:42px;width:auto;display:block;margin-bottom:2px;'>" : '';
 
     $addrBlock = "<b>$fullName,</b>";
     if ($org)     $addrBlock .= "<br>$org,";
@@ -59,12 +59,12 @@ function invitation_letter_html(array $data): string {
 <html lang='en'>
 <head><meta charset='UTF-8'>
 <style>
-  body    { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.5; }
+  body    { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.4; }
   table   { border-collapse: collapse; }
-  .page   { padding: 8mm 18mm 10mm 18mm; }
-  hr.div  { border: none; border-top: 1.5px solid #0a2540; margin: 8px 0 14px 0; }
-  .subj   { text-align: center; font-weight: bold; font-size: 10.5pt; text-decoration: underline; margin: 14px 0 12px 0; }
-  p       { margin: 0 0 8px 0; text-align: justify; font-size: 10pt; }
+  .page   { padding: 5mm 15mm 4mm 15mm; }
+  hr.div  { border: none; border-top: 1.5px solid #0a2540; margin: 5px 0 8px 0; }
+  .subj   { text-align: center; font-weight: bold; font-size: 10pt; text-decoration: underline; margin: 8px 0 7px 0; }
+  p       { margin: 0 0 5px 0; text-align: justify; font-size: 9pt; }
   a       { color: #1a56db; text-decoration: underline; }
 </style>
 </head>
@@ -81,10 +81,10 @@ function invitation_letter_html(array $data): string {
   <hr class='div'>
 
   <!-- Date + addressee -->
-  <table width='100%' style='margin-bottom:12px;'>
+  <table width='100%' style='margin-bottom:7px;'>
     <tr>
-      <td style='vertical-align:top; width:45%; font-size:10pt;'>$dateStr</td>
-      <td style='vertical-align:top; text-align:right; font-size:10pt; line-height:1.6;'>$addrBlock</td>
+      <td style='vertical-align:top; width:45%; font-size:9pt;'>$dateStr</td>
+      <td style='vertical-align:top; text-align:right; font-size:9pt; line-height:1.5;'>$addrBlock</td>
     </tr>
   </table>
 
@@ -110,36 +110,35 @@ function invitation_letter_html(array $data): string {
   <p>We look forward to welcoming you to The Gambia this October as we collaborate to advance real-world solutions for global social development.</p>
 
   <!-- Signatures -->
-  <table width='100%' style='margin-top:16px;'>
+  <table width='100%' style='margin-top:10px;'>
     <tr>
-      <td style='width:50%; vertical-align:top; padding-right:14px;'>
-        <div style='font-size:10pt; margin-bottom:3px;'>Sign:</div>
+      <td style='width:50%; vertical-align:top; padding-right:12px;'>
+        <div style='font-size:9pt; margin-bottom:2px;'>Sign:</div>
         $sig1Img
-        <p style='margin-bottom:1px;'><b>Melvine Wajiri</b></p>
-        <p style='margin-bottom:1px; font-size:9pt;'>Chair, NGO Coalition for Social Development</p>
-        <p style='margin-bottom:3px; font-size:9pt;'>GCO, The Earth Hour Award Committee</p>
-        <p style='margin-bottom:1px; font-size:8.5pt;'>211 E 43rd Street, 7th Floor New York,</p>
-        <p style='margin-bottom:1px; font-size:8.5pt;'>NY 10017, USA.</p>
-        <p style='margin-bottom:1px; font-size:8.5pt;'><a href='mailto:m.wajiri@ngocsocd.org' style='color:#1a56db;'>m.wajiri@ngocsocd.org</a> | +19726840854</p>
-        <p style='font-size:8.5pt;'><a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a>&nbsp;&nbsp;EIN 99-447-7990</p>
+        <p style='margin-bottom:0;'><b>Melvine Wajiri</b></p>
+        <p style='margin-bottom:0; font-size:8.5pt;'>Chair, NGO Coalition for Social Development</p>
+        <p style='margin-bottom:2px; font-size:8.5pt;'>GCO, The Earth Hour Award Committee</p>
+        <p style='margin-bottom:0; font-size:8pt;'>211 E 43rd Street, 7th Floor New York, NY 10017, USA.</p>
+        <p style='margin-bottom:0; font-size:8pt;'><a href='mailto:m.wajiri@ngocsocd.org' style='color:#1a56db;'>m.wajiri@ngocsocd.org</a> | +19726840854</p>
+        <p style='font-size:8pt;'><a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a>&nbsp;&nbsp;EIN 99-447-7990</p>
       </td>
-      <td style='width:50%; vertical-align:top; padding-left:14px;'>
-        <div style='font-size:10pt; margin-bottom:3px;'>Sign:</div>
+      <td style='width:50%; vertical-align:top; padding-left:12px;'>
+        <div style='font-size:9pt; margin-bottom:2px;'>Sign:</div>
         $sig2Img
-        <p style='margin-bottom:1px;'><b>Ebrima Jarbo</b></p>
-        <p style='margin-bottom:1px; font-size:9pt;'>Director, NGO Affairs Agency</p>
-        <p style='margin-bottom:3px; font-size:9pt;'>Ministry of Land, Regional Government<br>and Religious Association, The Gambia.</p>
-        <p style='margin-bottom:1px; font-size:8.5pt;'><a href='mailto:ebrimajarbo@gmail.com' style='color:#1a56db;'>ebrimajarbo@gmail.com</a> | +2207533085</p>
+        <p style='margin-bottom:0;'><b>Ebrima Jarbo</b></p>
+        <p style='margin-bottom:0; font-size:8.5pt;'>Director, NGO Affairs Agency</p>
+        <p style='margin-bottom:2px; font-size:8.5pt;'>Ministry of Land, Regional Government and Religious Association, The Gambia.</p>
+        <p style='font-size:8pt;'><a href='mailto:ebrimajarbo@gmail.com' style='color:#1a56db;'>ebrimajarbo@gmail.com</a> | +2207533085</p>
       </td>
     </tr>
   </table>
 
   <!-- Footer -->
-  <table width='100%' style='margin-top:16px; border-top:1px solid #cccccc;'>
+  <table width='100%' style='margin-top:10px; border-top:1px solid #cccccc;'>
     <tr>
-      <td style='padding-top:8px; vertical-align:middle; width:28%;'>$b3Img</td>
-      <td style='padding-top:8px; vertical-align:middle; text-align:right;'>
-        <span style='font-size:9pt; font-weight:bold; color:#c0392b; letter-spacing:0.03em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
+      <td style='padding-top:6px; vertical-align:middle; width:28%;'>$b3Img</td>
+      <td style='padding-top:6px; vertical-align:middle; text-align:right;'>
+        <span style='font-size:8.5pt; font-weight:bold; color:#c0392b; letter-spacing:0.03em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
       </td>
     </tr>
   </table>
