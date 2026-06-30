@@ -79,7 +79,6 @@ function invitation_letter_html(array $data): string {
       <td style='vertical-align:top; text-align:right; width:35%;'>$b2Img</td>
     </tr>
   </table>
-  <hr class='div'>
 
   <!-- Date + addressee -->
   <table width='100%' style='margin-bottom:7px;'>
@@ -137,8 +136,8 @@ function invitation_letter_html(array $data): string {
   <!-- Footer — pinned to page bottom -->
   <table width='100%' class='footer'>
     <tr>
-      <td style='vertical-align:middle; width:28%;'>$b3Img</td>
-      <td style='vertical-align:middle; text-align:right;'>
+      <td style='vertical-align:middle; width:30%;'>$b3Img</td>
+      <td style='vertical-align:middle; text-align:center; padding-right:20px;'>
         <span style='font-size:8.5pt; font-weight:bold; color:#c0392b; letter-spacing:0.03em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
       </td>
     </tr>
