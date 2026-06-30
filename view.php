@@ -332,17 +332,21 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       <?php endif; ?>
 
       <!-- Resend / invitation emails -->
-      <form method="post" style="display:contents;">
-        <button name="resend_email" value="confirmation" type="submit" class="btn-action" style="background:#fff8e1;color:#92400e;border-color:#fde68a;" onclick="return confirm('Resend confirmation email to <?= htmlspecialchars($r['email']) ?>?')">
+      <form method="post" id="resend-form" style="display:contents;">
+        <input type="hidden" name="resend_email" id="resend-action" value="">
+        <button type="button" class="btn-action" style="background:#fff8e1;color:#92400e;border-color:#fde68a;"
+          onclick="confirmResend('confirmation','Resend Confirmation','Resend confirmation email to <?= htmlspecialchars($r['email'], ENT_QUOTES) ?>?','Resend','#92400e')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
           Resend Confirmation
         </button>
         <?php if ($status === 'approved'): ?>
-        <button name="resend_email" value="approval" type="submit" class="btn-action" style="background:#f0fdf4;color:#065f46;border-color:#6ee7b7;" onclick="return confirm('Resend approval email to <?= htmlspecialchars($r['email']) ?>?')">
+        <button type="button" class="btn-action" style="background:#f0fdf4;color:#065f46;border-color:#6ee7b7;"
+          onclick="confirmResend('approval','Resend Approval','Resend approval email to <?= htmlspecialchars($r['email'], ENT_QUOTES) ?>?','Resend','#059669')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.96"/></svg>
           Resend Approval
         </button>
-        <button name="resend_email" value="invitation" type="submit" class="btn-action" style="background:#ede9fe;color:#5b21b6;border-color:#c4b5fd;" onclick="return confirm('Send invitation letter to <?= htmlspecialchars($r['email']) ?>?')">
+        <button type="button" class="btn-action" style="background:#ede9fe;color:#5b21b6;border-color:#c4b5fd;"
+          onclick="confirmResend('invitation','Send Invitation Letter','Send official invitation letter to <?= htmlspecialchars($r['email'], ENT_QUOTES) ?>?','Send','#5b21b6')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Send Invitation
         </button>
@@ -542,6 +546,23 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
 </div><!-- /.main -->
 
 <script>
+function confirmResend(action, title, text, btnLabel, btnColor) {
+  Swal.fire({
+    title: title,
+    text: text,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: btnLabel,
+    confirmButtonColor: btnColor,
+    cancelButtonColor: '#6b7280',
+    reverseButtons: true,
+  }).then(function(r) {
+    if (!r.isConfirmed) return;
+    document.getElementById('resend-action').value = action;
+    document.getElementById('resend-form').submit();
+  });
+}
+
 function confirmLogout() {
   Swal.fire({
     title: 'Sign out?',
