@@ -1,4 +1,4 @@
 ---
 deployment:
   tasks:
-    - rsync -a --delete --exclude=".git" --exclude=".github" --exclude="db.php" --exclude="mail_config.php" --exclude="uploads/" --exclude="vendor/" /home/zvtadugw/gambia2026_repo/ /home/zvtadugw/gambia2026.ngocsocd.org/
+    - rsync -rl --delete --exclude=".git" --exclude=".github" --exclude="db.php" --exclude="mail_config.php" --exclude="uploads/" --exclude="vendor/" /home/zvtadugw/gambia2026_repo/ /home/zvtadugw/gambia2026.ngocsocd.org/
