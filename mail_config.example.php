@@ -24,7 +24,9 @@ define('BADGE_SECRET', 'replace-with-a-long-random-secret');
 define('RECAPTCHA_SITE_KEY',   '');
 define('RECAPTCHA_SECRET_KEY', '');
 
-// ── GitHub webhook auto-deploy secret ────────────────────────────────────────
-// Must match the "Secret" you enter when creating the GitHub webhook.
-// Generate with: openssl rand -hex 32
+// ── GitHub webhook auto-deploy (ngocsocd.org only) ───────────────────────────
+// DEPLOY_WEBHOOK_SECRET must match the "Secret" set in GitHub → Webhooks.
+// CPANEL_USER / CPANEL_PASS are the cPanel login credentials for this server.
 define('DEPLOY_WEBHOOK_SECRET', '');
+define('CPANEL_USER', '');
+define('CPANEL_PASS', '');
