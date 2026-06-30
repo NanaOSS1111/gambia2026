@@ -81,7 +81,7 @@ function invitation_letter_html(array $data): string {
   </table>
 
   <!-- Date + addressee -->
-  <table width='100%' style='margin-bottom:7px;'>
+  <table width='100%' style='margin-top:10mm; margin-bottom:7px;'>
     <tr>
       <td style='vertical-align:top; width:45%; font-size:9pt;'>$dateStr</td>
       <td style='vertical-align:top; text-align:right; font-size:9pt; line-height:1.5;'>$addrBlock</td>
