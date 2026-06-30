@@ -98,11 +98,11 @@ function nomination_letter_html(array $data): string {
   </table>
 
   <!-- Reference lines -->
-  <p style='margin-bottom:3px;'><span style='color:#c0392b;font-weight:bold;'>NOTIFICATION:</span> <b>$refCode</b></p>
-  <p style='margin-bottom:10px;'><b>Ref:</b> <i>Nomination for the Conferment of the Unsung Heroes &ldquo;Earth Hour Award&rdquo;</i></p>
+  <p style='margin-bottom:3px;padding-left:36px;'><span style='color:#c0392b;font-weight:bold;'>NOTIFICATION:</span> <b>$refCode</b></p>
+  <p style='margin-bottom:10px;padding-left:36px;'><b>Ref:</b> <i>Nomination for the Conferment of the Unsung Heroes &ldquo;Earth Hour Award&rdquo;</i></p>
 
   <!-- Salutation -->
-  <p style='margin-bottom:8px;'>$fullName,</p>
+  <p style='margin-bottom:8px;padding-left:36px;'>$fullName,</p>
 
   <!-- Body -->
   <p><b>Congratulations.</b> We are pleased to inform you that you have been nominated for the Prestigious Global Civil Society Unsung Heroes <b>&ldquo;Earth Hour Award&rdquo;</b>.</p>
