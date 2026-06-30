@@ -33,7 +33,7 @@
   (function () {
     var loader = document.getElementById('page-loader');
     var startTime = Date.now();
-    var MIN_MS = 500; // show for at least 500ms so it's always visible
+    var MIN_MS = 500;
 
     function hide() {
       var elapsed = Date.now() - startTime;

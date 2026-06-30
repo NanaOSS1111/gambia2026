@@ -1157,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toast:            true,
     position:         'top-end',
     icon:             '<?= $flash['type'] ?>',
-    title:            '<?= addslashes($flash['msg']) ?>',
+    title:            '<?= addslashes($flash['msg'] ?? '') ?>',
     showConfirmButton: false,
     timer:            4500,
     timerProgressBar: true,

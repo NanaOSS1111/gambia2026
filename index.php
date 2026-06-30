@@ -571,6 +571,20 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   }
   .birth-age-warn.visible { display: block; }
 
+  /* Inline date-range warnings (arrival / departure) */
+  .date-range-warn {
+    display: none;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #7a4f00;
+    line-height: 1.5;
+  }
+  .date-range-warn.visible { display: block; }
+
   /* SUBMIT */
   .reg-submit {
     background: #fff;
@@ -805,10 +819,14 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 <body>
 <?php include __DIR__ . '/_spinner.php'; ?>
 
-<div id="submit-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,.78);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
+<div id="submit-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,37,64,.82);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
   <div style="width:52px;height:52px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:reg-spin .8s linear infinite;"></div>
-  <div style="color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;">Submitting registration…</div>
-  <div style="color:rgba(255,255,255,.55);font-size:13px;">Please wait, do not close this page.</div>
+  <div id="overlay-title" style="color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;">Uploading files&hellip;</div>
+  <div style="width:260px;background:rgba(255,255,255,.2);border-radius:20px;height:8px;overflow:hidden;">
+    <div id="upload-bar" style="width:0%;height:100%;background:#fff;border-radius:20px;transition:width .25s ease;"></div>
+  </div>
+  <div id="overlay-pct" style="color:rgba(255,255,255,.75);font-size:13px;min-height:18px;">0%</div>
+  <div style="color:rgba(255,255,255,.5);font-size:12px;">Please wait &mdash; do not close this page.</div>
 </div>
 <style>@keyframes reg-spin{to{transform:rotate(360deg)}}</style>
 
@@ -1160,13 +1178,15 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           <div class="field-row">
             <div class="field">
               <label for="arrival_date">Arrival Date in The Gambia <span class="req">*</span></label>
-              <input type="date" name="arrival_date" id="arrival_date" required>
+              <input type="date" name="arrival_date" id="arrival_date" min="2026-10-10" required>
               <span class="field-hint">If locally based, indicate the date you will start attending.</span>
+              <p class="date-range-warn" id="arrival-date-warn">&#9888; Arrival date must be <strong>10 October 2026 or later</strong>. The event runs 12&ndash;16 October, with arrival from 10 October.</p>
             </div>
             <div class="field">
               <label for="departure_date">Departure Date from The Gambia <span class="req">*</span></label>
-              <input type="date" name="departure_date" id="departure_date" required>
+              <input type="date" name="departure_date" id="departure_date" max="2026-10-22" required>
               <span class="field-hint">If locally based, indicate the last date you will attend.</span>
+              <p class="date-range-warn" id="departure-date-warn">&#9888; Departure date must be <strong>22 October 2026 or earlier</strong>.</p>
             </div>
           </div>
 
@@ -1542,6 +1562,19 @@ function validateForm(form) {
     }
   }
 
+  var minArrival   = new Date('2026-10-10');
+  var maxDeparture = new Date('2026-10-22');
+
+  if (arrival && new Date(arrival) < minArrival) {
+    errors.push('arrival_date');
+    dateErrs.push('Arrival Date must be 10 October 2026 or later.');
+  }
+
+  if (departure && new Date(departure) > maxDeparture) {
+    errors.push('departure_date');
+    dateErrs.push('Departure Date must be 22 October 2026 or earlier.');
+  }
+
   if (arrival && departure && new Date(departure) < new Date(arrival)) {
     errors.push('departure_date');
     dateErrs.push('Departure Date cannot be before your Arrival Date.');
@@ -1588,6 +1621,47 @@ function markErrors(form, errors) {
 
   bd.addEventListener('change', checkAge);
   bd.addEventListener('input',  checkAge);
+})();
+
+// ── Arrival / departure date range real-time check ────────
+(function () {
+  var arrEl   = document.getElementById('arrival_date');
+  var depEl   = document.getElementById('departure_date');
+  var arrWarn = document.getElementById('arrival-date-warn');
+  var depWarn = document.getElementById('departure-date-warn');
+  if (!arrEl || !depEl) return;
+
+  var minArrival   = new Date('2026-10-10');
+  var maxDeparture = new Date('2026-10-22');
+
+  function checkArrival() {
+    var val = arrEl.value;
+    if (!val) { arrWarn.classList.remove('visible'); arrEl.classList.remove('f-err'); return; }
+    if (new Date(val) < minArrival) {
+      arrWarn.classList.add('visible');
+      arrEl.classList.add('f-err');
+    } else {
+      arrWarn.classList.remove('visible');
+      arrEl.classList.remove('f-err');
+    }
+  }
+
+  function checkDeparture() {
+    var val = depEl.value;
+    if (!val) { depWarn.classList.remove('visible'); depEl.classList.remove('f-err'); return; }
+    if (new Date(val) > maxDeparture) {
+      depWarn.classList.add('visible');
+      depEl.classList.add('f-err');
+    } else {
+      depWarn.classList.remove('visible');
+      depEl.classList.remove('f-err');
+    }
+  }
+
+  arrEl.addEventListener('change', checkArrival);
+  arrEl.addEventListener('input',  checkArrival);
+  depEl.addEventListener('change', checkDeparture);
+  depEl.addEventListener('input',  checkDeparture);
 })();
 
 // ── Duplicate name detection ──────────────────────────────
@@ -1695,10 +1769,30 @@ document.getElementById('regForm').addEventListener('submit', function (e) {
     };
 
     var doActualSubmit = function() {
-      fetch('process.php', { method: 'POST', body: new FormData(form) })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        // Keep CSRF token in sync so retries after validation errors still work
+      var bar   = document.getElementById('upload-bar');
+      var pct   = document.getElementById('overlay-pct');
+      var title = document.getElementById('overlay-title');
+
+      var xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = function(e) {
+        if (!e.lengthComputable) return;
+        var p = Math.round(e.loaded / e.total * 100);
+        if (bar)   bar.style.width  = p + '%';
+        if (pct)   pct.textContent  = p + '%';
+        if (p >= 100) {
+          if (title) title.textContent = 'Processing registration…';
+          if (pct)   pct.textContent   = 'Almost done…';
+        }
+      };
+
+      xhr.onload = function() {
+        var data;
+        try { data = JSON.parse(xhr.responseText); } catch(ex) {
+          hideOverlay();
+          showToast('Something went wrong', 'Please check your connection and try again.', true);
+          return;
+        }
         if (data.csrf_token) {
           var csrfField = form.querySelector('[name="csrf_token"]');
           if (csrfField) csrfField.value = data.csrf_token;
@@ -1721,11 +1815,15 @@ document.getElementById('regForm').addEventListener('submit', function (e) {
           hideOverlay();
           showToast(data.message, 'Please correct this and try again.', true);
         }
-      })
-      .catch(function () {
+      };
+
+      xhr.onerror = function() {
         hideOverlay();
-        showToast('Something went wrong', 'Please check your connection and try again.', true);
-      });
+        showToast('Connection error', 'Please check your connection and try again.', true);
+      };
+
+      xhr.open('POST', 'process.php');
+      xhr.send(new FormData(form));
     };
 
     // reCAPTCHA v3: get token then submit; fallback to direct submit if not loaded

@@ -112,6 +112,14 @@ if (!$departure || $departure->format('Y-m-d') !== $departureRaw) {
 if ($departure < $arrival) {
     err('Departure Date cannot be before your Arrival Date.');
 }
+$minArrival   = new DateTimeImmutable('2026-10-10');
+$maxDeparture = new DateTimeImmutable('2026-10-22');
+if ($arrival < $minArrival) {
+    err('Arrival Date must be 10 October 2026 or later.');
+}
+if ($departure > $maxDeparture) {
+    err('Departure Date must be 22 October 2026 or earlier.');
+}
 
 // ── Duplicate check — email, phone, name+company, passport ──
 $email   = strtolower(trim($_POST['email']));
