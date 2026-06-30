@@ -117,7 +117,10 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
     $ids = array_map('intval', (array)$_POST['selected_ids']);
     if (!empty($ids)) {
         $ph      = implode(',', array_fill(0, count($ids), '?'));
-        $retUrl  = 'admin.php?' . http_build_query(['status' => $_POST['ret_status'] ?? 'all', 'search' => $_POST['ret_search'] ?? '']);
+        $allowedStatuses = ['all', 'pending', 'approved', 'rejected'];
+        $retStatus = in_array($_POST['ret_status'] ?? '', $allowedStatuses, true) ? $_POST['ret_status'] : 'all';
+        $retSearch = substr(preg_replace('/[^\w\s@.\-]/u', '', $_POST['ret_search'] ?? ''), 0, 100);
+        $retUrl  = 'admin.php?' . http_build_query(['status' => $retStatus, 'search' => $retSearch]);
         if ($_POST['bulk_action'] === 'approve') {
             $pdo->prepare("UPDATE registrations SET status='approved' WHERE id IN ($ph)")->execute($ids);
             $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph)");
@@ -163,7 +166,10 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
 if (isset($_POST['update_status'])) {
     $newStatus = $_POST['status'];
     $rid       = (int)$_POST['id'];
-    $retUrl    = 'admin.php?' . http_build_query(['status' => $_POST['ret_status'] ?? 'all', 'search' => $_POST['ret_search'] ?? '']);
+    $allowedStatuses = ['all', 'pending', 'approved', 'rejected'];
+    $retStatus = in_array($_POST['ret_status'] ?? '', $allowedStatuses, true) ? $_POST['ret_status'] : 'all';
+    $retSearch = substr(preg_replace('/[^\w\s@.\-]/u', '', $_POST['ret_search'] ?? ''), 0, 100);
+    $retUrl    = 'admin.php?' . http_build_query(['status' => $retStatus, 'search' => $retSearch]);
     $pdo->prepare("UPDATE registrations SET status=? WHERE id=?")->execute([$newStatus, $rid]);
     $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id=?");
     $stmt->execute([$rid]);
@@ -761,6 +767,7 @@ $regStatusInfo = is_registration_open($pdo);
         <input type="hidden" name="export_all" value="1">
         <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
         <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+        <input type="hidden" name="admin_csrf" value="<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>">
         <button type="submit" class="btn btn-green">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export All CSV

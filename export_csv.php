@@ -5,6 +5,16 @@ if (!isset($_SESSION['admin'])) { header('Location: admin.php'); exit; }
 require_once 'db.php';
 require_once 'logger.php';
 
+// CSRF check
+if (
+    empty($_POST['admin_csrf']) ||
+    empty($_SESSION['admin_csrf']) ||
+    !hash_equals($_SESSION['admin_csrf'], $_POST['admin_csrf'])
+) {
+    http_response_code(403);
+    die('Forbidden: invalid security token.');
+}
+
 $ids = array_map('intval', (array)($_POST['ids'] ?? []));
 $all = !empty($_POST['export_all']);
 
@@ -43,6 +53,11 @@ header('Cache-Control: no-cache, must-revalidate');
 // BOM for Excel UTF-8
 echo "\xEF\xBB\xBF";
 
+// Sanitise a CSV field to prevent formula injection in Excel/Sheets
+function csv_safe(string $v): string {
+    return preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
+}
+
 $out = fopen('php://output', 'w');
 
 // Header row
@@ -56,7 +71,7 @@ fputcsv($out, [
 
 foreach ($rows as $r) {
     $ref = 'GAM26-' . str_pad($r['id'], 5, '0', STR_PAD_LEFT);
-    fputcsv($out, [
+    fputcsv($out, array_map('csv_safe', [
         $ref,
         $r['status'],
         $r['representation_type'],
@@ -76,7 +91,7 @@ foreach ($rows as $r) {
         $r['address_in_country'],
         $r['position'] ?? '',
         $r['submitted_at'],
-    ]);
+    ]));
 }
 
 fclose($out);

@@ -1,15 +1,39 @@
-# Prevent server-side caching of PHP pages (avoids stale CSRF tokens)
+# ── HTTPS redirect ────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ── Security headers ───────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# ── Prevent server-side caching of PHP pages (avoids stale CSRF tokens) ──
 <FilesMatch "\.php$">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-    Header set Pragma "no-cache"
+    <IfModule mod_headers.c>
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+    </IfModule>
 </FilesMatch>
 
-# Deny direct access to sensitive files
-<FilesMatch "^(db|mail_config|logger|rate_limit|session_guard)\.php$">
+# ── Deny direct access to sensitive files ─────────────────────
+<FilesMatch "^(db|mail_config|logger|rate_limit|session_guard|settings)\.php$">
     Require all denied
 </FilesMatch>
 
-# Deny access to dot-files
-<FilesMatch "^\.">
+# ── Deny access to dot-files and env ──────────────────────────
+<FilesMatch "^(\.|\.(env|git|htpasswd))">
+    Require all denied
+</FilesMatch>
+
+# ── Block access to sensitive file types ──────────────────────
+<FilesMatch "\.(sql|log|bak|swp|orig)$">
     Require all denied
 </FilesMatch>

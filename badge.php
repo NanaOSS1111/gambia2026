@@ -28,9 +28,12 @@ $fullName  = htmlspecialchars(($r['title'] ? $r['title'] . ' ' : '') . $r['first
 $org       = htmlspecialchars($r['organisation_name']);
 $type      = htmlspecialchars($r['representation_type']);
 $refH      = htmlspecialchars($ref);
-$photoPath = $r['picture'] ? 'uploads/' . htmlspecialchars($r['picture']) : '';
+// Validate filename — prevent path traversal
+$picFile   = $r['picture'] ?? '';
+$picFile   = (preg_match('/^[a-zA-Z0-9_\-\.]+$/', $picFile) && strpos($picFile, '..') === false) ? $picFile : '';
+$photoPath = $picFile ? 'uploads/' . $picFile : '';
 $photoExts = ['jpg','jpeg','png','gif','webp'];
-$hasPhoto  = $photoPath && in_array(strtolower(pathinfo($r['picture'], PATHINFO_EXTENSION)), $photoExts) && file_exists($r['picture'] ? 'uploads/' . $r['picture'] : '');
+$hasPhoto  = $photoPath && in_array(strtolower(pathinfo($picFile, PATHINFO_EXTENSION)), $photoExts) && file_exists($photoPath);
 
 $qrData = urlencode($ref);
 $qrUrl  = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=6&data={$qrData}";
@@ -379,8 +382,8 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
 
   <!-- Photo -->
   <div class="badge-photo-wrap">
-    <?php if ($photoPath && file_exists($photoPath)): ?>
-      <img src="<?= $photoPath ?>" alt="Photo" class="badge-photo">
+    <?php if ($hasPhoto): ?>
+      <img src="<?= htmlspecialchars($photoPath) ?>" alt="Photo" class="badge-photo">
     <?php else: ?>
       <div class="badge-initials"><?= $initials ?></div>
     <?php endif; ?>

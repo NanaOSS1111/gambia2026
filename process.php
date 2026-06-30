@@ -152,7 +152,14 @@ if ($dupPassport->fetch()) {
 
 // ── File uploads ──────────────────────────────────────────
 function handleUpload($field, $required = true) {
-    $allowed = ['jpg','jpeg','png','pdf','doc','docx'];
+    static $mimeMap = [
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'pdf'  => 'application/pdf',
+        'doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
     if (empty($_FILES[$field]['name'])) {
         if ($required) err("Please upload the required file: $field.");
         return null;
@@ -161,7 +168,17 @@ function handleUpload($field, $required = true) {
     if ($file['error'] !== UPLOAD_ERR_OK) err("Upload error for $field (code {$file['error']}).");
     if ($file['size'] > MAX_FILE_SIZE)    err("File '$field' exceeds the 2 MB size limit.");
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, $allowed))        err("File type '.$ext' is not allowed for $field.");
+    if (!array_key_exists($ext, $mimeMap)) err("File type '.$ext' is not allowed for $field.");
+
+    // MIME type validation — file content must match declared extension
+    $finfo        = new finfo(FILEINFO_MIME_TYPE);
+    $detectedMime = $finfo->file($file['tmp_name']);
+    $expectedMime = $mimeMap[$ext];
+    // jpeg files may also be reported as image/jpg
+    $ok = ($detectedMime === $expectedMime)
+       || ($ext === 'jpg' && $detectedMime === 'image/jpg')
+       || ($ext === 'docx' && $detectedMime === 'application/zip'); // docx is a zip
+    if (!$ok) err("File '$field' content does not match its extension. Please upload a valid file.");
 
     $newName = uniqid() . '_' . preg_replace('/[^a-z0-9._-]/i', '_', basename($file['name']));
     $dest    = UPLOAD_DIR . $newName;

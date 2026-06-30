@@ -24,3 +24,8 @@ function enforce_admin_session(): void {
 }
 
 enforce_admin_session();
+
+// Ensure a per-session CSRF token exists for admin forms
+if (!isset($_SESSION['admin_csrf'])) {
+    $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
+}

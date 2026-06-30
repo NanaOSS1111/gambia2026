@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /admin.php
+Disallow: /view.php
+Disallow: /logs.php
+Disallow: /export_csv.php
+Disallow: /export_csv
+Disallow: /reset_password.php
+Disallow: /setup_admin.php
+Disallow: /process.php
+Disallow: /csrf-token.php
+Disallow: /uploads/
+Disallow: /vendor/

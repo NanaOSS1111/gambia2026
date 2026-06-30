@@ -10,6 +10,15 @@ ensure_logs_table($pdo);
 
 /* ── Clear logs ───────────────────────────────────────────── */
 if (isset($_POST['clear_logs'])) {
+    if (
+        empty($_POST['admin_csrf']) ||
+        empty($_SESSION['admin_csrf']) ||
+        !hash_equals($_SESSION['admin_csrf'], $_POST['admin_csrf'])
+    ) {
+        http_response_code(403);
+        $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Invalid security token. Please try again.'];
+        header('Location: logs.php'); exit;
+    }
     $pdo->exec("DELETE FROM admin_logs");
     log_action($pdo, 'clear_logs', 'Cleared all activity logs');
     $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Activity logs cleared.'];
@@ -218,6 +227,7 @@ $badgeCfg = [
       <div style="flex:1;"></div>
       <form method="POST" id="clearForm">
         <input type="hidden" name="clear_logs" value="1">
+        <input type="hidden" name="admin_csrf" value="<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>">
         <button type="button" class="btn btn-danger" onclick="confirmClear()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
           Clear All Logs
