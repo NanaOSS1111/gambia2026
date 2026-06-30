@@ -35,19 +35,20 @@ function nomination_letter_html(array $data): string {
     $idNum     = str_pad($data['id'], 5, '0', STR_PAD_LEFT);
     $refCode   = 'G26/AMB/2026/ Ref #' . $idNum;
 
-    $day    = (int)date('j');
+    $day     = (int)date('j');
     $dateStr = $day . ordinal_suffix($day) . ' ' . date('F Y');
 
-    // Logos + signature as base64 for PDF (dompdf requires embedded images)
-    $headPath = __DIR__ . '/asset/HeadLogo-01.png';
-    $sigPath  = __DIR__ . '/asset/signature.png';
-    $headSrc  = file_exists($headPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($headPath)) : '';
-    $sigSrc   = file_exists($sigPath)  ? 'data:image/png;base64,' . base64_encode(file_get_contents($sigPath))  : '';
+    // Embed images as base64 (dompdf requires embedded images)
+    $enc = static function (string $p): string {
+        return file_exists($p) ? 'data:image/png;base64,' . base64_encode(file_get_contents($p)) : '';
+    };
+    $headSrc = $enc(__DIR__ . '/asset/HeadLogo-01.png');
+    $sigSrc  = $enc(__DIR__ . '/asset/signature.png');
 
-    $headImg = $headSrc ? "<img src='$headSrc' style='width:200px;height:auto;display:block;'>" : '';
-    $sigImg  = $sigSrc  ? "<img src='$sigSrc'  style='height:52px;width:auto;display:block;margin-bottom:2px;'>" : '';
+    $headImg = $headSrc ? "<img src='$headSrc' style='width:220px;height:auto;display:block;'>" : '';
+    $sigImg  = $sigSrc  ? "<img src='$sigSrc'  style='height:50px;width:auto;display:block;margin-bottom:2px;'>" : '';
 
-    // Address block rows
+    // Addressee block
     $addrRows  = "<tr><td><b>$fullName</b></td></tr>";
     if ($position) $addrRows .= "<tr><td>$position</td></tr>";
     if ($org)      $addrRows .= "<tr><td>$org</td></tr>";
@@ -59,64 +60,49 @@ function nomination_letter_html(array $data): string {
 <html lang='en'>
 <head><meta charset='UTF-8'>
 <style>
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.35; }
+  * { box-sizing: border-box; }
+  body  { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #1a1a1a; margin:0; padding:0; line-height:1.4; }
   table { border-collapse: collapse; }
-  .page { padding: 6mm 18mm 12mm 18mm; }
-  .lh-table  { width: 100%; margin-bottom: 8px; }
-  .lh-logo-l { width: 44%; vertical-align: middle; padding-right: 16px; }
-  .lh-contact { vertical-align: middle; text-align: left; font-size: 8.5pt; color: #1a56db; line-height: 1.45; }
-  .divider   { border: none; border-top: 2.5px solid #0a2540; margin: 6px 0 14px 0; }
-  .top-table { width: 100%; margin-bottom: 14px; }
-  .date-cell { vertical-align: top; font-size: 10pt; padding-top: 2px; width: 38%; }
-  .addr-cell { vertical-align: top; text-align: right; font-size: 9.5pt; line-height: 1.35; width: 62%; padding-left: 30%; }
-  a, .link   { color: #1a56db; text-decoration: underline; }
-  .notif     { margin-bottom: 3px; font-size: 10pt; }
-  .notif-red { color: #c0392b; font-weight: bold; }
-  .ref-line  { margin-bottom: 10px; font-size: 10pt; }
-  .salute    { margin-bottom: 6px; font-size: 10pt; }
-  p          { margin: 0 0 6px 0; text-align: justify; font-size: 10pt; }
-  .sign-area { margin-top: 14px; font-size: 10pt; }
-  .part2     { page-break-before: always; border-top: 2px solid #0a2540; padding-top: 10px; margin-top: 0; }
-  .part2-title { font-size: 12pt; font-weight: bold; color: #0a2540; margin-bottom: 6px; }
-  .decl-title  { font-weight: bold; margin-bottom: 5px; font-size: 10.5pt; }
-  .blank { border-bottom: 1px solid #333; display: inline-block; width: 200px; }
-  .blank-sm { border-bottom: 1px solid #333; display: inline-block; width: 120px; }
-  ol li { margin-bottom: 3px; font-size: 10pt; }
-  .sign3-table { width: 100%; margin-top: 12px; font-size: 9.5pt; }
-  .sign3-table td { vertical-align: top; padding-right: 12px; }
-  .sign-blank { border-bottom: 1px solid #333; margin-bottom: 3px; height: 20px; }
-  .footer-bar { margin-top: 14px; border-top: 1px solid #0a2540; padding-top: 6px; font-size: 7.5pt; color: #555; text-align: center; }
+  .page { padding: 10mm 18mm 12mm 18mm; }
+  p     { margin: 0 0 6px 0; text-align: justify; }
+  .part2 { page-break-before: always; padding-top: 8px; }
+  .part2-title { font-size: 11pt; font-weight: bold; color: #0a2540; margin-bottom: 6px; border-top: 2px solid #0a2540; padding-top: 8px; }
+  .decl-title  { font-weight: bold; margin-bottom: 4px; }
+  .blank    { border-bottom: 1px solid #333; display: inline-block; min-width: 180px; }
+  .blank-sm { border-bottom: 1px solid #333; display: inline-block; min-width: 110px; }
+  ol li { margin-bottom: 3px; }
+  .sign-blank { border-bottom: 1px solid #333; height: 22px; margin-bottom: 3px; }
 </style>
 </head>
 <body>
 <div class='page'>
 
-  <!-- Letterhead -->
-  <div style='margin-bottom:6px;'>
-    <div>$headImg</div>
-    <div style='font-size:8.5pt;color:#1a56db;line-height:1.75;margin-top:4px;'>
-      <div>211 E 43rd Street, 7th Floor New York, NY 10017, USA.</div>
-      <div><a href='mailto:info@ngocsocd.org' style='color:#1a56db;'>info@ngocsocd.org</a>,&nbsp;&nbsp;<a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a>&nbsp;&nbsp;+1 212-537-9303</div>
-      <div>IRS 501 (C) 3 Exempt EIN 99-447-7990</div>
-    </div>
+  <!-- Letterhead logo -->
+  <div style='margin-bottom:4px;'>$headImg</div>
+
+  <!-- Contact info line -->
+  <div style='font-size:8.5pt;color:#1a56db;line-height:1.7;margin-bottom:14px;'>
+    <div>211 E 43rd Street, 7th Floor New York, NY 10017, USA.</div>
+    <div>info@ngocsocd.org,&nbsp;&nbsp;www.ngocsocd.org&nbsp;&nbsp;+1 212-537-9303</div>
+    <div>IRS 501 (C) 3 Exempt EIN 99-447-7990</div>
   </div>
 
-  <!-- Date + Address -->
-  <table class='top-table'>
+  <!-- Date left | Addressee right -->
+  <table style='width:100%;margin-bottom:14px;'>
     <tr>
-      <td class='date-cell' style='width:50%;'>$dateStr</td>
-      <td class='addr-cell'>
-        <table style='margin-left:auto;'>$addrRows</table>
+      <td style='width:45%;vertical-align:top;font-size:10pt;'>$dateStr</td>
+      <td style='width:55%;vertical-align:top;text-align:right;font-size:10pt;line-height:1.5;'>
+        <table style='margin-left:auto;font-size:10pt;'>$addrRows</table>
       </td>
     </tr>
   </table>
 
   <!-- Reference lines -->
-  <div class='notif'><span class='notif-red'>NOTIFICATION:</span> <b>$refCode</b></div>
-  <div class='ref-line'><b>Ref:</b> <i>Nomination for the Conferment of the Unsung Heroes &ldquo;Earth Hour Award&rdquo;</i></div>
+  <p style='margin-bottom:3px;'><span style='color:#c0392b;font-weight:bold;'>NOTIFICATION:</span> <b>$refCode</b></p>
+  <p style='margin-bottom:10px;'><b>Ref:</b> <i>Nomination for the Conferment of the Unsung Heroes &ldquo;Earth Hour Award&rdquo;</i></p>
 
   <!-- Salutation -->
-  <div class='salute'>$fullName,</div>
+  <p style='margin-bottom:8px;'>$fullName,</p>
 
   <!-- Body -->
   <p><b>Congratulations.</b> We are pleased to inform you that you have been nominated for the Prestigious Global Civil Society Unsung Heroes <b>&ldquo;Earth Hour Award&rdquo;</b>.</p>
@@ -143,29 +129,29 @@ function nomination_letter_html(array $data): string {
   <p><b>Contribution to Climate Governance and Social Transformation.</b><br>
   By the end of 2030, the One Billion Earth Hours Award will have cultivated a global culture of excellence in community service. <i>&ldquo;We are not just counting hours; we are quantifying the collective will of humanity to save itself. One billion hours is the down payment for recovering our planet and a sustainable future.&rdquo;</i></p>
 
-  <p>This initiative offers a unique opportunity for development partners and stakeholders to invest in a proven, transparent mechanism that empowers the frontline defenders of our environment by measuring, calculating, estimating, or quantifying the carbon footprints and tracking the carbon metrics emitted. If we come together, we will ensure that civil society&rsquo;s contribution to climate action and social development is acknowledged, amplified, and scaled for the benefit of all humanity. <a href='https://www.earthhouraward.org' style='color:#1a56db;'>www.earthhouraward.org</a></p>
+  <p>This initiative offers a unique opportunity for development partners and stakeholders to invest in a proven, transparent mechanism that empowers the frontline defenders of our environment by measuring, calculating, estimating, or quantifying the carbon footprints and tracking the carbon metrics emitted. If we come together, we will ensure that civil society&rsquo;s contribution to climate action and social development is acknowledged, amplified, and scaled for the benefit of all humanity. www.earthhouraward.org</p>
 
   <p>We sincerely congratulate you on your achievements and look forward to honoring you at this event. Additional details will be shared after we receive <b>(Part 2)</b> your acceptance letter.</p>
 
   <!-- Sign-off -->
-  <div class='sign-area'>
-    <p style='margin-bottom:6px;'>Yours sincerely,</p>
-    {$sigImg}
-    <p style='margin-bottom:2px;'><b>Melvine Wajiri</b></p>
-    <p style='margin-bottom:2px;'>The Chair, NGO Coalition for Social Development.</p>
-    <p>GCO, The Earth Hour Award Committee</p>
-    <p style='margin-top:10px;font-style:italic;font-size:9pt;'>&ldquo;One billion hours of action. Ten million leaders. One resilient planet.&rdquo;</p>
+  <div style='margin-top:14px;'>
+    <p style='margin-bottom:8px;'>Yours sincerely,</p>
+    $sigImg
+    <p style='margin-bottom:1px;'><b>Melvine Wajiri</b></p>
+    <p style='margin-bottom:1px;'>The Chair, NGO Coalition for Social Development.</p>
+    <p style='margin-bottom:10px;'>GCO, The Earth Hour Award Committee</p>
+    <p style='font-style:italic;'>&ldquo;One billion hours of action. Ten million leaders. One resilient planet.&rdquo;</p>
   </div>
 
-  <!-- PART 2 -->
+  <!-- ── PART 2 (new page) ──────────────────────────────────── -->
   <div class='part2'>
     <div class='part2-title'>PART 2 &mdash; Liabilities of the Signatory</div>
+
     <div class='decl-title'>Declaration by the signatory.</div>
+    <p>I, <span class='blank'>&nbsp;$fullName&nbsp;</span>&nbsp;&nbsp;NID Card/Passport No: <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+    <p style='margin-bottom:8px;'>Resident at <span class='blank'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;Country <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, at this moment, acknowledge that I have read the following and declared that:</p>
 
-    <p>I, <span class='blank' style='width:180px;'>&nbsp;$fullName&nbsp;</span>, &nbsp;NID Card/Passport No: <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
-    <p>Resident at <span class='blank' style='width:200px;'>&nbsp;</span> &nbsp;Country <span class='blank-sm'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>, at this moment, acknowledge that I have read the following and declared that:</p>
-
-    <ol>
+    <ol style='margin:0 0 10px 0;padding-left:18px;'>
       <li>I am the authorized representative of my organization to receive this Award.</li>
       <li>I will attend in-person for the Award ceremony.</li>
       <li>I am a nominee for the 2026 Earth Hour Award in The Gambia.</li>
@@ -174,8 +160,8 @@ function nomination_letter_html(array $data): string {
       <li>I authorize the organizer and its partners to obtain and disclose any information concerning me, whether academic, professionally, personal or otherwise.</li>
     </ol>
 
-    <div class='decl-title' style='margin-top:12px;'>We are undertaking by the signatory.</div>
-    <ol>
+    <div class='decl-title'>We are undertaking by the signatory.</div>
+    <ol style='margin:0 0 10px 0;padding-left:18px;'>
       <li>About my participation, I undertake not to take any action to incur expenses for the Award.</li>
       <li>I undertake to diligently follow the program set out, abide by the regulations of the host organization, and comply with the terms and conditions detailed in the Selection Guide for the Management of Award Recipients.</li>
       <li>I undertake to submit to the organizer or the certifying organization/agency any requested report/record relating to my community service and other related work on climate change and social development.</li>
@@ -184,45 +170,31 @@ function nomination_letter_html(array $data): string {
       <li>I undertake not to submit any request to Immigration, Refugees, and Citizenship for any purpose other than this Agreement.</li>
     </ol>
 
-    <p style='margin-top:10px;'><b>Default:</b> Any false statement, misconduct, or breach of this Agreement for any reason on my part will constitute default. Failure to meet any of the obligations stated in this Agreement, including the regulations of the host organization and the terms and conditions detailed in the Award Selection Guide for the Management of nominees, will lead to my immediate termination. If so, I will have to return to the organizers all materials, gadgets, symbols, finance paid on my behalf in the context of this Agreement, and the necessary procedures will be instituted without further notice or delay.</p>
+    <p style='margin-bottom:10px;'><b>Default:</b> Any false statement, misconduct, or breach of this Agreement for any reason on my part will constitute default. Failure to meet any of the obligations stated in this Agreement, including the regulations of the host organization and the terms and conditions detailed in the Award Selection Guide for the Management of nominees, will lead to my immediate termination. If so, I will have to return to the organizers all materials, gadgets, symbols, finance paid on my behalf in the context of this Agreement, and the necessary procedures will be instituted without further notice or delay.</p>
 
-    <!-- Three signature blocks side by side -->
-    <table style='width:100%;margin-top:12px;font-size:9pt;border-collapse:collapse;'>
+    <!-- Three signature blocks -->
+    <table style='width:100%;margin-top:16px;font-size:10pt;border-collapse:collapse;'>
       <tr>
-        <td style='width:33%;padding-right:10px;vertical-align:top;'>
-          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
-          <div><b>Signature (Shortlisted Nominee)</b></div>
-          <table style='width:100%;font-size:9pt;'><tr>
-            <td style='white-space:nowrap;padding-right:4px;'>Name: $fullName</td>
-          </tr><tr>
-            <td style='text-align:right;white-space:nowrap;'>Position: 2026 Earth Hour Award Nominee</td>
-          </tr></table>
+        <td style='width:33%;padding-right:12px;vertical-align:top;'>
+          <div class='sign-blank'>&nbsp;</div>
+          <p style='margin-bottom:1px;'><b>Signature (Shortlisted Nominee)</b></p>
+          <p style='margin-bottom:1px;'>Name: $fullName</p>
+          <p>Position: 2026 Earth Hour Award Nominee</p>
         </td>
-        <td style='width:33%;padding:0 5px;vertical-align:top;'>
-          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
-          <div><b>Signature (2026 Award Selection Committee)</b></div>
-          <table style='width:100%;font-size:9pt;'><tr>
-            <td style='white-space:nowrap;'>Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          </tr><tr>
-            <td style='white-space:nowrap;'>Position: Team Lead</td>
-          </tr></table>
+        <td style='width:33%;padding:0 6px;vertical-align:top;'>
+          <div class='sign-blank'>&nbsp;</div>
+          <p style='margin-bottom:1px;'><b>Signature (2026 Award Selection Committee)</b></p>
+          <p style='margin-bottom:1px;'>Name:</p>
+          <p>Position: Team Lead</p>
         </td>
-        <td style='width:34%;padding-left:10px;vertical-align:top;'>
-          <div style='border-bottom:1px solid #333;height:22px;margin-bottom:3px;'>&nbsp;</div>
-          <div><b>Signature (NGO Coalition for Social Development)</b></div>
-          <table style='width:100%;font-size:9pt;'><tr>
-            <td style='white-space:nowrap;'>Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          </tr><tr>
-            <td style='text-align:right;white-space:nowrap;'>Position: The Chair / GCO</td>
-          </tr></table>
+        <td style='width:34%;padding-left:12px;vertical-align:top;'>
+          <div class='sign-blank'>&nbsp;</div>
+          <p style='margin-bottom:1px;'><b>Signature (NGO Coalition for Social Development)</b></p>
+          <p style='margin-bottom:1px;'>Name:</p>
+          <p>Position: The Chair / GCO</p>
         </td>
       </tr>
     </table>
-  </div>
-
-  <div class='footer-bar'>
-    NGO Coalition for Social Development (NGOCSOCD) &bull; 211 E 43rd Street, 7th Floor, New York, NY 10017, USA<br>
-    <a href='mailto:info@ngocsocd.org' style='color:#1a56db;'>info@ngocsocd.org</a> &bull; <a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a> &bull; +1 212-537-9303 &bull; IRS 501(C)3 Exempt &bull; EIN 99-447-799
   </div>
 
 </div>
