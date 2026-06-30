@@ -1,4 +1,4 @@
-name: Deploy to one.com
+name: Deploy to all servers
 
 on:
   push:
@@ -18,7 +18,11 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
-      - name: Deploy via SFTP
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      # ── Server 1: gambia2026.earthhouraward.org (one.com) ──────────────
+      - name: Deploy → gambia2026.earthhouraward.org
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
@@ -26,11 +30,32 @@ jobs:
           SFTP_PASS: ${{ secrets.SFTP_PASS }}
           SFTP_PATH: ${{ secrets.SFTP_PATH }}
         run: |
-          # Install lftp (available on all GitHub-hosted Ubuntu runners)
-          sudo apt-get install -y lftp
+          lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php . ${SFTP_PATH};
+            quit
+          "
 
-          # Mirror local files → remote. By default lftp does NOT delete remote
-          # files, so uploads/, db.php, and mail_config.php on the server are safe.
+      # ── Server 2: gambia2026.ngocsocd.org (cPanel) ─────────────────────
+      # Add these secrets in GitHub → Settings → Secrets → Actions:
+      #   SFTP_HOST_2   — cPanel hostname or IP (e.g. server123.hostprovider.com)
+      #   SFTP_PORT_2   — usually 22
+      #   SFTP_USER_2   — cPanel FTP/SFTP username
+      #   SFTP_PASS_2   — cPanel FTP/SFTP password
+      #   SFTP_PATH_2   — document root path (e.g. /home/username/public_html)
+      - name: Deploy → gambia2026.ngocsocd.org
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST_2 }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT_2 }}
+          SFTP_USER: ${{ secrets.SFTP_USER_2 }}
+          SFTP_PASS: ${{ secrets.SFTP_PASS_2 }}
+          SFTP_PATH: ${{ secrets.SFTP_PATH_2 }}
+        run: |
+          if [ -z "${SFTP_HOST}" ]; then
+            echo "SFTP_HOST_2 not configured — skipping deploy to gambia2026.ngocsocd.org"
+            exit 0
+          fi
           lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
             set sftp:auto-confirm yes;
             set net:max-retries 3;
