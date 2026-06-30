@@ -61,11 +61,12 @@ function invitation_letter_html(array $data): string {
 <style>
   body    { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #1a1a1a; margin: 0; padding: 0; line-height: 1.4; }
   table   { border-collapse: collapse; }
-  .page   { padding: 5mm 15mm 4mm 15mm; }
+  .page   { padding: 5mm 15mm 22mm 15mm; }
   hr.div  { border: none; border-top: 1.5px solid #0a2540; margin: 5px 0 8px 0; }
   .subj   { text-align: center; font-weight: bold; font-size: 10pt; text-decoration: underline; margin: 8px 0 7px 0; }
   p       { margin: 0 0 5px 0; text-align: justify; font-size: 9pt; }
   a       { color: #1a56db; text-decoration: underline; }
+  .footer { position: fixed; bottom: 4mm; left: 15mm; right: 15mm; }
 </style>
 </head>
 <body>
@@ -110,7 +111,7 @@ function invitation_letter_html(array $data): string {
   <p>We look forward to welcoming you to The Gambia this October as we collaborate to advance real-world solutions for global social development.</p>
 
   <!-- Signatures -->
-  <table width='100%' style='margin-top:10px;'>
+  <table width='100%' style='margin-top:20px;'>
     <tr>
       <td style='width:50%; vertical-align:top; padding-right:12px;'>
         <div style='font-size:9pt; margin-bottom:2px;'>Sign:</div>
@@ -133,11 +134,11 @@ function invitation_letter_html(array $data): string {
     </tr>
   </table>
 
-  <!-- Footer -->
-  <table width='100%' style='margin-top:10px; border-top:1px solid #cccccc;'>
+  <!-- Footer — pinned to page bottom -->
+  <table width='100%' class='footer'>
     <tr>
-      <td style='padding-top:6px; vertical-align:middle; width:28%;'>$b3Img</td>
-      <td style='padding-top:6px; vertical-align:middle; text-align:right;'>
+      <td style='vertical-align:middle; width:28%;'>$b3Img</td>
+      <td style='vertical-align:middle; text-align:right;'>
         <span style='font-size:8.5pt; font-weight:bold; color:#c0392b; letter-spacing:0.03em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
       </td>
     </tr>
