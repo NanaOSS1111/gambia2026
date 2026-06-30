@@ -28,6 +28,13 @@
     Require all denied
 </FilesMatch>
 
+# ── Restrict deploy webhook to POST only ──────────────────────
+<Files "_deploy.php">
+    <LimitExcept POST>
+        Require all denied
+    </LimitExcept>
+</Files>
+
 # ── Deny access to dot-files and env ──────────────────────────
 <FilesMatch "^(\.|\.(env|git|htpasswd))">
     Require all denied

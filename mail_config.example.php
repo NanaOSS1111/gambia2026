@@ -23,3 +23,8 @@ define('BADGE_SECRET', 'replace-with-a-long-random-secret');
 // Get keys at: https://www.google.com/recaptcha/admin/create
 define('RECAPTCHA_SITE_KEY',   '');
 define('RECAPTCHA_SECRET_KEY', '');
+
+// ── GitHub webhook auto-deploy secret ────────────────────────────────────────
+// Must match the "Secret" you enter when creating the GitHub webhook.
+// Generate with: openssl rand -hex 32
+define('DEPLOY_WEBHOOK_SECRET', '');

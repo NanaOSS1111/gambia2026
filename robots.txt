@@ -10,3 +10,4 @@ Disallow: /process.php
 Disallow: /csrf-token.php
 Disallow: /uploads/
 Disallow: /vendor/
+Disallow: /_deploy.php
