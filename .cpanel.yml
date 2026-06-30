@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/zvtadugw/gambia2026.ngocsocd.org/
+    - /bin/cp -R . $DEPLOYPATH
+    - cd $DEPLOYPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || true
