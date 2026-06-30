@@ -63,6 +63,7 @@ if (!isset($_SESSION['admin'])): ?>
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 <div class="card">
   <div class="logo"><img src="asset/organizationLOGO.png" alt="GAMBIA 2026"></div>
   <h2>Admin Access</h2>
@@ -959,6 +960,8 @@ function confirmLogout() {
     confirmButtonColor: '#0a2540',
     cancelButtonColor: '#6b7280',
     reverseButtons: true,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
   }).then(function(r) {
     if (r.isConfirmed) doLogout();
   });

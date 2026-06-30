@@ -250,6 +250,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 
 <!-- Processing overlay -->
 <div id="proc-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,.72);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
@@ -574,8 +575,15 @@ function confirmLogout() {
     confirmButtonColor: '#0a2540',
     cancelButtonColor: '#6b7280',
     reverseButtons: true,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
   }).then(function(r) {
-    if (r.isConfirmed) window.location.href = 'admin.php?logout=1';
+    if (!r.isConfirmed) return;
+    var f = document.createElement('form');
+    f.method = 'POST'; f.action = 'admin.php';
+    var i = document.createElement('input');
+    i.type = 'hidden'; i.name = 'do_logout'; i.value = '1';
+    f.appendChild(i); document.body.appendChild(f); f.submit();
   });
 }
 

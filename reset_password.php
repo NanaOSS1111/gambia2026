@@ -119,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 'reset') {
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 <div class="card">
   <div class="logo"><img src="asset/organizationLOGO.png" alt="Logo"></div>
 

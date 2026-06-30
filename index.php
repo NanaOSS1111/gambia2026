@@ -803,6 +803,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 
 <div id="submit-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,.78);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
   <div style="width:52px;height:52px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:reg-spin .8s linear infinite;"></div>

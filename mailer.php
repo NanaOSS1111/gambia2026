@@ -20,21 +20,9 @@ function attach_email_logos(PHPMailer $mail): void {
 function email_header_html(): string {
     return "
   <tr>
-    <td style='background:#f4f7fb;padding:18px 24px;border-bottom:3px solid #0a2540;'>
-      <table width='100%' cellpadding='0' cellspacing='0'>
-        <tr>
-          <td width='110' style='vertical-align:middle;'>
-            <img src='cid:org_logo' alt='Organization' width='110' height='31' style='width:110px;height:31px;display:block;'>
-          </td>
-          <td style='text-align:center;vertical-align:middle;padding:0 10px;'>
-              <div style='font-size:15px;font-weight:700;color:#0a2540;letter-spacing:.04em;line-height:1.2;'>GAMBIA</div>
-              <div style='font-size:15px;font-weight:700;color:#e0603a;letter-spacing:.04em;'>2026</div>
-            </td>
-          <td width='64' style='vertical-align:middle;text-align:right;'>
-            <img src='cid:nat_seal' alt='National Seal' width='52' height='52' style='width:52px;height:52px;display:block;margin-left:auto;'>
-          </td>
-        </tr>
-      </table>
+    <td style='background:#f4f7fb;padding:18px 24px;border-bottom:3px solid #0a2540;text-align:center;'>
+      <img src='cid:nat_seal' alt='National Seal' width='52' height='52' style='width:52px;height:52px;display:inline-block;vertical-align:middle;margin-right:20px;'>
+      <img src='cid:org_logo' alt='Organization' width='110' height='31' style='width:110px;height:31px;display:inline-block;vertical-align:middle;'>
     </td>
   </tr>";
 }

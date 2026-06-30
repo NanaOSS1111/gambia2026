@@ -163,6 +163,7 @@ if (!empty($_SESSION['flash'])) { $flash = $_SESSION['flash']; unset($_SESSION['
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 
 <!-- Nav -->
 <nav class="nav">

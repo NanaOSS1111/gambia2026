@@ -183,6 +183,7 @@ $badgeCfg = [
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 
 <nav class="nav">
   <a class="nav-brand" href="admin.php">

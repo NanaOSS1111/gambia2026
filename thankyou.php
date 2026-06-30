@@ -232,6 +232,7 @@
 </style>
 </head>
 <body>
+<?php include __DIR__ . '/_spinner.php'; ?>
 
 <!-- ── Hero banner ───────────────────────────────────────── -->
 <div class="reg-hero">
