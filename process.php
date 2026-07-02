@@ -58,7 +58,6 @@ foreach ($required as $f) {
 }
 
 // ── Checkboxes & radio ────────────────────────────────────
-if (empty($_POST['is_18_or_older']))     err('Please confirm you are 18 or older.');
 if (empty($_POST['code_of_conduct']))    err('You must confirm the Framework Document endorsement.');
 if (empty($_POST['data_privacy']))       err('You must agree to the Data Privacy Notice.');
 if (empty($_POST['terms_conditions']))   err('You must complete the Declaration (Section A).');

@@ -1153,14 +1153,6 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
             </div>
           </div>
 
-          <div class="field">
-            <label>Are you at least 18 years old at the time of your participation? <span class="req">*</span></label>
-            <div class="radio-group">
-              <label><input type="radio" name="is_18_or_older" value="1" required> Yes</label>
-              <label><input type="radio" name="is_18_or_older" value="0"> No</label>
-            </div>
-            <span class="field-hint">Participants under 18 must submit the Minor Participation Waiver Form.</span>
-          </div>
 
         </div>
       </div>
@@ -1498,7 +1490,6 @@ var fieldLabels = {
   picture:              'Profile Picture',
   passport_file:        'Passport Scan',
   nomination_letter:    'Nomination Letter',
-  is_18_or_older:       'Age Confirmation (18 or older)',
   code_of_conduct:      'Framework Document Endorsement',
   data_privacy:         'Data Privacy Agreement',
   terms_conditions:     'Declaration – Section A',
@@ -1524,9 +1515,6 @@ function validateForm(form) {
     var el = form.querySelector('[name="' + n + '"]');
     if (el && !el.files.length) errors.push(n);
   });
-
-  // Radio
-  if (!form.querySelector('[name="is_18_or_older"]:checked')) errors.push('is_18_or_older');
 
   // Checkboxes
   ['code_of_conduct','data_privacy','terms_conditions','undertakings','final_confirmation'].forEach(function (n) {
