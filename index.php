@@ -1142,7 +1142,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         <div class="reg-section-body">
 
           <div class="field">
-            <label>Official letter of nomination from your organization <span class="req">*</span></label>
+            <label>Official letter from your organization nominating you as a delegate to the Gambia-2026 summit <span class="req">*</span></label>
             <div class="file-drop">
               <input type="file" name="nomination_letter" id="nominationInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
               <div class="file-drop-icon">📋</div>
