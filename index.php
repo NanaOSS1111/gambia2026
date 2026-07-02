@@ -1142,7 +1142,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
         <div class="reg-section-body">
 
           <div class="field">
-            <label>Official Nomination Letter from an accredited Observer Organization <span class="req">*</span></label>
+            <label>Official letter of nomination from your organization <span class="req">*</span></label>
             <div class="file-drop">
               <input type="file" name="nomination_letter" id="nominationInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
               <div class="file-drop-icon">📋</div>
