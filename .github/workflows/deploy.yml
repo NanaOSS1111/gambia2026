@@ -49,7 +49,9 @@ jobs:
           lftp -u "${FTP_USER},${FTP_PASS}" "ftp://${FTP_HOST}:${FTP_PORT}" -e "
             set ftp:ssl-allow yes;
             set ssl:verify-certificate no;
+            set ftp:passive-mode yes;
             set net:max-retries 3;
+            set net:timeout 30;
             mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php --exclude db.php --exclude mail_config.php . ${FTP_PATH};
             quit
           "
