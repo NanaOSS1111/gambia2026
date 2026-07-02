@@ -37,21 +37,19 @@ jobs:
             quit
           "
 
-      # ── Server 2: gambia2026.ngocsocd.org (Truehost cPanel) ──────────────
+      # ── Server 2: gambia2026.ngocsocd.org (Truehost cPanel UAPI) ────────
       - name: Deploy → gambia2026.ngocsocd.org
         env:
-          FTP_HOST: ${{ secrets.SFTP_HOST_2 }}
-          FTP_PORT: ${{ secrets.SFTP_PORT_2 }}
-          FTP_USER: ${{ secrets.SFTP_USER_2 }}
-          FTP_PASS: ${{ secrets.SFTP_PASS_2 }}
-          FTP_PATH: ${{ secrets.SFTP_PATH_2 }}
+          CPANEL_HOST: ${{ secrets.SFTP_HOST_2 }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER_2 }}
+          CPANEL_PASS: ${{ secrets.CPANEL_PASS_2 }}
         run: |
-          lftp -u "${FTP_USER},${FTP_PASS}" "ftp://${FTP_HOST}:${FTP_PORT}" -e "
-            set ftp:ssl-allow yes;
-            set ssl:verify-certificate no;
-            set ftp:passive-mode yes;
-            set net:max-retries 3;
-            set net:timeout 30;
-            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php --exclude db.php --exclude mail_config.php . ${FTP_PATH};
-            quit
-          "
+          echo "Triggering cPanel git pull..."
+          curl -sk -u "${CPANEL_USER}:${CPANEL_PASS}" \
+            "https://${CPANEL_HOST}:2083/execute/VersionControl/update" \
+            --data "repository_root=/home/zvtadugw/gambia2026_repo" | python3 -m json.tool || true
+
+          echo "Triggering cPanel deployment (rsync)..."
+          curl -sk -u "${CPANEL_USER}:${CPANEL_PASS}" \
+            "https://${CPANEL_HOST}:2083/execute/VersionControl/create_deployment" \
+            --data "repository_root=/home/zvtadugw/gambia2026_repo" | python3 -m json.tool || true
