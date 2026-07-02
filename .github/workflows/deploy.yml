@@ -40,15 +40,16 @@ jobs:
       # ── Server 2: gambia2026.ngocsocd.org (Truehost cPanel) ──────────────
       - name: Deploy → gambia2026.ngocsocd.org
         env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST_2 }}
-          SFTP_PORT: ${{ secrets.SFTP_PORT_2 }}
-          SFTP_USER: ${{ secrets.SFTP_USER_2 }}
-          SFTP_PASS: ${{ secrets.SFTP_PASS_2 }}
-          SFTP_PATH: ${{ secrets.SFTP_PATH_2 }}
+          FTP_HOST: ${{ secrets.SFTP_HOST_2 }}
+          FTP_PORT: ${{ secrets.SFTP_PORT_2 }}
+          FTP_USER: ${{ secrets.SFTP_USER_2 }}
+          FTP_PASS: ${{ secrets.SFTP_PASS_2 }}
+          FTP_PATH: ${{ secrets.SFTP_PATH_2 }}
         run: |
-          lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
-            set sftp:auto-confirm yes;
+          lftp -u "${FTP_USER},${FTP_PASS}" "ftp://${FTP_HOST}:${FTP_PORT}" -e "
+            set ftp:ssl-allow yes;
+            set ssl:verify-certificate no;
             set net:max-retries 3;
-            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php --exclude db.php --exclude mail_config.php . ${SFTP_PATH};
+            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php --exclude db.php --exclude mail_config.php . ${FTP_PATH};
             quit
           "
