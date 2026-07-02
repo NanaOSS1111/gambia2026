@@ -37,11 +37,18 @@ jobs:
             quit
           "
 
-      # ── Server 2: gambia2026.ngocsocd.org ─────────────────────────────────
-      # Deployed via cPanel Git Version Control (pull-based).
-      # After pushing to main, go to:
-      #   cPanel → Git Version Control → gambia2026 → Manage → Pull or Deploy → Deploy HEAD Commit
-      - name: Remind → deploy gambia2026.ngocsocd.org via cPanel
+      # ── Server 2: gambia2026.ngocsocd.org (Truehost cPanel) ──────────────
+      - name: Deploy → gambia2026.ngocsocd.org
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST_2 }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT_2 }}
+          SFTP_USER: ${{ secrets.SFTP_USER_2 }}
+          SFTP_PASS: ${{ secrets.SFTP_PASS_2 }}
+          SFTP_PATH: ${{ secrets.SFTP_PATH_2 }}
         run: |
-          echo "gambia2026.ngocsocd.org uses cPanel Git Version Control."
-          echo "To deploy: cPanel → Git Version Control → Manage → Pull or Deploy → Deploy HEAD Commit"
+          lftp -u "${SFTP_USER},${SFTP_PASS}" "sftp://${SFTP_HOST}:${SFTP_PORT}" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mirror --reverse --verbose --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitignore --exclude-glob *.example.php --exclude db.php --exclude mail_config.php . ${SFTP_PATH};
+            quit
+          "
