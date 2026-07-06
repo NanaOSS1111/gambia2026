@@ -200,6 +200,15 @@ $picture           = handleUpload('picture',          true);
 $passport_file     = handleUpload('passport_file',    true);
 $nomination_letter = handleUpload('nomination_letter', true);
 
+// Profile picture must be a real-sized photo (not a tiny icon or placeholder)
+if ($picture) {
+    $dims = @getimagesize(UPLOAD_DIR . $picture);
+    if (!$dims || $dims[0] < 100 || $dims[1] < 100) {
+        @unlink(UPLOAD_DIR . $picture);
+        err('Your profile picture must be at least 100×100 pixels. Please upload a clear, passport-style photo.');
+    }
+}
+
 // ── Sanitise ──────────────────────────────────────────────
 $s = fn($v) => htmlspecialchars(trim($v ?? ''), ENT_QUOTES, 'UTF-8');
 

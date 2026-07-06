@@ -1020,10 +1020,10 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
               </div>
               <div>
                 <div class="file-drop" id="pictureDrop">
-                  <input type="file" name="picture" id="pictureInput" accept="image/*" required>
+                  <input type="file" name="picture" id="pictureInput" accept=".jpg,.jpeg,.png" required>
                   <div class="file-drop-icon">📷</div>
-                  <div class="file-drop-text">Drag a picture here</div>
-                  <div class="file-drop-sub">or click to choose from your computer</div>
+                  <div class="file-drop-text">Drag a passport-style photo here</div>
+                  <div class="file-drop-sub">JPG or PNG &mdash; at least 100&times;100 px &mdash; max 2 MB</div>
                   <div class="file-drop-name" id="pictureFileName"></div>
                 </div>
                 <div class="picture-reqs">
@@ -1775,21 +1775,38 @@ function setupFileDrop(inputId, nameId, previewId) {
 setupFileDrop('passportInput',   'passportFileName',   'passportPreview');
 setupFileDrop('nominationInput', 'nominationFileName', 'nominationPreview');
 
-// Picture preview
+// Picture preview + client-side dimension check
 document.getElementById('pictureInput').addEventListener('change', function () {
-  if (this.files[0]) {
-    var reader = new FileReader();
-    reader.onload = function (e) {
+  var input = this;
+  var file  = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    var tempImg = new Image();
+    tempImg.onload = function () {
+      if (tempImg.width < 100 || tempImg.height < 100) {
+        showToast('Photo too small',
+          'Your picture is only ' + tempImg.width + '×' + tempImg.height +
+          ' px. Please upload a clear photo of at least 100×100 pixels.', true);
+        input.value = '';
+        var img = document.getElementById('pictureImg');
+        var ph  = document.querySelector('.picture-preview .ph');
+        img.src = ''; img.style.display = 'none';
+        if (ph) ph.style.display = '';
+        document.getElementById('pictureFileName').style.display = 'none';
+        return;
+      }
       var img = document.getElementById('pictureImg');
       var ph  = document.querySelector('.picture-preview .ph');
       img.src = e.target.result;
       img.style.display = 'block';
       if (ph) ph.style.display = 'none';
+      document.getElementById('pictureFileName').textContent = '✓ ' + file.name;
+      document.getElementById('pictureFileName').style.display = 'block';
     };
-    reader.readAsDataURL(this.files[0]);
-    document.getElementById('pictureFileName').textContent = '✓ ' + this.files[0].name;
-    document.getElementById('pictureFileName').style.display = 'block';
-  }
+    tempImg.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 
 // ── Toast ──────────────────────────────────────────────────
