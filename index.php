@@ -1536,7 +1536,7 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
               </select>
               <input type="tel" name="contact_number_number" id="contact_number_number" class="phone-number-input" placeholder="e.g. 000 000 0000" required>
             </div>
-            <span class="field-hint">A number we can reach you at in The Gambia in case of emergency.</span>
+            <span class="field-hint">A number we can use to reach your hotel, accommodation, hostel, guest house or any place you will be staying.</span>
             <p class="date-range-warn" id="contact-phone-warn">&#9888; Phone number must be at least 10 digits (including country code).</p>
           </div>
 
