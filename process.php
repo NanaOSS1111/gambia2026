@@ -23,7 +23,6 @@ if (!$regStatus['open']) err('Registration is currently closed. Please check bac
 
 // Rate limit identifiers — recorded only after a successful insert below
 $rl_email = strtolower(trim($_POST['email'] ?? ''));
-$rl_phone = trim($_POST['contact_number'] ?? '');
 
 // ── CSRF ──────────────────────────────────────────────────
 if (
@@ -51,7 +50,9 @@ $required = [
     'representation_type', 'organisation_name', 'gender',
     'first_name', 'last_name', 'email', 'birth_date', 'home_address',
     'passport_nationality', 'passport_number', 'passport_expiration',
-    'arrival_date', 'departure_date', 'address_in_country', 'contact_number',
+    'arrival_date', 'departure_date', 'address_in_country',
+    'personal_phone_code', 'personal_phone_number',
+    'contact_number_code', 'contact_number_number',
 ];
 foreach ($required as $f) {
     if (empty(trim($_POST[$f] ?? ''))) err("Field '$f' is required.");
@@ -68,6 +69,15 @@ if (empty($_POST['final_confirmation'])) err('You must provide your final confir
 if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
     err('Please enter a valid email address.');
 }
+
+// ── Phone assembly & digit validation ────────────────────
+$personal_phone = trim($_POST['personal_phone_code']) . ' ' . trim($_POST['personal_phone_number']);
+$contact_number = trim($_POST['contact_number_code']) . ' ' . trim($_POST['contact_number_number']);
+
+if (strlen(preg_replace('/\D/', '', $personal_phone)) < 10)
+    err('Personal Phone Number must be at least 10 digits (including country code).');
+if (strlen(preg_replace('/\D/', '', $contact_number)) < 10)
+    err('Contact Number in The Gambia must be at least 10 digits (including country code).');
 
 // ── Date validations ──────────────────────────────────────
 $today      = new DateTimeImmutable('today');
@@ -120,20 +130,13 @@ if ($departure > $maxDeparture) {
     err('Departure Date must be 22 October 2026 or earlier.');
 }
 
-// ── Duplicate check — email, phone, name+company, passport ──
-$email   = strtolower(trim($_POST['email']));
-$phone   = trim($_POST['contact_number']);
+// ── Duplicate check — email, name+company, passport ──────
+$email = strtolower(trim($_POST['email']));
 
 $dupEmail = $pdo->prepare("SELECT id FROM registrations WHERE LOWER(email) = ?");
 $dupEmail->execute([$email]);
 if ($dupEmail->fetch()) {
     err('This email address is already registered. Each delegate may only register once.');
-}
-
-$dupPhone = $pdo->prepare("SELECT id FROM registrations WHERE contact_number = ?");
-$dupPhone->execute([$phone]);
-if ($dupPhone->fetch()) {
-    err('This phone number is already registered. Each delegate may only register once.');
 }
 
 // Same full name + same organisation = same person re-registering
@@ -206,7 +209,7 @@ try {
         INSERT INTO registrations
           (representation_type, organisation_name, picture, title, gender,
            first_name, last_name, position, institution, email, birth_date,
-           home_address, passport_nationality, passport_number, passport_expiration,
+           home_address, personal_phone, passport_nationality, passport_number, passport_expiration,
            passport_file, nomination_letter, is_18_or_older,
            arrival_date, departure_date, address_in_country, contact_number,
            scholarship,
@@ -215,7 +218,7 @@ try {
         VALUES
           (:representation_type, :organisation_name, :picture, :title, :gender,
            :first_name, :last_name, :position, :institution, :email, :birth_date,
-           :home_address, :passport_nationality, :passport_number, :passport_expiration,
+           :home_address, :personal_phone, :passport_nationality, :passport_number, :passport_expiration,
            :passport_file, :nomination_letter, :is_18_or_older,
            :arrival_date, :departure_date, :address_in_country, :contact_number,
            :scholarship,
@@ -235,6 +238,7 @@ try {
         ':email'                => strtolower(trim($_POST['email'])),
         ':birth_date'           => $birthRaw,
         ':home_address'         => $s($_POST['home_address']),
+        ':personal_phone'       => $personal_phone,
         ':passport_nationality' => $s($_POST['passport_nationality']),
         ':passport_number'      => $s($_POST['passport_number']),
         ':passport_expiration'  => $passExpRaw,
@@ -244,13 +248,17 @@ try {
         ':arrival_date'         => $arrivalRaw,
         ':departure_date'       => $departureRaw,
         ':address_in_country'   => $s($_POST['address_in_country']),
-        ':contact_number'       => $phone,
+        ':contact_number'       => $contact_number,
         ':scholarship'          => in_array($_POST['scholarship'] ?? '', ['Accommodation', 'Airfare']) ? $_POST['scholarship'] : null,
         ':ip_address'           => $_SERVER['REMOTE_ADDR'] ?? '',
     ]);
 
     $newId    = (int)$pdo->lastInsertId();
-    $emailData = array_merge($_POST, ['id' => $newId]);
+    $emailData = array_merge($_POST, [
+        'id'             => $newId,
+        'personal_phone' => $personal_phone,
+        'contact_number' => $contact_number,
+    ]);
 
     // Send JSON response to browser first, then send email in background
     ob_clean();

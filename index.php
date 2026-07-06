@@ -359,6 +359,40 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
   }
   textarea { resize: vertical; min-height: 90px; }
 
+  /* PHONE INPUT */
+  .phone-input-wrap {
+    display: flex;
+    border: 1.5px solid #d1dce8;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .phone-input-wrap:focus-within { border-color: #0d6e8c; box-shadow: 0 0 0 3px rgba(13,110,140,.1); }
+  .phone-input-wrap:has(.f-err)  { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.1); }
+  .phone-code-select {
+    border: none !important;
+    border-right: 1.5px solid #d1dce8 !important;
+    border-radius: 0 !important;
+    background-color: #f4f7fb;
+    background-position: right 10px center;
+    padding-right: 30px;
+    min-width: 110px;
+    max-width: 145px;
+    box-shadow: none !important;
+    font-size: 13px;
+  }
+  .phone-number-input {
+    border: none !important;
+    border-radius: 0 !important;
+    flex: 1;
+    min-width: 0;
+    box-shadow: none !important;
+  }
+  .phone-input-wrap .phone-code-select:focus,
+  .phone-input-wrap .phone-number-input:focus { border-color: transparent !important; box-shadow: none !important; }
+  .phone-number-input.f-err { background: #fff5f5 !important; }
+
   /* FILE UPLOAD */
   .file-drop {
     border: 2px dashed #b8cfe0;
@@ -1076,6 +1110,165 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
             <textarea name="home_address" id="home_address" placeholder="e.g. P.O. Box 1234, City, Country" required></textarea>
           </div>
 
+          <div class="field">
+            <label for="personal_phone_number">Personal Phone Number <span class="req">*</span></label>
+            <div class="phone-input-wrap">
+              <select name="personal_phone_code" id="personal_phone_code" class="phone-code-select">
+                <optgroup label="Africa">
+                  <option value="+220">+220 Gambia</option>
+                  <option value="+233">+233 Ghana</option>
+                  <option value="+234">+234 Nigeria</option>
+                  <option value="+221">+221 Senegal</option>
+                  <option value="+232">+232 Sierra Leone</option>
+                  <option value="+231">+231 Liberia</option>
+                  <option value="+224">+224 Guinea</option>
+                  <option value="+245">+245 Guinea-Bissau</option>
+                  <option value="+223">+223 Mali</option>
+                  <option value="+226">+226 Burkina Faso</option>
+                  <option value="+225">+225 Côte d'Ivoire</option>
+                  <option value="+228">+228 Togo</option>
+                  <option value="+229">+229 Benin</option>
+                  <option value="+227">+227 Niger</option>
+                  <option value="+237">+237 Cameroon</option>
+                  <option value="+236">+236 C. African Rep.</option>
+                  <option value="+235">+235 Chad</option>
+                  <option value="+241">+241 Gabon</option>
+                  <option value="+240">+240 Equatorial Guinea</option>
+                  <option value="+242">+242 Congo (Rep.)</option>
+                  <option value="+243">+243 DR Congo</option>
+                  <option value="+244">+244 Angola</option>
+                  <option value="+267">+267 Botswana</option>
+                  <option value="+268">+268 Eswatini</option>
+                  <option value="+266">+266 Lesotho</option>
+                  <option value="+27">+27 South Africa</option>
+                  <option value="+263">+263 Zimbabwe</option>
+                  <option value="+260">+260 Zambia</option>
+                  <option value="+265">+265 Malawi</option>
+                  <option value="+258">+258 Mozambique</option>
+                  <option value="+255">+255 Tanzania</option>
+                  <option value="+254">+254 Kenya</option>
+                  <option value="+256">+256 Uganda</option>
+                  <option value="+250">+250 Rwanda</option>
+                  <option value="+257">+257 Burundi</option>
+                  <option value="+251">+251 Ethiopia</option>
+                  <option value="+252">+252 Somalia</option>
+                  <option value="+253">+253 Djibouti</option>
+                  <option value="+291">+291 Eritrea</option>
+                  <option value="+249">+249 Sudan</option>
+                  <option value="+211">+211 South Sudan</option>
+                  <option value="+20">+20 Egypt</option>
+                  <option value="+218">+218 Libya</option>
+                  <option value="+216">+216 Tunisia</option>
+                  <option value="+213">+213 Algeria</option>
+                  <option value="+212">+212 Morocco</option>
+                  <option value="+222">+222 Mauritania</option>
+                  <option value="+238">+238 Cape Verde</option>
+                  <option value="+239">+239 São Tomé &amp; Príncipe</option>
+                  <option value="+230">+230 Mauritius</option>
+                  <option value="+269">+269 Comoros</option>
+                  <option value="+248">+248 Seychelles</option>
+                  <option value="+261">+261 Madagascar</option>
+                </optgroup>
+                <optgroup label="Europe">
+                  <option value="+44">+44 United Kingdom</option>
+                  <option value="+33">+33 France</option>
+                  <option value="+49">+49 Germany</option>
+                  <option value="+31">+31 Netherlands</option>
+                  <option value="+32">+32 Belgium</option>
+                  <option value="+34">+34 Spain</option>
+                  <option value="+351">+351 Portugal</option>
+                  <option value="+39">+39 Italy</option>
+                  <option value="+41">+41 Switzerland</option>
+                  <option value="+43">+43 Austria</option>
+                  <option value="+46">+46 Sweden</option>
+                  <option value="+47">+47 Norway</option>
+                  <option value="+45">+45 Denmark</option>
+                  <option value="+358">+358 Finland</option>
+                  <option value="+353">+353 Ireland</option>
+                  <option value="+48">+48 Poland</option>
+                  <option value="+420">+420 Czech Republic</option>
+                  <option value="+36">+36 Hungary</option>
+                  <option value="+40">+40 Romania</option>
+                  <option value="+359">+359 Bulgaria</option>
+                  <option value="+30">+30 Greece</option>
+                  <option value="+7">+7 Russia</option>
+                  <option value="+380">+380 Ukraine</option>
+                  <option value="+370">+370 Lithuania</option>
+                  <option value="+371">+371 Latvia</option>
+                  <option value="+372">+372 Estonia</option>
+                </optgroup>
+                <optgroup label="Americas">
+                  <option value="+1">+1 USA / Canada</option>
+                  <option value="+52">+52 Mexico</option>
+                  <option value="+55">+55 Brazil</option>
+                  <option value="+54">+54 Argentina</option>
+                  <option value="+56">+56 Chile</option>
+                  <option value="+57">+57 Colombia</option>
+                  <option value="+58">+58 Venezuela</option>
+                  <option value="+51">+51 Peru</option>
+                  <option value="+593">+593 Ecuador</option>
+                  <option value="+591">+591 Bolivia</option>
+                  <option value="+595">+595 Paraguay</option>
+                  <option value="+598">+598 Uruguay</option>
+                  <option value="+53">+53 Cuba</option>
+                  <option value="+1-809">+1 Dominican Republic</option>
+                  <option value="+1-876">+1 Jamaica</option>
+                  <option value="+1-868">+1 Trinidad &amp; Tobago</option>
+                  <option value="+502">+502 Guatemala</option>
+                  <option value="+504">+504 Honduras</option>
+                  <option value="+503">+503 El Salvador</option>
+                  <option value="+505">+505 Nicaragua</option>
+                  <option value="+506">+506 Costa Rica</option>
+                  <option value="+507">+507 Panama</option>
+                </optgroup>
+                <optgroup label="Asia">
+                  <option value="+91">+91 India</option>
+                  <option value="+92">+92 Pakistan</option>
+                  <option value="+880">+880 Bangladesh</option>
+                  <option value="+94">+94 Sri Lanka</option>
+                  <option value="+977">+977 Nepal</option>
+                  <option value="+86">+86 China</option>
+                  <option value="+81">+81 Japan</option>
+                  <option value="+82">+82 South Korea</option>
+                  <option value="+852">+852 Hong Kong</option>
+                  <option value="+886">+886 Taiwan</option>
+                  <option value="+65">+65 Singapore</option>
+                  <option value="+60">+60 Malaysia</option>
+                  <option value="+62">+62 Indonesia</option>
+                  <option value="+63">+63 Philippines</option>
+                  <option value="+66">+66 Thailand</option>
+                  <option value="+84">+84 Vietnam</option>
+                  <option value="+855">+855 Cambodia</option>
+                  <option value="+856">+856 Laos</option>
+                  <option value="+95">+95 Myanmar</option>
+                  <option value="+93">+93 Afghanistan</option>
+                  <option value="+98">+98 Iran</option>
+                  <option value="+964">+964 Iraq</option>
+                  <option value="+963">+963 Syria</option>
+                  <option value="+962">+962 Jordan</option>
+                  <option value="+961">+961 Lebanon</option>
+                  <option value="+972">+972 Israel / Palestine</option>
+                  <option value="+966">+966 Saudi Arabia</option>
+                  <option value="+971">+971 UAE</option>
+                  <option value="+974">+974 Qatar</option>
+                  <option value="+965">+965 Kuwait</option>
+                  <option value="+973">+973 Bahrain</option>
+                  <option value="+968">+968 Oman</option>
+                  <option value="+967">+967 Yemen</option>
+                  <option value="+90">+90 Turkey</option>
+                </optgroup>
+                <optgroup label="Oceania">
+                  <option value="+61">+61 Australia</option>
+                  <option value="+64">+64 New Zealand</option>
+                  <option value="+679">+679 Fiji</option>
+                  <option value="+675">+675 Papua New Guinea</option>
+                </optgroup>
+              </select>
+              <input type="tel" name="personal_phone_number" id="personal_phone_number" class="phone-number-input" placeholder="e.g. 000 000 0000" required>
+            </div>
+            <p class="date-range-warn" id="personal-phone-warn">&#9888; Phone number must be at least 10 digits (including country code).</p>
+          </div>
+
         </div>
       </div>
 
@@ -1188,9 +1381,163 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           </div>
 
           <div class="field">
-            <label for="contact_number">Contact Number in The Gambia <span class="req">*</span></label>
-            <input type="tel" name="contact_number" id="contact_number" placeholder="e.g. +220 000 0000" required>
-            <span class="field-hint">A number we can reach you at in case of emergency.</span>
+            <label for="contact_number_number">Contact Number in The Gambia <span class="req">*</span></label>
+            <div class="phone-input-wrap">
+              <select name="contact_number_code" id="contact_number_code" class="phone-code-select">
+                <optgroup label="Africa">
+                  <option value="+220">+220 Gambia</option>
+                  <option value="+233">+233 Ghana</option>
+                  <option value="+234">+234 Nigeria</option>
+                  <option value="+221">+221 Senegal</option>
+                  <option value="+232">+232 Sierra Leone</option>
+                  <option value="+231">+231 Liberia</option>
+                  <option value="+224">+224 Guinea</option>
+                  <option value="+245">+245 Guinea-Bissau</option>
+                  <option value="+223">+223 Mali</option>
+                  <option value="+226">+226 Burkina Faso</option>
+                  <option value="+225">+225 Côte d'Ivoire</option>
+                  <option value="+228">+228 Togo</option>
+                  <option value="+229">+229 Benin</option>
+                  <option value="+227">+227 Niger</option>
+                  <option value="+237">+237 Cameroon</option>
+                  <option value="+236">+236 C. African Rep.</option>
+                  <option value="+235">+235 Chad</option>
+                  <option value="+241">+241 Gabon</option>
+                  <option value="+240">+240 Equatorial Guinea</option>
+                  <option value="+242">+242 Congo (Rep.)</option>
+                  <option value="+243">+243 DR Congo</option>
+                  <option value="+244">+244 Angola</option>
+                  <option value="+267">+267 Botswana</option>
+                  <option value="+268">+268 Eswatini</option>
+                  <option value="+266">+266 Lesotho</option>
+                  <option value="+27">+27 South Africa</option>
+                  <option value="+263">+263 Zimbabwe</option>
+                  <option value="+260">+260 Zambia</option>
+                  <option value="+265">+265 Malawi</option>
+                  <option value="+258">+258 Mozambique</option>
+                  <option value="+255">+255 Tanzania</option>
+                  <option value="+254">+254 Kenya</option>
+                  <option value="+256">+256 Uganda</option>
+                  <option value="+250">+250 Rwanda</option>
+                  <option value="+257">+257 Burundi</option>
+                  <option value="+251">+251 Ethiopia</option>
+                  <option value="+252">+252 Somalia</option>
+                  <option value="+253">+253 Djibouti</option>
+                  <option value="+291">+291 Eritrea</option>
+                  <option value="+249">+249 Sudan</option>
+                  <option value="+211">+211 South Sudan</option>
+                  <option value="+20">+20 Egypt</option>
+                  <option value="+218">+218 Libya</option>
+                  <option value="+216">+216 Tunisia</option>
+                  <option value="+213">+213 Algeria</option>
+                  <option value="+212">+212 Morocco</option>
+                  <option value="+222">+222 Mauritania</option>
+                  <option value="+238">+238 Cape Verde</option>
+                  <option value="+239">+239 São Tomé &amp; Príncipe</option>
+                  <option value="+230">+230 Mauritius</option>
+                  <option value="+269">+269 Comoros</option>
+                  <option value="+248">+248 Seychelles</option>
+                  <option value="+261">+261 Madagascar</option>
+                </optgroup>
+                <optgroup label="Europe">
+                  <option value="+44">+44 United Kingdom</option>
+                  <option value="+33">+33 France</option>
+                  <option value="+49">+49 Germany</option>
+                  <option value="+31">+31 Netherlands</option>
+                  <option value="+32">+32 Belgium</option>
+                  <option value="+34">+34 Spain</option>
+                  <option value="+351">+351 Portugal</option>
+                  <option value="+39">+39 Italy</option>
+                  <option value="+41">+41 Switzerland</option>
+                  <option value="+43">+43 Austria</option>
+                  <option value="+46">+46 Sweden</option>
+                  <option value="+47">+47 Norway</option>
+                  <option value="+45">+45 Denmark</option>
+                  <option value="+358">+358 Finland</option>
+                  <option value="+353">+353 Ireland</option>
+                  <option value="+48">+48 Poland</option>
+                  <option value="+420">+420 Czech Republic</option>
+                  <option value="+36">+36 Hungary</option>
+                  <option value="+40">+40 Romania</option>
+                  <option value="+359">+359 Bulgaria</option>
+                  <option value="+30">+30 Greece</option>
+                  <option value="+7">+7 Russia</option>
+                  <option value="+380">+380 Ukraine</option>
+                  <option value="+370">+370 Lithuania</option>
+                  <option value="+371">+371 Latvia</option>
+                  <option value="+372">+372 Estonia</option>
+                </optgroup>
+                <optgroup label="Americas">
+                  <option value="+1">+1 USA / Canada</option>
+                  <option value="+52">+52 Mexico</option>
+                  <option value="+55">+55 Brazil</option>
+                  <option value="+54">+54 Argentina</option>
+                  <option value="+56">+56 Chile</option>
+                  <option value="+57">+57 Colombia</option>
+                  <option value="+58">+58 Venezuela</option>
+                  <option value="+51">+51 Peru</option>
+                  <option value="+593">+593 Ecuador</option>
+                  <option value="+591">+591 Bolivia</option>
+                  <option value="+595">+595 Paraguay</option>
+                  <option value="+598">+598 Uruguay</option>
+                  <option value="+53">+53 Cuba</option>
+                  <option value="+1-809">+1 Dominican Republic</option>
+                  <option value="+1-876">+1 Jamaica</option>
+                  <option value="+1-868">+1 Trinidad &amp; Tobago</option>
+                  <option value="+502">+502 Guatemala</option>
+                  <option value="+504">+504 Honduras</option>
+                  <option value="+503">+503 El Salvador</option>
+                  <option value="+505">+505 Nicaragua</option>
+                  <option value="+506">+506 Costa Rica</option>
+                  <option value="+507">+507 Panama</option>
+                </optgroup>
+                <optgroup label="Asia">
+                  <option value="+91">+91 India</option>
+                  <option value="+92">+92 Pakistan</option>
+                  <option value="+880">+880 Bangladesh</option>
+                  <option value="+94">+94 Sri Lanka</option>
+                  <option value="+977">+977 Nepal</option>
+                  <option value="+86">+86 China</option>
+                  <option value="+81">+81 Japan</option>
+                  <option value="+82">+82 South Korea</option>
+                  <option value="+852">+852 Hong Kong</option>
+                  <option value="+886">+886 Taiwan</option>
+                  <option value="+65">+65 Singapore</option>
+                  <option value="+60">+60 Malaysia</option>
+                  <option value="+62">+62 Indonesia</option>
+                  <option value="+63">+63 Philippines</option>
+                  <option value="+66">+66 Thailand</option>
+                  <option value="+84">+84 Vietnam</option>
+                  <option value="+855">+855 Cambodia</option>
+                  <option value="+856">+856 Laos</option>
+                  <option value="+95">+95 Myanmar</option>
+                  <option value="+93">+93 Afghanistan</option>
+                  <option value="+98">+98 Iran</option>
+                  <option value="+964">+964 Iraq</option>
+                  <option value="+963">+963 Syria</option>
+                  <option value="+962">+962 Jordan</option>
+                  <option value="+961">+961 Lebanon</option>
+                  <option value="+972">+972 Israel / Palestine</option>
+                  <option value="+966">+966 Saudi Arabia</option>
+                  <option value="+971">+971 UAE</option>
+                  <option value="+974">+974 Qatar</option>
+                  <option value="+965">+965 Kuwait</option>
+                  <option value="+973">+973 Bahrain</option>
+                  <option value="+968">+968 Oman</option>
+                  <option value="+967">+967 Yemen</option>
+                  <option value="+90">+90 Turkey</option>
+                </optgroup>
+                <optgroup label="Oceania">
+                  <option value="+61">+61 Australia</option>
+                  <option value="+64">+64 New Zealand</option>
+                  <option value="+679">+679 Fiji</option>
+                  <option value="+675">+675 Papua New Guinea</option>
+                </optgroup>
+              </select>
+              <input type="tel" name="contact_number_number" id="contact_number_number" class="phone-number-input" placeholder="e.g. 000 000 0000" required>
+            </div>
+            <span class="field-hint">A number we can reach you at in The Gambia in case of emergency.</span>
+            <p class="date-range-warn" id="contact-phone-warn">&#9888; Phone number must be at least 10 digits (including country code).</p>
           </div>
 
         </div>
@@ -1484,10 +1831,11 @@ var fieldLabels = {
   passport_expiration:  'Passport Expiration Date',
   arrival_date:         'Arrival Date in The Gambia',
   departure_date:       'Departure Date from The Gambia',
-  home_address:         'Postal Address',
-  address_in_country:   'Address in The Gambia',
-  contact_number:       'Contact Number',
-  picture:              'Profile Picture',
+  home_address:           'Postal Address',
+  personal_phone_number:  'Personal Phone Number',
+  address_in_country:     'Address in The Gambia',
+  contact_number_number:  'Contact Number in The Gambia',
+  picture:                'Profile Picture',
   passport_file:        'Passport Scan',
   nomination_letter:    'Nomination Letter',
   code_of_conduct:      'Framework Document Endorsement',
@@ -1502,13 +1850,34 @@ function validateForm(form) {
   var errors  = [];
   var dateErrs = [];  // descriptive date messages shown as toasts
 
-  // Required text / select / textarea / date / email / tel
+  // Required text / select / textarea / date / email
   ['representation_type','organisation_name','gender','first_name','last_name',
    'email','birth_date','home_address','passport_nationality','passport_number','passport_expiration',
-   'arrival_date','departure_date','address_in_country','contact_number'].forEach(function (n) {
+   'arrival_date','departure_date','address_in_country'].forEach(function (n) {
     var el = form.querySelector('[name="' + n + '"]');
     if (el && !el.value.trim()) errors.push(n);
   });
+
+  // Phone validation — min 10 digits (code + number combined)
+  function phoneDigitCount(codeId, numberId) {
+    var code = (document.getElementById(codeId) ? document.getElementById(codeId).value : '').replace(/\D/g, '');
+    var num  = (document.getElementById(numberId) ? document.getElementById(numberId).value : '').replace(/\D/g, '');
+    return (code + num).length;
+  }
+  var ppEl = form.querySelector('[name="personal_phone_number"]');
+  if (!ppEl || !ppEl.value.trim()) {
+    errors.push('personal_phone_number');
+  } else if (phoneDigitCount('personal_phone_code', 'personal_phone_number') < 10) {
+    errors.push('personal_phone_number');
+    dateErrs.push('Personal Phone Number must be at least 10 digits (including country code).');
+  }
+  var cnEl = form.querySelector('[name="contact_number_number"]');
+  if (!cnEl || !cnEl.value.trim()) {
+    errors.push('contact_number_number');
+  } else if (phoneDigitCount('contact_number_code', 'contact_number_number') < 10) {
+    errors.push('contact_number_number');
+    dateErrs.push('Contact Number in The Gambia must be at least 10 digits (including country code).');
+  }
 
   // File inputs
   ['picture','passport_file','nomination_letter'].forEach(function (n) {
@@ -1650,6 +2019,30 @@ function markErrors(form, errors) {
   arrEl.addEventListener('input',  checkArrival);
   depEl.addEventListener('change', checkDeparture);
   depEl.addEventListener('input',  checkDeparture);
+})();
+
+// ── Phone real-time digit check ───────────────────────────
+(function () {
+  function setupPhoneCheck(codeId, numberId, warnId) {
+    var codeEl = document.getElementById(codeId);
+    var numEl  = document.getElementById(numberId);
+    var warn   = document.getElementById(warnId);
+    if (!codeEl || !numEl || !warn) return;
+    function check() {
+      var digits = (codeEl.value.replace(/\D/g,'') + numEl.value.replace(/\D/g,'')).length;
+      if (numEl.value.trim() && digits < 10) {
+        warn.classList.add('visible');
+        numEl.classList.add('f-err');
+      } else {
+        warn.classList.remove('visible');
+        numEl.classList.remove('f-err');
+      }
+    }
+    codeEl.addEventListener('change', check);
+    numEl.addEventListener('input',   check);
+  }
+  setupPhoneCheck('personal_phone_code',  'personal_phone_number',  'personal-phone-warn');
+  setupPhoneCheck('contact_number_code',  'contact_number_number',  'contact-phone-warn');
 })();
 
 // ── Duplicate name detection ──────────────────────────────
