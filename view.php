@@ -384,6 +384,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
         <div class="f"><span class="f-lbl">Position</span><span class="f-val"><?= val($r['position']) ?></span></div>
         <div class="f"><span class="f-lbl">Institution</span><span class="f-val"><?= val($r['institution']) ?></span></div>
         <div class="f"><span class="f-lbl">Postal Address</span><span class="f-val"><?= val($r['home_address']) ?></span></div>
+        <div class="f"><span class="f-lbl">Personal Phone Number</span><span class="f-val"><?= val($r['personal_phone'] ?? null) ?></span></div>
       </div>
     </div>
   </div>
@@ -468,7 +469,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       <div class="doc-card">
         <div class="doc-card-hd">
           <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span>Passport Scan</span>
+          <span>Passport / National ID</span>
         </div>
         <div class="doc-card-body">
           <?php if ($r['passport_file']): ?>
