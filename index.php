@@ -1309,12 +1309,12 @@ $countryCount   = (int)($counterRow['countries'] ?? 0);
           </div>
 
           <div class="field">
-            <label>Passport Scan <span class="req">*</span></label>
+            <label>Passport / National ID Scan <span class="req">*</span></label>
             <div class="file-drop" id="passportDrop">
               <input type="file" name="passport_file" id="passportInput" accept=".pdf,.jpg,.jpeg,.png" required>
               <div class="file-drop-icon">📄</div>
-              <div class="file-drop-text">Drag your passport scan here</div>
-              <div class="file-drop-sub">PDF, JPG or PNG — max 2 MB</div>
+              <div class="file-drop-text">Drag your document here or click to upload</div>
+              <div class="file-drop-sub"><strong>International delegates:</strong> upload a scan of your passport bio-data page. <strong>Gambian nationals:</strong> upload a scan of your national identity card. &mdash; PDF, JPG or PNG, max 2 MB.</div>
               <div class="file-drop-name" id="passportFileName"></div>
               <div id="passportPreview" style="text-align:center;"></div>
             </div>
@@ -1836,7 +1836,7 @@ var fieldLabels = {
   address_in_country:     'Address in The Gambia',
   contact_number_number:  'Contact Number in The Gambia',
   picture:                'Profile Picture',
-  passport_file:        'Passport Scan',
+  passport_file:        'Passport / National ID Scan',
   nomination_letter:    'Nomination Letter',
   code_of_conduct:      'Framework Document Endorsement',
   data_privacy:         'Data Privacy Agreement',
