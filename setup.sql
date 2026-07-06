@@ -14,6 +14,8 @@ CREATE TABLE registrations (
   institution         VARCHAR(255),
   email               VARCHAR(255) NOT NULL,
   birth_date          DATE NOT NULL,
+  home_address        TEXT NOT NULL,
+  personal_phone      VARCHAR(30) DEFAULT NULL,
   passport_nationality VARCHAR(100) NOT NULL,
   passport_number     VARCHAR(50) NOT NULL,
   passport_expiration DATE NOT NULL,
@@ -24,16 +26,14 @@ CREATE TABLE registrations (
   departure_date      DATE NOT NULL,
   address_in_country  TEXT NOT NULL,
   contact_number      VARCHAR(50) NOT NULL,
+  scholarship         VARCHAR(20) DEFAULT NULL,
   code_of_conduct     TINYINT(1) NOT NULL DEFAULT 0,
   data_privacy        TINYINT(1) NOT NULL DEFAULT 0,
   terms_conditions    TINYINT(1) NOT NULL DEFAULT 0,
   undertakings        TINYINT(1) NOT NULL DEFAULT 0,
   final_confirmation  TINYINT(1) NOT NULL DEFAULT 0,
+  admin_notes         TEXT NULL,
   status              ENUM('pending','approved','rejected') DEFAULT 'pending',
   ip_address          VARCHAR(45),
   submitted_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Run this if the table already exists:
--- ALTER TABLE registrations ADD COLUMN undertakings TINYINT(1) NOT NULL DEFAULT 0;
--- ALTER TABLE registrations ADD COLUMN final_confirmation TINYINT(1) NOT NULL DEFAULT 0;
