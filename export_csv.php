@@ -64,7 +64,7 @@ $out = fopen('php://output', 'w');
 fputcsv($out, [
     'Reference', 'Status', 'Representation Type', 'Organisation',
     'Title', 'First Name', 'Last Name', 'Gender', 'Email',
-    'Phone', 'Nationality', 'Passport Number', 'Passport Expiry',
+    'Personal Phone', 'Contact Number (Gambia)', 'Nationality', 'Passport Number', 'Passport Expiry',
     'Arrival', 'Departure', 'Postal Address', 'Address in Country', 'Position',
     'Submitted At',
 ]);
@@ -81,6 +81,7 @@ foreach ($rows as $r) {
         $r['last_name'],
         $r['gender'],
         $r['email'],
+        $r['personal_phone'] ?? '',
         $r['contact_number'],
         $r['passport_nationality'],
         $r['passport_number'],

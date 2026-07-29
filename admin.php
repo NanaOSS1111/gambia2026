@@ -6,6 +6,11 @@ require_once 'mailer.php';
 require_once 'logger.php';
 require_once 'settings.php';
 
+/* ── Admin CSRF token ────────────────────────────────────── */
+if (empty($_SESSION['admin_csrf'])) {
+    $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
+}
+
 /* ── Redirect to setup if table missing ──────────────────── */
 try {
     $pdo->query("SELECT 1 FROM admin_users LIMIT 1");
@@ -764,7 +769,7 @@ $regStatusInfo = is_registration_open($pdo);
         <?php endif; ?>
       </form>
       <div style="flex:1;"></div>
-      <form method="POST" action="export_csv" style="display:inline;">
+      <form method="POST" action="export_csv.php" style="display:inline;">
         <input type="hidden" name="export_all" value="1">
         <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
         <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
@@ -1017,7 +1022,10 @@ function exportSelected() {
   if (!ids.length) return;
   var form = document.createElement('form');
   form.method = 'POST';
-  form.action = 'export_csv';
+  form.action = 'export_csv.php';
+  var csrf = document.createElement('input');
+  csrf.type = 'hidden'; csrf.name = 'admin_csrf'; csrf.value = '<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>';
+  form.appendChild(csrf);
   ids.forEach(function(id) {
     var inp = document.createElement('input');
     inp.type = 'hidden'; inp.name = 'ids[]'; inp.value = id;
