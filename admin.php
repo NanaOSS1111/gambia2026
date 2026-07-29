@@ -490,6 +490,27 @@ $regStatusInfo = is_registration_open($pdo);
 
   /* ── Toolbar ─────────────────────────────────── */
   .toolbar{padding:16px 24px;border-bottom:1px solid #f0f4f8;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+  /* ── Export field selector modal ─────────────── */
+  .xmodal-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,.55);z-index:600;align-items:center;justify-content:center;padding:20px;}
+  .xmodal-overlay.open{display:flex;}
+  .xmodal{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.22);width:100%;max-width:560px;overflow:hidden;}
+  .xmodal-hd{padding:20px 24px 16px;border-bottom:1px solid #f0f4f8;display:flex;align-items:center;justify-content:space-between;}
+  .xmodal-hd h3{font-size:15px;font-weight:700;color:#0a2540;}
+  .xmodal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#9aaabf;line-height:1;padding:0 4px;}
+  .xmodal-close:hover{color:#dc2626;}
+  .xmodal-body{padding:20px 24px;}
+  .xmodal-toolbar{display:flex;gap:8px;margin-bottom:14px;}
+  .xmodal-link{font-size:12px;font-weight:600;color:#0d6e8c;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;}
+  .xfield-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;max-height:320px;overflow-y:auto;}
+  .xfield-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .1s;}
+  .xfield-item:hover{background:#f0f4f8;}
+  .xfield-item input{width:15px;height:15px;accent-color:#0d6e8c;cursor:pointer;flex-shrink:0;}
+  .xfield-item label{font-size:13px;color:#1a2332;cursor:pointer;user-select:none;}
+  .xmodal-ft{padding:16px 24px;border-top:1px solid #f0f4f8;display:flex;justify-content:flex-end;gap:10px;}
+  .xmodal-cancel{padding:9px 20px;border-radius:8px;border:1.5px solid #d1dce8;background:#fff;color:#4a6080;font-size:13px;font-weight:600;cursor:pointer;}
+  .xmodal-export{padding:9px 22px;border-radius:8px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;}
+  .xmodal-export:hover{background:#047857;}
   .search-box{flex:1;min-width:220px;max-width:360px;position:relative;}
   .search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:#9aaabf;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
   .search-box input{
@@ -769,16 +790,10 @@ $regStatusInfo = is_registration_open($pdo);
         <?php endif; ?>
       </form>
       <div style="flex:1;"></div>
-      <form method="POST" action="export_csv.php" style="display:inline;">
-        <input type="hidden" name="export_all" value="1">
-        <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
-        <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
-        <input type="hidden" name="admin_csrf" value="<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>">
-        <button type="submit" class="btn btn-green">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export All CSV
-        </button>
-      </form>
+      <button type="button" class="btn btn-green" onclick="openExportModal('all')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
     </div>
 
     <!-- Table (wraps bulk form) -->
@@ -895,6 +910,66 @@ $regStatusInfo = is_registration_open($pdo);
   </div><!-- /.card -->
 </div><!-- /.main -->
 
+<!-- ── Export field selector modal ──────────────────────────── -->
+<div class="xmodal-overlay" id="exportModal">
+  <div class="xmodal">
+    <div class="xmodal-hd">
+      <h3>Choose fields to export</h3>
+      <button class="xmodal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div class="xmodal-body">
+      <div class="xmodal-toolbar">
+        <button class="xmodal-link" onclick="xSelectAll(true)">Select all</button>
+        <span style="color:#d1dce8;">|</span>
+        <button class="xmodal-link" onclick="xSelectAll(false)">Deselect all</button>
+      </div>
+      <div class="xfield-grid" id="xFieldGrid">
+        <?php
+        $exportFields = [
+          'ref'             => 'Reference',
+          'status'          => 'Status',
+          'first_name'      => 'First Name',
+          'last_name'       => 'Last Name',
+          'title'           => 'Title',
+          'gender'          => 'Gender',
+          'email'           => 'Email',
+          'personal_phone'  => 'Personal Phone',
+          'contact_number'  => 'Contact Number (Gambia)',
+          'nationality'     => 'Nationality',
+          'passport_number' => 'Passport Number',
+          'passport_expiry' => 'Passport Expiry',
+          'arrival'         => 'Arrival Date',
+          'departure'       => 'Departure Date',
+          'postal_address'  => 'Postal Address',
+          'address_gambia'  => 'Address in Gambia',
+          'rep_type'        => 'Representation Type',
+          'organisation'    => 'Organisation',
+          'position'        => 'Position',
+          'institution'     => 'Institution',
+          'scholarship'     => 'Scholarship',
+          'submitted_at'    => 'Submitted At',
+        ];
+        $defaultOn = ['ref','first_name','last_name','email','personal_phone','nationality','passport_number','arrival','departure'];
+        foreach ($exportFields as $key => $label):
+          $checked = in_array($key, $defaultOn) ? 'checked' : '';
+        ?>
+        <div class="xfield-item">
+          <input type="checkbox" id="xf_<?= $key ?>" value="<?= $key ?>" <?= $checked ?>>
+          <label for="xf_<?= $key ?>"><?= htmlspecialchars($label) ?></label>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <div class="xmodal-ft">
+      <button class="xmodal-cancel" onclick="closeExportModal()">Cancel</button>
+      <button class="xmodal-export" onclick="doExport()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download CSV
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Scroll-to-top button ───────────────────────────────── -->
 <button id="scroll-top" title="Back to top" aria-label="Back to top">&#8679;</button>
 
@@ -906,7 +981,7 @@ $regStatusInfo = is_registration_open($pdo);
   <button class="bbtn bbtn-reject"  onclick="triggerBulk('Reject')">✕ Reject</button>
   <button class="bbtn" style="background:#7c3aed;" onclick="triggerBulk('Invite')">✉ Send Invitation</button>
   <button class="bbtn bbtn-delete"  onclick="triggerBulk('Delete')">🗑 Delete</button>
-  <button class="bbtn" style="background:#059669;" onclick="exportSelected()">⬇ Export CSV</button>
+  <button class="bbtn" style="background:#059669;" onclick="openExportModal('selected')">⬇ Export CSV</button>
   <button class="bbtn-cancel"       onclick="clearSelection()">Cancel</button>
 </div>
 
@@ -1017,23 +1092,56 @@ function clearSelection() {
   refreshBulkUI();
 }
 
-function exportSelected() {
-  var ids = Array.from(document.querySelectorAll('.row-check:checked')).map(function(cb){ return cb.value; });
-  if (!ids.length) return;
+var _exportMode = 'all';
+
+function openExportModal(mode) {
+  _exportMode = mode || 'all';
+  if (mode === 'selected') {
+    var ids = document.querySelectorAll('.row-check:checked');
+    if (!ids.length) return;
+  }
+  document.getElementById('exportModal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.remove('open');
+}
+
+function xSelectAll(checked) {
+  document.querySelectorAll('#xFieldGrid input[type=checkbox]').forEach(function(cb) { cb.checked = checked; });
+}
+
+function doExport() {
+  var selected = Array.from(document.querySelectorAll('#xFieldGrid input[type=checkbox]:checked')).map(function(cb){ return cb.value; });
+  if (!selected.length) { alert('Please select at least one field.'); return; }
+
   var form = document.createElement('form');
   form.method = 'POST';
   form.action = 'export_csv.php';
-  var csrf = document.createElement('input');
-  csrf.type = 'hidden'; csrf.name = 'admin_csrf'; csrf.value = '<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>';
-  form.appendChild(csrf);
-  ids.forEach(function(id) {
+
+  function addField(name, value) {
     var inp = document.createElement('input');
-    inp.type = 'hidden'; inp.name = 'ids[]'; inp.value = id;
+    inp.type = 'hidden'; inp.name = name; inp.value = value;
     form.appendChild(inp);
-  });
+  }
+
+  addField('admin_csrf', '<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>');
+  selected.forEach(function(f) { addField('fields[]', f); });
+
+  if (_exportMode === 'all') {
+    addField('export_all', '1');
+    addField('status', '<?= htmlspecialchars($status) ?>');
+    addField('search', '<?= htmlspecialchars($search) ?>');
+  } else {
+    Array.from(document.querySelectorAll('.row-check:checked')).forEach(function(cb) {
+      addField('ids[]', cb.value);
+    });
+  }
+
   document.body.appendChild(form);
   form.submit();
   document.body.removeChild(form);
+  closeExportModal();
 }
 
 function triggerBulk(action) {
