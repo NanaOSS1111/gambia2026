@@ -133,7 +133,7 @@ if ($departure > $maxDeparture) {
 // ── Duplicate check — email, name+company, passport ──────
 $email = strtolower(trim($_POST['email']));
 
-$dupEmail = $pdo->prepare("SELECT id FROM registrations WHERE LOWER(email) = ?");
+$dupEmail = $pdo->prepare("SELECT id FROM registrations WHERE LOWER(email) = ? AND status != 'rejected'");
 $dupEmail->execute([$email]);
 if ($dupEmail->fetch()) {
     err('This email address is already registered. Each delegate may only register once.');
@@ -142,7 +142,8 @@ if ($dupEmail->fetch()) {
 // Same full name + same organisation = same person re-registering
 $dupName = $pdo->prepare(
     "SELECT id FROM registrations
-     WHERE LOWER(first_name) = LOWER(?) AND LOWER(last_name) = LOWER(?) AND LOWER(organisation_name) = LOWER(?)"
+     WHERE LOWER(first_name) = LOWER(?) AND LOWER(last_name) = LOWER(?) AND LOWER(organisation_name) = LOWER(?)
+       AND status != 'rejected'"
 );
 $dupName->execute([
     trim($_POST['first_name']),
@@ -154,7 +155,7 @@ if ($dupName->fetch()) {
 }
 
 // Same passport number = same person regardless of name/email
-$dupPassport = $pdo->prepare("SELECT id FROM registrations WHERE passport_number = ?");
+$dupPassport = $pdo->prepare("SELECT id FROM registrations WHERE passport_number = ? AND status != 'rejected'");
 $dupPassport->execute([trim($_POST['passport_number'])]);
 if ($dupPassport->fetch()) {
     err('This passport number is already registered. Each delegate may only register once.');
