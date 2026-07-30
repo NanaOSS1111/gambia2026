@@ -161,6 +161,16 @@ if ($dupPassport->fetch()) {
     err('This passport number is already registered. Each delegate may only register once.');
 }
 
+// Check for a previously rejected record so we can reset it instead of creating a duplicate
+$chkRej = $pdo->prepare(
+    "SELECT id, picture, passport_file, nomination_letter
+     FROM registrations
+     WHERE (LOWER(email) = ? OR passport_number = ?) AND status = 'rejected'
+     LIMIT 1"
+);
+$chkRej->execute([$email, trim($_POST['passport_number'])]);
+$existingRejected = $chkRej->fetch(PDO::FETCH_ASSOC) ?: null;
+
 // ── File uploads ──────────────────────────────────────────
 function handleUpload($field, $required = true) {
     static $mimeMap = [
@@ -213,29 +223,9 @@ if ($picture) {
 // ── Sanitise ──────────────────────────────────────────────
 $s = fn($v) => htmlspecialchars(trim($v ?? ''), ENT_QUOTES, 'UTF-8');
 
-// ── Insert ────────────────────────────────────────────────
+// ── Insert or reset rejected record ──────────────────────
 try {
-    $stmt = $pdo->prepare("
-        INSERT INTO registrations
-          (representation_type, organisation_name, picture, title, gender,
-           first_name, last_name, position, institution, email, birth_date,
-           home_address, personal_phone, passport_nationality, passport_number, passport_expiration,
-           passport_file, nomination_letter, is_18_or_older,
-           arrival_date, departure_date, address_in_country, contact_number,
-           scholarship,
-           code_of_conduct, data_privacy, terms_conditions, undertakings,
-           final_confirmation, ip_address)
-        VALUES
-          (:representation_type, :organisation_name, :picture, :title, :gender,
-           :first_name, :last_name, :position, :institution, :email, :birth_date,
-           :home_address, :personal_phone, :passport_nationality, :passport_number, :passport_expiration,
-           :passport_file, :nomination_letter, :is_18_or_older,
-           :arrival_date, :departure_date, :address_in_country, :contact_number,
-           :scholarship,
-           1, 1, 1, 1, 1, :ip_address)
-    ");
-
-    $stmt->execute([
+    $bindings = [
         ':representation_type'  => $s($_POST['representation_type']),
         ':organisation_name'    => $s($_POST['organisation_name']),
         ':picture'              => $picture,
@@ -261,9 +251,71 @@ try {
         ':contact_number'       => $contact_number,
         ':scholarship'          => in_array($_POST['scholarship'] ?? '', ['Accommodation', 'Airfare']) ? $_POST['scholarship'] : null,
         ':ip_address'           => $_SERVER['REMOTE_ADDR'] ?? '',
-    ]);
+    ];
 
-    $newId    = (int)$pdo->lastInsertId();
+    if ($existingRejected) {
+        // Delete old uploaded files — they are being replaced by newly submitted ones
+        foreach (['picture', 'passport_file', 'nomination_letter'] as $ff) {
+            if (!empty($existingRejected[$ff])) @unlink(UPLOAD_DIR . $existingRejected[$ff]);
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE registrations SET
+              representation_type  = :representation_type,
+              organisation_name    = :organisation_name,
+              picture              = :picture,
+              title                = :title,
+              gender               = :gender,
+              first_name           = :first_name,
+              last_name            = :last_name,
+              position             = :position,
+              institution          = :institution,
+              email                = :email,
+              birth_date           = :birth_date,
+              home_address         = :home_address,
+              personal_phone       = :personal_phone,
+              passport_nationality = :passport_nationality,
+              passport_number      = :passport_number,
+              passport_expiration  = :passport_expiration,
+              passport_file        = :passport_file,
+              nomination_letter    = :nomination_letter,
+              is_18_or_older       = :is_18_or_older,
+              arrival_date         = :arrival_date,
+              departure_date       = :departure_date,
+              address_in_country   = :address_in_country,
+              contact_number       = :contact_number,
+              scholarship          = :scholarship,
+              ip_address           = :ip_address,
+              status               = 'pending',
+              admin_notes          = NULL,
+              submitted_at         = NOW()
+            WHERE id = :id AND status = 'rejected'
+        ");
+        $stmt->execute($bindings + [':id' => $existingRejected['id']]);
+        $newId = $existingRejected['id'];
+    } else {
+        $stmt = $pdo->prepare("
+            INSERT INTO registrations
+              (representation_type, organisation_name, picture, title, gender,
+               first_name, last_name, position, institution, email, birth_date,
+               home_address, personal_phone, passport_nationality, passport_number, passport_expiration,
+               passport_file, nomination_letter, is_18_or_older,
+               arrival_date, departure_date, address_in_country, contact_number,
+               scholarship,
+               code_of_conduct, data_privacy, terms_conditions, undertakings,
+               final_confirmation, ip_address)
+            VALUES
+              (:representation_type, :organisation_name, :picture, :title, :gender,
+               :first_name, :last_name, :position, :institution, :email, :birth_date,
+               :home_address, :personal_phone, :passport_nationality, :passport_number, :passport_expiration,
+               :passport_file, :nomination_letter, :is_18_or_older,
+               :arrival_date, :departure_date, :address_in_country, :contact_number,
+               :scholarship,
+               1, 1, 1, 1, 1, :ip_address)
+        ");
+        $stmt->execute($bindings);
+        $newId = (int)$pdo->lastInsertId();
+    }
     $emailData = array_merge($_POST, [
         'id'             => $newId,
         'personal_phone' => $personal_phone,
