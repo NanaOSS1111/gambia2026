@@ -157,6 +157,15 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Invitation letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
             flush_and_continue($retUrl);
             foreach ($toInvite as $row) send_invitation_email($row);
+        } elseif ($_POST['bulk_action'] === 'official_invite') {
+            $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
+            $stmt->execute($ids);
+            $toInvite = $stmt->fetchAll();
+            $n = count($toInvite);
+            log_action($pdo, 'bulk_official_invite', "Sent Official Invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Official Invitation & VISA Letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
+            flush_and_continue($retUrl);
+            foreach ($toInvite as $row) send_official_invitation_email($row);
         } elseif ($_POST['bulk_action'] === 'delete') {
             $pdo->prepare("DELETE FROM registrations WHERE id IN ($ph)")->execute($ids);
             $n = count($ids);
@@ -806,7 +815,8 @@ $regStatusInfo = is_registration_open($pdo);
       <button type="submit" name="bulk_action" value="approve" id="doBulkApprove" style="display:none"></button>
       <button type="submit" name="bulk_action" value="reject"  id="doBulkReject"  style="display:none"></button>
       <button type="submit" name="bulk_action" value="delete"  id="doBulkDelete"  style="display:none"></button>
-      <button type="submit" name="bulk_action" value="invite"  id="doBulkInvite"  style="display:none"></button>
+      <button type="submit" name="bulk_action" value="invite"          id="doBulkInvite"         style="display:none"></button>
+      <button type="submit" name="bulk_action" value="official_invite" id="doBulkOfficialInvite" style="display:none"></button>
 
       <div class="tbl-wrap">
         <?php if (empty($rows)): ?>
@@ -980,6 +990,7 @@ $regStatusInfo = is_registration_open($pdo);
   <button class="bbtn bbtn-approve" onclick="triggerBulk('Approve')">✓ Approve</button>
   <button class="bbtn bbtn-reject"  onclick="triggerBulk('Reject')">✕ Reject</button>
   <button class="bbtn" style="background:#7c3aed;" onclick="triggerBulk('Invite')">✉ Send Invitation</button>
+  <button class="bbtn" style="background:#d97706;" onclick="triggerBulk('OfficialInvite')">✉ Official Invitation</button>
   <button class="bbtn bbtn-delete"  onclick="triggerBulk('Delete')">🗑 Delete</button>
   <button class="bbtn" style="background:#059669;" onclick="openExportModal('selected')">⬇ Export CSV</button>
   <button class="bbtn-cancel"       onclick="clearSelection()">Cancel</button>
@@ -1171,8 +1182,10 @@ function triggerBulk(action) {
     return;
   }
   var cfg = {
-    Approve: { icon:'question', color:'#059669', msg:'Approve ' + n + ' registration(s)?' },
-    Delete:  { icon:'warning',  color:'#ef4444', msg:'Permanently delete ' + n + ' registration(s)?' },
+    Approve:       { icon:'question', color:'#059669', msg:'Approve ' + n + ' registration(s)?' },
+    Delete:        { icon:'warning',  color:'#ef4444', msg:'Permanently delete ' + n + ' registration(s)?' },
+    Invite:        { icon:'question', color:'#7c3aed', msg:'Send Invitation Letter to ' + n + ' approved delegate(s)?' },
+    OfficialInvite:{ icon:'question', color:'#d97706', msg:'Send Official Invitation & VISA Letter to ' + n + ' approved delegate(s)?' },
   };
   var c = cfg[action];
   Swal.fire({

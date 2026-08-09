@@ -4,6 +4,7 @@ require_once __DIR__ . '/mail_config.php';
 require_once __DIR__ . '/confirmation_pdf.php';
 require_once __DIR__ . '/nomination_letter_pdf.php';
 require_once __DIR__ . '/invitation_letter_pdf.php';
+require_once __DIR__ . '/invitation_letter_pdf_v2.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -643,6 +644,135 @@ function invitation_email_plain(array $data): string {
         . "Ministry of Land, Regional Government and Religious Association, The Gambia\n"
         . "ebrimajarbo@gmail.com | +2207533085\n\n"
         . str_repeat('-', 44) . "\n"
+        . "12-16 October 2026 | SDK Conference Centre, Banjul, The Gambia";
+}
+
+// ── Official Invitation email (v2 — VISA letter) ─────────────────────────────
+function send_official_invitation_email(array $data): bool {
+    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host        = MAIL_HOST;
+        $mail->SMTPAuth    = true;
+        $mail->Username    = MAIL_USERNAME;
+        $mail->Password    = MAIL_PASSWORD;
+        $mail->SMTPSecure  = MAIL_ENCRYPTION;
+        $mail->Port        = MAIL_PORT;
+        $mail->Timeout     = 5;
+        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+        $mail->CharSet     = 'UTF-8';
+        $mail->Encoding    = 'base64';
+        $mail->XMailer     = ' ';
+
+        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+        $mail->addAddress($data['email'], trim($data['first_name'] . ' ' . $data['last_name']));
+        $mail->addReplyTo('m.wajiri@ngocsocd.org', 'Melvine Wajiri');
+
+        $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Official Invitation & VISA Letter — GAMBIA 2026 NGO Summit | ' . $ref;
+        $mail->Body    = official_invitation_email_html($data);
+        $mail->AltBody = official_invitation_email_plain($data);
+
+        $pdf = build_invitation_letter_pdf_v2($data);
+        if ($pdf !== '') {
+            $mail->addStringAttachment($pdf, "OfficialInvitation_{$ref}.pdf", 'base64', 'application/pdf');
+        }
+
+        $mail->send();
+        return true;
+    } catch (Exception) {
+        error_log('Official invitation mailer error: ' . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+function official_invitation_email_html(array $data): string {
+    $name = htmlspecialchars(trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']));
+    $ref  = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+    $org  = htmlspecialchars($data['organisation_name'] ?? '');
+    return "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'></head><body style='margin:0;padding:0;background:#f0f4f8;font-family:Arial,Helvetica,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f0f4f8;padding:32px 0;'>
+    <tr><td align='center'>
+      <table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);'>
+        " . email_header_html() . "
+        <tr>
+          <td style='background:#0a2540;padding:14px 36px;text-align:center;'>
+            <span style='font-size:14px;font-weight:700;color:#fff;letter-spacing:.03em;'>&#9993;&nbsp; OFFICIAL INVITATION &amp; VISA LETTER — GAMBIA 2026</span>
+          </td>
+        </tr>
+        <tr>
+          <td style='padding:28px 36px 24px;color:#222222;font-size:14px;line-height:1.7;'>
+            <p style='margin:0 0 12px;'>Dear <strong>{$name}</strong>,</p>
+            <p style='margin:0 0 12px;'>We are honored to extend a formal invitation to you and your esteemed organization to attend <strong>GAMBIA 2026: NGO Restitution on the Doha Political Declaration on Social Development</strong>. This high-level gathering will take place <strong>12&ndash;16 October 2026</strong>, from 9:00 a.m. to 5:00 p.m. at the <strong>SDK Conference Centre in Banjul, The Gambia</strong>.</p>
+            <p style='margin:0 0 12px;'>Summit Theme: <em>&ldquo;Pathways and Partnerships for the Future after 30 Years: Reinforcing the 2025 Doha Political Declaration in Times of Multiple Global Crises.&rdquo;</em></p>
+            <p style='margin:0 0 14px;'>For the full summit program visit <a href='https://www.ngocsocd.org' style='color:#1a56db;'>www.ngocsocd.org</a></p>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background:#fef9ec;border-left:4px solid #d97706;border-radius:4px;margin:0 0 14px;'>
+              <tr><td style='padding:14px 16px;font-size:13px;color:#0a2540;line-height:1.8;'>
+                <strong>VISA Application Instructions:</strong><br>
+                For those who need visas, please submit this official invitation and your passport copy to:<br>
+                <strong>Name:</strong> <em>BUBA BADJIE, Police Superintendent, Gambia Immigration Department (GID)</em><br>
+                <strong>Email:</strong> <a href='mailto:badjiebazzen@gmail.com' style='color:#1a56db;'>badjiebazzen@gmail.com</a><br>
+                <strong>Subject:</strong> GAMBIA2026 VISA WAIVER REQUEST..<br><br>
+                Visas to this summit are <strong>free of charge</strong>. Please contact the immigration department as soon as possible to ensure timely processing.
+              </td></tr>
+            </table>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background:#f0f9ff;border-left:4px solid #0ea5e9;border-radius:4px;margin:0 0 14px;'>
+              <tr><td style='padding:12px 16px;font-size:13px;color:#0a2540;line-height:1.8;'>
+                <strong>Organisation:</strong> {$org}&nbsp;&nbsp;|&nbsp;&nbsp;<strong>Delegate Ref:</strong> {$ref}
+              </td></tr>
+            </table>
+            <p style='margin:0 0 12px;'>Please find your <strong>Official Invitation &amp; VISA Letter</strong> attached as a PDF (2 pages) — you will need it for your visa application and for accreditation upon arrival.</p>
+            <p style='margin:0 0 24px;'>We look forward to welcoming you to Africa&rsquo;s smiling coast, The Gambia this October 2026.</p>
+            <p style='margin:0;'>Yours sincerely,<br>
+            <strong>Melvine Wajiri</strong> &mdash; Chair, NGO Coalition for Social Development<br>
+            <a href='mailto:m.wajiri@ngocsocd.org' style='color:#0a2540;'>m.wajiri@ngocsocd.org</a> | +19726840854<br><br>
+            <strong>Ebrima Jarbo</strong> &mdash; Director, NGO Affairs Agency<br>
+            Ministry of Land, Regional Government and Religious Association, The Gambia<br>
+            <a href='mailto:ebrimajarbo@gmail.com' style='color:#0a2540;'>ebrimajarbo@gmail.com</a> | +2207533085</p>
+          </td>
+        </tr>
+        " . email_footer_html() . "
+      </table>
+    </td></tr>
+  </table>
+</body></html>";
+}
+
+function official_invitation_email_plain(array $data): string {
+    $name = trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']);
+    $ref  = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
+    return "GAMBIA 2026 — Official Invitation & VISA Letter\n"
+        . str_repeat('=', 48) . "\n\n"
+        . "Dear {$name},\n\n"
+        . "We are honored to extend a formal invitation to you to attend GAMBIA 2026:\n"
+        . "NGO Restitution on the Doha Political Declaration on Social Development.\n"
+        . "12-16 October 2026 | SDK Conference Centre, Banjul, The Gambia\n\n"
+        . "Delegate Ref: {$ref}\n\n"
+        . "VISA APPLICATION INSTRUCTIONS\n"
+        . str_repeat('-', 32) . "\n"
+        . "For those who need visas, please submit this official invitation and your\n"
+        . "passport copy to:\n"
+        . "  Name:    BUBA BADJIE, Police Superintendent, Gambia Immigration Department (GID)\n"
+        . "  Email:   badjiebazzen@gmail.com\n"
+        . "  Subject: GAMBIA2026 VISA WAIVER REQUEST..\n\n"
+        . "Visas to this summit are free of charge. Please contact the immigration\n"
+        . "department as soon as possible to ensure timely processing.\n\n"
+        . "Your Official Invitation & VISA Letter (2 pages) is attached as a PDF.\n"
+        . "Please use it for your visa application and present it upon arrival.\n\n"
+        . "We look forward to welcoming you to Africa's smiling coast, The Gambia.\n\n"
+        . "Yours sincerely,\n\n"
+        . "Melvine Wajiri\n"
+        . "Chair, NGO Coalition for Social Development\n"
+        . "m.wajiri@ngocsocd.org | +19726840854 | ngocsocd.org\n\n"
+        . "Ebrima Jarbo\n"
+        . "Director, NGO Affairs Agency\n"
+        . "Ministry of Land, Regional Government and Religious Association, The Gambia\n"
+        . "ebrimajarbo@gmail.com | +2207533085\n\n"
+        . str_repeat('-', 48) . "\n"
         . "12-16 October 2026 | SDK Conference Centre, Banjul, The Gambia";
 }
 
