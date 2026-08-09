@@ -182,8 +182,8 @@ function invitation_letter_html_v2(array $data): string {
 <table width='100%' class='footer'>
   <tr>
     <td style='vertical-align:middle; width:35%;'>$b3Img</td>
-    <td style='vertical-align:middle; text-align:right; padding-right:5px;'>
-      <span style='font-size:8.5pt; font-weight:bold; color:#c0392b; letter-spacing:0.02em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
+    <td style='vertical-align:middle; text-align:center; padding-right:20px;'>
+      <span style='font-size:8.5pt; font-weight:bold; color:#c0392b; letter-spacing:0.03em;'>&ldquo;MOBILIZING CIVIL SOCIETY FOR BOLD SOCIAL DEVELOPMENT&rdquo;</span>
     </td>
   </tr>
 </table>
