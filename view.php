@@ -38,18 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email'])) {
     $fresh->execute([$id]);
     $row  = $fresh->fetch();
     $type = $_POST['resend_email'];
+    $sent = false;
+    $lbl  = '';
     if ($type === 'confirmation') {
-        flush_and_continue("view.php?id=$id&resent=confirmation");
-        send_confirmation_email($row);
+        $sent = send_confirmation_email($row);
+        $lbl  = 'confirmation';
     } elseif ($type === 'approval' && $row['status'] === 'approved') {
-        flush_and_continue("view.php?id=$id&resent=approval");
-        send_approval_email($row);
+        $sent = send_approval_email($row);
+        $lbl  = 'approval';
     } elseif ($type === 'invitation' && $row['status'] === 'approved') {
-        flush_and_continue("view.php?id=$id&resent=invitation");
-        send_invitation_email($row);
+        $sent = send_invitation_email($row);
+        $lbl  = 'invitation';
     } elseif ($type === 'official_invitation' && $row['status'] === 'approved') {
-        flush_and_continue("view.php?id=$id&resent=official_invitation");
-        send_official_invitation_email($row);
+        $sent = send_official_invitation_email($row);
+        $lbl  = 'official_invitation';
+    }
+
+    if ($lbl !== '') {
+        if ($sent) {
+            header("Location: view.php?id=$id&resent=$lbl");
+        } else {
+            header("Location: view.php?id=$id&email_failed=1");
+        }
     } else {
         header("Location: view.php?id=$id");
     }
@@ -374,6 +384,10 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       <?php $resentLabels = ['approval' => 'Approval', 'confirmation' => 'Confirmation', 'invitation' => 'Invitation', 'official_invitation' => 'Official Invitation']; ?>
       <span style="font-size:12px;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:6px;padding:5px 12px;">
         ✓ <?= $resentLabels[$_GET['resent']] ?? 'Email' ?> sent successfully
+      </span>
+      <?php elseif (isset($_GET['email_failed'])): ?>
+      <span style="font-size:12px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:5px 12px;">
+        ✕ Email delivery failed. Please check SMTP settings.
       </span>
       <?php endif; ?>
     </div>
