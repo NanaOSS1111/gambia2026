@@ -1,12 +1,12 @@
 <?php
 /**
- * Email diagnostic tool — admin-only.
- * Upload to server, visit in browser, then DELETE after diagnosis.
+ * Interactive Email Diagnostic & SMTP Configuration Tool — Admin Only.
+ * Allows testing and saving SMTP configuration for GAMBIA 2026.
  */
 session_start();
 if (!isset($_SESSION['admin'])) {
     http_response_code(403);
-    echo '<h2>Access denied. Log in as admin first.</h2>';
+    echo '<h2 style="font-family:sans-serif;padding:20px;">Access denied. Log in as admin first.</h2>';
     exit;
 }
 
@@ -16,92 +16,135 @@ require_once __DIR__ . '/mail_config.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailerException;
 
-$result  = null;
-$step    = '';
-$detail  = '';
+$result      = null;
+$step        = '';
+$detail      = '';
+$smtpDebugLog = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $toEmail = trim($_POST['to_email'] ?? '');
-    $testPdf = !empty($_POST['test_pdf']);
+// Load defaults from mail_config.php or POST
+$mailHost   = $_POST['mail_host']   ?? (defined('MAIL_HOST')       ? MAIL_HOST       : 'mail.ngocsocd.org');
+$mailPort   = $_POST['mail_port']   ?? (defined('MAIL_PORT')       ? MAIL_PORT       : 465);
+$mailEnc    = $_POST['mail_enc']    ?? (defined('MAIL_ENCRYPTION') ? MAIL_ENCRYPTION : 'ssl');
+$mailUser   = $_POST['mail_user']   ?? (defined('MAIL_USERNAME')   ? MAIL_USERNAME   : 'registration@ngocsocd.org');
+$mailPass   = $_POST['mail_pass']   ?? (defined('MAIL_PASSWORD')   ? MAIL_PASSWORD   : '');
+$mailFrom   = $_POST['mail_from']   ?? (defined('MAIL_FROM')       ? MAIL_FROM       : 'registration@ngocsocd.org');
+$mailName   = $_POST['mail_name']   ?? (defined('MAIL_FROM_NAME')  ? MAIL_FROM_NAME  : 'GAMBIA 2026 Secretariat');
+$toEmail    = trim($_POST['to_email'] ?? '');
+$testPdf    = !empty($_POST['test_pdf']);
+$saveConfig = !empty($_POST['save_config']);
 
+// ── Save config action ───────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $saveConfig) {
+    $badgeSecret     = defined('BADGE_SECRET')         ? BADGE_SECRET         : bin2hex(random_bytes(16));
+    $recaptchaSite   = defined('RECAPTCHA_SITE_KEY')   ? RECAPTCHA_SITE_KEY   : '';
+    $recaptchaSecret = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
+
+    $configContent = "<?php\n"
+        . "// ── SMTP Configuration (Generated via test_mailer.php) ───────────────────────\n"
+        . "define('MAIL_HOST',       " . var_export($mailHost, true) . ");\n"
+        . "define('MAIL_PORT',       " . (int)$mailPort . ");\n"
+        . "define('MAIL_ENCRYPTION', " . var_export($mailEnc, true) . ");\n"
+        . "define('MAIL_USERNAME',   " . var_export($mailUser, true) . ");\n"
+        . "define('MAIL_PASSWORD',   " . var_export($mailPass, true) . ");\n"
+        . "define('MAIL_FROM',       " . var_export($mailFrom, true) . ");\n"
+        . "define('MAIL_FROM_NAME',  " . var_export($mailName, true) . ");\n\n"
+        . "// ── Security & reCAPTCHA ─────────────────────────────────────────────────────\n"
+        . "define('BADGE_SECRET',         " . var_export($badgeSecret, true) . ");\n"
+        . "define('RECAPTCHA_SITE_KEY',   " . var_export($recaptchaSite, true) . ");\n"
+        . "define('RECAPTCHA_SECRET_KEY', " . var_export($recaptchaSecret, true) . ");\n";
+
+    if (@file_put_contents(__DIR__ . '/mail_config.php', $configContent) !== false) {
+        $result = 'success';
+        $detail = "mail_config.php has been updated on the live server successfully!\n\nNew settings:\nHOST: $mailHost\nPORT: $mailPort\nENC: $mailEnc\nUSER: $mailUser\nFROM: $mailFrom";
+    } else {
+        $result = 'error';
+        $detail = "Failed to write to mail_config.php. Check file permissions on the server.";
+    }
+}
+
+// ── Test email action ────────────────────────────────────────────────────────
+elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Step 1: constants
-        $step = 'Loading mail config';
-        if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) {
-            throw new \RuntimeException('MAIL_USERNAME or MAIL_PASSWORD is empty in mail_config.php');
+        $step = 'Validating inputs';
+        if (empty($mailUser) || empty($mailPass)) {
+            throw new \RuntimeException('SMTP Username and Password are required.');
         }
-        $detail .= "MAIL_HOST: " . MAIL_HOST . "\n";
-        $detail .= "MAIL_PORT: " . MAIL_PORT . "\n";
-        $detail .= "MAIL_USERNAME: " . MAIL_USERNAME . "\n";
-        $detail .= "MAIL_ENCRYPTION: " . MAIL_ENCRYPTION . "\n";
-        $detail .= "MAIL_FROM: " . MAIL_FROM . "\n\n";
 
-        // Step 2: SMTP connect test
-        $step = 'Creating PHPMailer instance';
+        $detail .= "Testing SMTP connection with settings:\n";
+        $detail .= "  MAIL_HOST:       $mailHost\n";
+        $detail .= "  MAIL_PORT:       $mailPort\n";
+        $detail .= "  MAIL_ENCRYPTION: $mailEnc\n";
+        $detail .= "  MAIL_USERNAME:   $mailUser\n";
+        $detail .= "  MAIL_FROM:       $mailFrom\n\n";
+
+        $step = 'Connecting to SMTP server';
         $mail = new PHPMailer(true);
+
+        // Capture SMTP debug log
+        ob_start();
+        $mail->SMTPDebug   = 2; // Client & server messages
+        $mail->Debugoutput = function($str, $level) {
+            echo htmlspecialchars($str) . "\n";
+        };
+
         $mail->isSMTP();
-        $mail->Host        = MAIL_HOST;
+        $mail->Host        = $mailHost;
         $mail->SMTPAuth    = true;
-        $mail->Username    = MAIL_USERNAME;
-        $mail->Password    = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
+        $mail->Username    = $mailUser;
+        $mail->Password    = $mailPass;
+        $mail->SMTPSecure  = $mailEnc;
+        $mail->Port        = (int)$mailPort;
         $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->SMTPDebug   = 0;
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
 
-        $step = 'Setting up addresses';
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($toEmail ?: MAIL_FROM);
-        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
+        $step = 'Setting up sender and recipient';
+        $mail->setFrom($mailFrom, $mailName);
+        $mail->addAddress($toEmail ?: $mailUser);
+        $mail->addReplyTo($mailFrom, $mailName);
 
-        // Step 3: optional PDF attachment test
         if ($testPdf) {
-            $step = 'Building nomination letter PDF (dompdf)';
+            $step = 'Building sample PDF attachment';
             require_once __DIR__ . '/nomination_letter_pdf.php';
             $fakeData = [
-                'id' => 99999,
-                'title' => 'Mr.',
-                'first_name' => 'Test',
-                'last_name' => 'User',
-                'position' => 'Director',
-                'organisation_name' => 'Test NGO',
-                'email' => $toEmail ?: MAIL_FROM,
-                'contact_number' => '+1 000 000 0000',
-                'home_address' => '123 Test Street',
-                'address_in_country' => '',
-                'country' => 'Test Country',
+                'id' => 99999, 'title' => 'Mr.', 'first_name' => 'Test', 'last_name' => 'Delegate',
+                'position' => 'Director', 'organisation_name' => 'Test NGO',
+                'email' => $toEmail ?: $mailUser, 'contact_number' => '+1 000 000 0000',
+                'home_address' => '123 Test Street', 'address_in_country' => '', 'country' => 'The Gambia',
             ];
             $pdf = build_nomination_letter_pdf($fakeData);
             if ($pdf) {
                 $mail->addStringAttachment($pdf, 'Test_Nomination_Letter.pdf', 'base64', 'application/pdf');
-                $detail .= "PDF generated OK (" . strlen($pdf) . " bytes)\n\n";
-            } else {
-                $detail .= "PDF returned empty string\n\n";
+                $detail .= "PDF generated successfully (" . strlen($pdf) . " bytes)\n\n";
             }
         }
 
-        $step = 'Composing and sending email';
+        $step = 'Sending test email';
         $mail->isHTML(true);
-        $mail->Subject = 'GAMBIA 2026 — Email Diagnostic Test';
-        $mail->Body    = '<p style="font-family:Arial,sans-serif;">This is a diagnostic test email from the GAMBIA 2026 system.<br>If you received this, SMTP is working correctly.</p>';
-        $mail->AltBody = 'This is a diagnostic test email. If you received this, SMTP is working correctly.';
+        $mail->Subject = 'GAMBIA 2026 — SMTP Test Email';
+        $mail->Body    = '<div style="font-family:Arial,sans-serif;padding:20px;background:#f0f4f8;border-radius:8px;">'
+                       . '<h2 style="color:#0a2540;">SMTP Configuration Successful!</h2>'
+                       . '<p>This is a test email sent from the <strong>GAMBIA 2026</strong> system.</p>'
+                       . '<p>Recipient: <strong>' . htmlspecialchars($toEmail ?: $mailUser) . '</strong></p>'
+                       . '</div>';
+        $mail->AltBody = "SMTP Configuration Successful!\nThis is a test email sent from GAMBIA 2026 system.";
 
         $mail->send();
+        $smtpDebugLog = ob_get_clean();
+
         $result  = 'success';
-        $detail .= "Email sent successfully to: " . ($toEmail ?: MAIL_FROM) . "\n";
+        $detail .= "Email sent successfully to: " . ($toEmail ?: $mailUser) . "\n";
 
     } catch (MailerException $e) {
+        $smtpDebugLog = ob_get_clean();
         $result  = 'error';
         $detail .= "PHPMailer error at step [$step]: " . $e->getMessage() . "\n";
-        if (isset($mail)) $detail .= "SMTP error info: " . $mail->ErrorInfo . "\n";
+        if (isset($mail)) $detail .= "SMTP info: " . $mail->ErrorInfo . "\n";
     } catch (\Throwable $e) {
+        $smtpDebugLog = ob_get_clean();
         $result  = 'error';
-        $detail .= "PHP error at step [$step]:\n";
-        $detail .= get_class($e) . ': ' . $e->getMessage() . "\n";
-        $detail .= "File: " . $e->getFile() . " line " . $e->getLine() . "\n";
+        $detail .= "System error at step [$step]: " . $e->getMessage() . "\n";
     }
 }
 ?>
@@ -109,45 +152,122 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Email Diagnostic — GAMBIA 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMTP Tester & Configurator — GAMBIA 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Arial, sans-serif; max-width: 680px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
-  h1   { color: #0a2540; }
-  form { background: #fff; padding: 28px; border-radius: 10px; border: 1px solid #e0e0e0; }
-  label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
-  input[type=email] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 14px; }
-  .check { margin-bottom: 18px; font-size: 14px; }
-  button { background: #0a2540; color: #fff; padding: 11px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
-  .result { margin-top: 24px; padding: 18px 22px; border-radius: 8px; font-size: 14px; }
-  .success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
-  .error   { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-  pre { background: #f0f0f0; padding: 14px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin-top: 12px; }
-  .warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; }
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #1a2332; padding: 30px 16px; }
+  .container { max-width: 760px; margin: 0 auto; background: #fff; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.08); padding: 32px; }
+  h1 { font-size: 22px; color: #0a2540; margin-bottom: 6px; }
+  p.sub { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .full { grid-column: span 2; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .field input, .field select { width: 100%; padding: 10px 14px; border: 1.5px solid #d1dce8; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+  .field input:focus, .field select:focus { border-color: #0d6e8c; box-shadow: 0 0 0 3px rgba(13,110,140,.12); }
+  .btn-group { display: flex; gap: 12px; margin-top: 24px; }
+  button { padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .15s; }
+  .btn-primary { background: #0a2540; color: #fff; }
+  .btn-primary:hover { background: #0d6e8c; }
+  .btn-save { background: #059669; color: #fff; }
+  .btn-save:hover { background: #047857; }
+  .result-box { margin-top: 24px; padding: 20px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
+  .result-box.success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+  .result-box.error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+  pre { background: rgba(0,0,0,.05); padding: 12px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin-top: 10px; font-family: monospace; }
+  .preset-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .preset-btn { background: #e2e8f0; color: #334155; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .preset-btn:hover { background: #cbd5e1; }
 </style>
 </head>
 <body>
-<h1>Email Diagnostic Tool</h1>
-<div class="warn">&#9888; Delete this file from the server after diagnosing the issue.</div>
 
-<form method="POST">
-  <label for="to_email">Send test email to:</label>
-  <input type="email" id="to_email" name="to_email" placeholder="your@email.com (leave blank to send to from-address)" value="<?= htmlspecialchars($_POST['to_email'] ?? '') ?>">
+<div class="container">
+  <h1>SMTP Configuration &amp; Diagnostic Tool</h1>
+  <p class="sub">Test your email settings live and optionally save them to <code>mail_config.php</code>.</p>
 
-  <div class="check">
-    <label><input type="checkbox" name="test_pdf" value="1" <?= !empty($_POST['test_pdf']) ? 'checked' : '' ?>>
-    Also test dompdf PDF generation (nomination letter) and attach it</label>
+  <div class="preset-bar">
+    <strong>Quick Presets:</strong>
+    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">ngocsocd.org (Port 465 SSL)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 587, 'tls')">ngocsocd.org (Port 587 TLS)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 25, '')">localhost (Port 25 Direct)</button>
   </div>
 
-  <button type="submit">Run Diagnostic</button>
-</form>
+  <form method="POST" id="smtpForm">
+    <div class="grid">
+      <div class="field">
+        <label>SMTP Host</label>
+        <input type="text" name="mail_host" id="f_host" value="<?= htmlspecialchars($mailHost) ?>" required placeholder="e.g. mail.ngocsocd.org">
+      </div>
+      <div class="field">
+        <label>SMTP Port</label>
+        <input type="number" name="mail_port" id="f_port" value="<?= htmlspecialchars($mailPort) ?>" required placeholder="465 or 587">
+      </div>
+      <div class="field">
+        <label>Encryption</label>
+        <select name="mail_enc" id="f_enc">
+          <option value="ssl" <?= $mailEnc === 'ssl' ? 'selected' : '' ?>>SSL (Port 465)</option>
+          <option value="tls" <?= $mailEnc === 'tls' ? 'selected' : '' ?>>TLS / STARTTLS (Port 587)</option>
+          <option value=""    <?= $mailEnc === ''    ? 'selected' : '' ?>>None (Port 25)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>System Email (Sender &amp; Username)</label>
+        <input type="email" name="mail_user" value="<?= htmlspecialchars($mailUser) ?>" required placeholder="registration@ngocsocd.org">
+      </div>
+      <div class="field full">
+        <label>SMTP Password</label>
+        <input type="password" name="mail_pass" value="<?= htmlspecialchars($mailPass) ?>" placeholder="Enter password for registration@ngocsocd.org" required>
+      </div>
+      <div class="field">
+        <label>From Email Address</label>
+        <input type="email" name="mail_from" value="<?= htmlspecialchars($mailFrom) ?>" required>
+      </div>
+      <div class="field">
+        <label>From Name</label>
+        <input type="text" name="mail_name" value="<?= htmlspecialchars($mailName) ?>" required>
+      </div>
+      <div class="field full">
+        <label>Send Test Email To (Recipient)</label>
+        <input type="email" name="to_email" value="<?= htmlspecialchars($toEmail) ?>" placeholder="netflixossgh@gmail.com">
+      </div>
+      <div class="field full" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" name="test_pdf" id="test_pdf" value="1" <?= $testPdf ? 'checked' : '' ?> style="width:auto;">
+        <label for="test_pdf" style="margin:0;font-weight:normal;">Include test PDF attachment (Dompdf verification)</label>
+      </div>
+    </div>
 
-<?php if ($result): ?>
-<div class="result <?= $result ?>">
-  <?= $result === 'success' ? '&#10003; ' : '&#10005; ' ?>
-  <?= $result === 'success' ? 'Email sent successfully!' : 'Error occurred.' ?>
-  <?php if ($detail): ?><pre><?= htmlspecialchars($detail) ?></pre><?php endif ?>
+    <div class="btn-group">
+      <button type="submit" class="btn-primary">Run SMTP Test</button>
+      <?php if ($result === 'success' && !$saveConfig): ?>
+        <button type="submit" name="save_config" value="1" class="btn-save">✓ Save Working Settings to mail_config.php</button>
+      <?php endif; ?>
+    </div>
+  </form>
+
+  <?php if ($result): ?>
+    <div class="result-box <?= $result ?>">
+      <strong><?= $result === 'success' ? '✓ Success!' : '✕ Error Occurred' ?></strong>
+      <pre><?= htmlspecialchars($detail) ?></pre>
+      <?php if ($smtpDebugLog): ?>
+        <strong style="margin-top:12px;display:block;">SMTP Server Log:</strong>
+        <pre><?= htmlspecialchars($smtpDebugLog) ?></pre>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
+
+  <div style="margin-top:24px;text-align:right;">
+    <a href="admin.php" style="color:#0d6e8c;text-decoration:none;font-size:13px;font-weight:600;">← Back to Admin Dashboard</a>
+  </div>
 </div>
-<?php endif ?>
 
+<script>
+function applyPreset(host, port, enc) {
+  document.getElementById('f_host').value = host;
+  document.getElementById('f_port').value = port;
+  document.getElementById('f_enc').value  = enc;
+}
+</script>
 </body>
 </html>
