@@ -21,8 +21,8 @@ $step        = '';
 $detail      = '';
 $smtpDebugLog = '';
 
-// Load defaults from POST or cPanel SSL defaults (bhs108.truehost.cloud:465 SSL)
-$mailHost   = $_POST['mail_host']   ?? 'bhs108.truehost.cloud';
+// Load defaults from POST or cPanel SSL defaults (bhs108b.superfasthost.cloud:465 SSL)
+$mailHost   = $_POST['mail_host']   ?? 'bhs108b.superfasthost.cloud';
 $mailPort   = $_POST['mail_port']   ?? 465;
 $mailEnc    = $_POST['mail_enc']    ?? 'ssl';
 $mailUser   = $_POST['mail_user']   ?? 'registration@ngocsocd.org';
@@ -258,7 +258,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="preset-bar">
     <strong>Quick Presets:</strong>
-    <button type="button" class="preset-btn" onclick="applyPreset('bhs108.truehost.cloud', 465, 'ssl')">Truehost Server (bhs108.truehost.cloud Port 465 SSL)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('bhs108b.superfasthost.cloud', 465, 'ssl')">Truehost Server (bhs108b.superfasthost.cloud Port 465 SSL)</button>
     <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">ngocsocd.org (Port 465 SSL)</button>
     <button type="button" class="preset-btn" onclick="applyPreset('localhost', 25, '')">localhost (Port 25 Direct)</button>
   </div>
