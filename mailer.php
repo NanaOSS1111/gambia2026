@@ -28,6 +28,19 @@ function email_header_html(): string {
   </tr>";
 }
 
+function email_footer_html(): string {
+    return "
+  <tr>
+    <td style='background:#f8f9fa;border-top:1px solid #e8e8e8;padding:18px 36px;text-align:center;'>
+      <p style='margin:0;font-size:11px;color:#999999;line-height:1.6;'>
+        This is an automated message &mdash; please do not reply directly to this email.<br>
+        For queries: <a href='mailto:secretariat@ngocsocd.org' style='color:#0a2540;text-decoration:none;'>secretariat@ngocsocd.org</a>
+        &nbsp;&bull;&nbsp;<a href='https://ngocsocd.org' style='color:#0a2540;text-decoration:none;'>ngocsocd.org</a>
+      </p>
+    </td>
+  </tr>";
+}
+
 function send_confirmation_email(array $data): bool {
     if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) {
         return false; // credentials not configured yet
@@ -66,6 +79,7 @@ function send_confirmation_email(array $data): bool {
         }
 
         $mail->send();
+        error_log('Mailer sent confirmation to: ' . $data['email']);
         return true;
     } catch (Exception $e) {
         error_log('Mailer error: ' . $mail->ErrorInfo);
