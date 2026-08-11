@@ -21,13 +21,13 @@ $step        = '';
 $detail      = '';
 $smtpDebugLog = '';
 
-// Load defaults from mail_config.php or POST
-$mailHost   = $_POST['mail_host']   ?? (defined('MAIL_HOST')       ? MAIL_HOST       : 'mail.ngocsocd.org');
-$mailPort   = $_POST['mail_port']   ?? (defined('MAIL_PORT')       ? MAIL_PORT       : 465);
-$mailEnc    = $_POST['mail_enc']    ?? (defined('MAIL_ENCRYPTION') ? MAIL_ENCRYPTION : 'ssl');
-$mailUser   = $_POST['mail_user']   ?? (defined('MAIL_USERNAME')   ? MAIL_USERNAME   : 'registration@ngocsocd.org');
+// Load defaults from POST or cPanel SSL defaults (mail.ngocsocd.org:465 SSL)
+$mailHost   = $_POST['mail_host']   ?? 'mail.ngocsocd.org';
+$mailPort   = $_POST['mail_port']   ?? 465;
+$mailEnc    = $_POST['mail_enc']    ?? 'ssl';
+$mailUser   = $_POST['mail_user']   ?? 'registration@ngocsocd.org';
 $mailPass   = $_POST['mail_pass']   ?? (defined('MAIL_PASSWORD')   ? MAIL_PASSWORD   : '');
-$mailFrom   = $_POST['mail_from']   ?? (defined('MAIL_FROM')       ? MAIL_FROM       : 'registration@ngocsocd.org');
+$mailFrom   = $_POST['mail_from']   ?? 'registration@ngocsocd.org';
 $mailName   = $_POST['mail_name']   ?? (defined('MAIL_FROM_NAME')  ? MAIL_FROM_NAME  : 'GAMBIA 2026 Secretariat');
 $toEmail    = trim($_POST['to_email'] ?? '');
 $testPdf    = !empty($_POST['test_pdf']);
