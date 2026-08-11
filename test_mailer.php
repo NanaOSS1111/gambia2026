@@ -141,6 +141,75 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result  = 'error';
         $detail .= "PHPMailer error at step [$step]: " . $e->getMessage() . "\n";
         if (isset($mail)) $detail .= "SMTP info: " . $mail->ErrorInfo . "\n";
+
+        // If 535 authentication error, try auto-diagnostic combinations
+        if (str_contains($e->getMessage(), '535') || str_contains($e->getMessage(), 'authenticate')) {
+            $detail .= "\n────── Running Auto-Diagnostic Combinations ──────\n";
+
+            $userVariants = array_unique([
+                $mailUser,
+                explode('@', $mailUser)[0], // e.g. 'registration'
+                'secretariat@ngocsocd.org',
+                'secretariat',
+            ]);
+            $hostVariants = array_unique([
+                $mailHost,
+                'srv.ngocsocd.org',
+                'bhs108.truehost.cloud',
+                '127.0.0.1',
+            ]);
+            $passVariants = array_unique([
+                $mailPass,
+                trim($mailPass),
+                html_entity_decode($mailPass, ENT_QUOTES, 'UTF-8'),
+            ]);
+            $authTypes = ['LOGIN', 'PLAIN'];
+
+            $foundWorking = false;
+            foreach ($hostVariants as $h) {
+                foreach ($userVariants as $u) {
+                    foreach ($passVariants as $p) {
+                        foreach ($authTypes as $auth) {
+                            try {
+                                $diagMail = new PHPMailer(true);
+                                $diagMail->isSMTP();
+                                $diagMail->Host        = $h;
+                                $diagMail->SMTPAuth    = true;
+                                $diagMail->AuthType    = $auth;
+                                $diagMail->Username    = $u;
+                                $diagMail->Password    = $p;
+                                $diagMail->SMTPSecure  = $mailEnc;
+                                $diagMail->Port        = (int)$mailPort;
+                                $diagMail->Timeout     = 5;
+                                $diagMail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+
+                                $diagMail->setFrom($mailFrom, $mailName);
+                                $diagMail->addAddress($toEmail ?: $mailUser);
+                                $diagMail->Subject = 'GAMBIA 2026 — Diagnostic Auto-Fix Success';
+                                $diagMail->Body    = 'SMTP authentication succeeded with auto-detected settings.';
+                                $diagMail->send();
+
+                                $foundWorking = true;
+                                $result = 'success';
+                                $detail .= "✓ WORKING COMBINATION FOUND!\n";
+                                $detail .= "  Host: $h\n  User: $u\n  AuthType: $auth\n  Port: $mailPort\n\n";
+
+                                // Update current form variables to working settings
+                                $mailHost = $h;
+                                $mailUser = $u;
+                                break 4;
+                            } catch (\Throwable $ex) {
+                                $detail .= "Tried Host: $h | User: $u | Auth: $auth => Failed (" . strtok($ex->getMessage(), "\n") . ")\n";
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!$foundWorking) {
+                $detail .= "\nAll combination attempts failed. Please verify in cPanel -> Email Accounts that the account '$mailUser' exists and that the password was saved properly without typos or extra spaces.";
+            }
+        }
     } catch (\Throwable $e) {
         $smtpDebugLog = ob_get_clean();
         $result  = 'error';
