@@ -303,14 +303,19 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="preset-bar">
     <strong>Quick Presets:</strong>
-    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 587, 'tls')">&#10003; localhost:587 TLS (known working)</button>
-    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 25, '')">localhost (Port 25 Direct)</button>
-    <button type="button" class="preset-btn" onclick="applyPreset('bhs108b.superfasthost.cloud', 465, 'ssl')">bhs108b.superfasthost.cloud:465 SSL (blocked)</button>
-    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">mail.ngocsocd.org:465 SSL (blocked)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('bhs108.truehost.cloud', 465, 'ssl')">&#10003; bhs108.truehost.cloud:465 SSL (verified working)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 587, 'tls')">localhost:587 TLS</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 25, '')">localhost:25 direct</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">mail.ngocsocd.org:465 SSL</button>
   </div>
   <p class="sub" style="margin-top:-10px;">
-    Port 465 is blocked outbound by the cPanel firewall on this server &mdash; those two
-    presets are kept only for re-confirming that. Use <code>localhost:587/tls</code>.
+    <code>bhs108.truehost.cloud:465/ssl</code> is the live config and was verified sending
+    on 12 Aug 2026 (auth OK, message accepted). Port 465 outbound is <strong>not</strong>
+    blocked on this server.
+    <br>
+    Beware <code>bhs108<strong>b</strong>.superfasthost.cloud</code> &mdash; that hostname does
+    not resolve from this server and was a stale default here until 12 Aug 2026. If you see
+    <code>getaddrinfo ... Name or service not known</code>, the host is misspelled.
   </p>
 
   <form method="POST" id="smtpForm">
