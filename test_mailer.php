@@ -21,44 +21,85 @@ $step        = '';
 $detail      = '';
 $smtpDebugLog = '';
 
-// Load defaults from POST or cPanel SSL defaults (bhs108b.superfasthost.cloud:465 SSL)
-$mailHost   = $_POST['mail_host']   ?? 'bhs108b.superfasthost.cloud';
-$mailPort   = $_POST['mail_port']   ?? 465;
-$mailEnc    = $_POST['mail_enc']    ?? 'ssl';
-$mailUser   = $_POST['mail_user']   ?? 'registration@ngocsocd.org';
+// Load defaults from POST, otherwise from the LIVE config the site actually sends with.
+// Never hardcode a host here: this tool must test the same path mailer.php uses,
+// or a passing test proves nothing about real delegate emails.
+$mailHost   = $_POST['mail_host']   ?? (defined('MAIL_HOST')       ? MAIL_HOST       : 'localhost');
+$mailPort   = $_POST['mail_port']   ?? (defined('MAIL_PORT')       ? MAIL_PORT       : 587);
+$mailEnc    = $_POST['mail_enc']    ?? (defined('MAIL_ENCRYPTION') ? MAIL_ENCRYPTION : 'tls');
+$mailUser   = $_POST['mail_user']   ?? (defined('MAIL_USERNAME')   ? MAIL_USERNAME   : '');
 $mailPass   = $_POST['mail_pass']   ?? (defined('MAIL_PASSWORD')   ? MAIL_PASSWORD   : '');
-$mailFrom   = $_POST['mail_from']   ?? 'registration@ngocsocd.org';
+$mailFrom   = $_POST['mail_from']   ?? (defined('MAIL_FROM')       ? MAIL_FROM       : '');
 $mailName   = $_POST['mail_name']   ?? (defined('MAIL_FROM_NAME')  ? MAIL_FROM_NAME  : 'GAMBIA 2026 Secretariat');
 $toEmail    = trim($_POST['to_email'] ?? '');
 $testPdf    = !empty($_POST['test_pdf']);
 $saveConfig = !empty($_POST['save_config']);
 
 // ── Save config action ───────────────────────────────────────────────────────
+// Writes the MAIL_* keys to .env and leaves mail_config.php untouched. mail_config.php
+// is the env() reader, not a value store — overwriting it with flat define()s would
+// silently orphan .env and drop keys this form never asks about (BADGE_SECRET, which
+// signs every badge URL already emailed to delegates).
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $saveConfig) {
-    $badgeSecret     = defined('BADGE_SECRET')         ? BADGE_SECRET         : bin2hex(random_bytes(16));
-    $recaptchaSite   = defined('RECAPTCHA_SITE_KEY')   ? RECAPTCHA_SITE_KEY   : '';
-    $recaptchaSecret = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
+    $envPath = __DIR__ . '/.env';
 
-    $configContent = "<?php\n"
-        . "// ── SMTP Configuration (Generated via test_mailer.php) ───────────────────────\n"
-        . "define('MAIL_HOST',       " . var_export($mailHost, true) . ");\n"
-        . "define('MAIL_PORT',       " . (int)$mailPort . ");\n"
-        . "define('MAIL_ENCRYPTION', " . var_export($mailEnc, true) . ");\n"
-        . "define('MAIL_USERNAME',   " . var_export($mailUser, true) . ");\n"
-        . "define('MAIL_PASSWORD',   " . var_export($mailPass, true) . ");\n"
-        . "define('MAIL_FROM',       " . var_export($mailFrom, true) . ");\n"
-        . "define('MAIL_FROM_NAME',  " . var_export($mailName, true) . ");\n\n"
-        . "// ── Security & reCAPTCHA ─────────────────────────────────────────────────────\n"
-        . "define('BADGE_SECRET',         " . var_export($badgeSecret, true) . ");\n"
-        . "define('RECAPTCHA_SITE_KEY',   " . var_export($recaptchaSite, true) . ");\n"
-        . "define('RECAPTCHA_SECRET_KEY', " . var_export($recaptchaSecret, true) . ");\n";
+    // Start from whatever .env already holds so unrelated keys survive untouched.
+    $envVars = function_exists('load_dotenv') ? load_dotenv($envPath) : [];
 
-    if (@file_put_contents(__DIR__ . '/mail_config.php', $configContent) !== false) {
-        $result = 'success';
-        $detail = "mail_config.php has been updated on the live server successfully!\n\nNew settings:\nHOST: $mailHost\nPORT: $mailPort\nENC: $mailEnc\nUSER: $mailUser\nFROM: $mailFrom";
-    } else {
+    $envVars['MAIL_HOST']       = $mailHost;
+    $envVars['MAIL_PORT']       = (string)(int)$mailPort;
+    $envVars['MAIL_ENCRYPTION'] = $mailEnc;
+    $envVars['MAIL_USERNAME']   = $mailUser;
+    $envVars['MAIL_PASSWORD']   = $mailPass;
+    $envVars['MAIL_FROM']       = $mailFrom;
+    $envVars['MAIL_FROM_NAME']  = $mailName;
+
+    // A value with a newline would corrupt every key after it — reject before writing.
+    $badKey = '';
+    foreach ($envVars as $k => $v) {
+        if (preg_match('/[\r\n]/', (string)$v)) { $badKey = $k; break; }
+    }
+
+    if ($badKey !== '') {
         $result = 'error';
-        $detail = "Failed to write to mail_config.php. Check file permissions on the server.";
+        $detail = "Refusing to write .env: the value for $badKey contains a line break.";
+    } else {
+        $envContent = '';
+        foreach ($envVars as $k => $v) {
+            $envContent .= $k . '=' . $v . "\n";
+        }
+
+        // Back up the current .env before replacing it — this file is gitignored,
+        // so a bad save is otherwise unrecoverable.
+        if (is_readable($envPath)) {
+            @copy($envPath, $envPath . '.bak');
+        }
+
+        if (@file_put_contents($envPath, $envContent, LOCK_EX) !== false) {
+            @chmod($envPath, 0600);
+            $result = 'success';
+            $detail = ".env has been updated on the live server successfully!\n\n"
+                    . "New settings:\nHOST: $mailHost\nPORT: $mailPort\nENC: $mailEnc\nUSER: $mailUser\nFROM: $mailFrom\n\n"
+                    . "Previous .env saved as .env.bak\n"
+                    . "Preserved keys: " . implode(', ', array_diff(array_keys($envVars), [
+                        'MAIL_HOST','MAIL_PORT','MAIL_ENCRYPTION','MAIL_USERNAME',
+                        'MAIL_PASSWORD','MAIL_FROM','MAIL_FROM_NAME',
+                      ])) . "\n\n"
+                    . "Note: constants are already defined for this request, so this page still\n"
+                    . "shows the OLD values until you reload. Send a test after reloading.";
+
+            // Warn if mail_config.php was previously flattened and no longer reads .env.
+            $cfgSrc = @file_get_contents(__DIR__ . '/mail_config.php');
+            if ($cfgSrc !== false && strpos($cfgSrc, 'load_dotenv') === false) {
+                $result = 'error';
+                $detail .= "\n\nWARNING: mail_config.php does not call load_dotenv(), so it is NOT\n"
+                         . "reading .env. Your saved settings will have no effect until\n"
+                         . "mail_config.php is restored from mail_config.example.php.";
+            }
+        } else {
+            $result = 'error';
+            $detail = "Failed to write .env. Check file permissions on the server.";
+        }
     }
 }
 
@@ -254,14 +295,23 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="container">
   <h1>SMTP Configuration &amp; Diagnostic Tool</h1>
-  <p class="sub">Test your email settings live and optionally save them to <code>mail_config.php</code>.</p>
+  <p class="sub">
+    Test your email settings live and optionally save them to <code>.env</code>.
+    The form loads the <strong>live settings the site sends with</strong>, so a passing
+    test here means real delegate emails work too.
+  </p>
 
   <div class="preset-bar">
     <strong>Quick Presets:</strong>
-    <button type="button" class="preset-btn" onclick="applyPreset('bhs108b.superfasthost.cloud', 465, 'ssl')">Truehost Server (bhs108b.superfasthost.cloud Port 465 SSL)</button>
-    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">ngocsocd.org (Port 465 SSL)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('localhost', 587, 'tls')">&#10003; localhost:587 TLS (known working)</button>
     <button type="button" class="preset-btn" onclick="applyPreset('localhost', 25, '')">localhost (Port 25 Direct)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('bhs108b.superfasthost.cloud', 465, 'ssl')">bhs108b.superfasthost.cloud:465 SSL (blocked)</button>
+    <button type="button" class="preset-btn" onclick="applyPreset('mail.ngocsocd.org', 465, 'ssl')">mail.ngocsocd.org:465 SSL (blocked)</button>
   </div>
+  <p class="sub" style="margin-top:-10px;">
+    Port 465 is blocked outbound by the cPanel firewall on this server &mdash; those two
+    presets are kept only for re-confirming that. Use <code>localhost:587/tls</code>.
+  </p>
 
   <form method="POST" id="smtpForm">
     <div class="grid">
@@ -310,7 +360,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="btn-group">
       <button type="submit" class="btn-primary">Run SMTP Test</button>
       <?php if ($result === 'success' && !$saveConfig): ?>
-        <button type="submit" name="save_config" value="1" class="btn-save">✓ Save Working Settings to mail_config.php</button>
+        <button type="submit" name="save_config" value="1" class="btn-save">✓ Save Working Settings to .env</button>
       <?php endif; ?>
     </div>
   </form>

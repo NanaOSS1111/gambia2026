@@ -55,7 +55,7 @@ function send_confirmation_email(array $data): bool {
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
@@ -104,7 +104,7 @@ function send_rejection_email(array $data, string $reason = ''): bool {
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
@@ -209,7 +209,7 @@ function send_approval_email(array $data): bool {
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
@@ -499,7 +499,7 @@ function send_invitation_email(array $data): bool {
         $mail->Password    = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
@@ -674,7 +674,7 @@ function send_official_invitation_email(array $data): bool {
         $mail->Password    = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
@@ -815,7 +815,7 @@ function send_password_reset_email(string $toEmail, string $toName, string $rese
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure  = MAIL_ENCRYPTION;
         $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 5;
+        $mail->Timeout     = 15;
         $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
         $mail->CharSet     = 'UTF-8';
         $mail->Encoding    = 'base64';
