@@ -16,6 +16,25 @@ require_once __DIR__ . '/mail_config.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailerException;
 
+// The send below runs inside an output buffer. A fatal there (execution timeout, memory
+// exhaustion) discards the buffer and renders a blank page with no clue what happened —
+// which is exactly what an unreachable SMTP host produces. Surface it instead.
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if (!$err || !in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        return;
+    }
+    while (ob_get_level() > 0) { ob_end_clean(); }
+    http_response_code(500);
+    echo '<pre style="font:13px/1.6 ui-monospace,Consolas,monospace;background:#fdecea;'
+       . 'border:1px solid #f5c6cb;color:#8a1c1c;padding:18px;margin:24px;white-space:pre-wrap;">'
+       . "SMTP TEST FAILED — fatal error\n\n"
+       . htmlspecialchars($err['message']) . "\n\n"
+       . 'at ' . htmlspecialchars($err['file']) . ':' . (int) $err['line'] . "\n\n"
+       . "If this says \"Maximum execution time exceeded\", the SMTP host never answered.\n"
+       . "The usual cause is a port/encryption mismatch: 465 needs SSL, 587 needs TLS.</pre>";
+});
+
 $result      = null;
 $step        = '';
 $detail      = '';
@@ -183,73 +202,21 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $detail .= "PHPMailer error at step [$step]: " . $e->getMessage() . "\n";
         if (isset($mail)) $detail .= "SMTP info: " . $mail->ErrorInfo . "\n";
 
-        // If 535 authentication error, try auto-diagnostic combinations
+        // NOTE: an "auto-diagnostic" used to live here that brute-forced 96 combinations
+        // (4 hosts x 4 usernames x 3 password variants x 2 auth types) on any auth failure.
+        // It was removed on 13 Aug 2026 because it: (1) blew past max_execution_time and left
+        // a blank page, since the fatal happened inside ob_start(); (2) transmitted the entered
+        // password to hardcoded third-party hosts the operator never typed; and (3) generated
+        // 96 failed logins per run, which trips fail2ban and the outbound defer/failure limit.
+        // Diagnose auth failures from the SMTP log below instead — never by guessing.
         if (str_contains($e->getMessage(), '535') || str_contains($e->getMessage(), 'authenticate')) {
-            $detail .= "\n────── Running Auto-Diagnostic Combinations ──────\n";
-
-            $userVariants = array_unique([
-                $mailUser,
-                explode('@', $mailUser)[0], // e.g. 'registration'
-                'secretariat@ngocsocd.org',
-                'secretariat',
-            ]);
-            $hostVariants = array_unique([
-                $mailHost,
-                'srv.ngocsocd.org',
-                'bhs108.truehost.cloud',
-                '127.0.0.1',
-            ]);
-            $passVariants = array_unique([
-                $mailPass,
-                trim($mailPass),
-                html_entity_decode($mailPass, ENT_QUOTES, 'UTF-8'),
-            ]);
-            $authTypes = ['LOGIN', 'PLAIN'];
-
-            $foundWorking = false;
-            foreach ($hostVariants as $h) {
-                foreach ($userVariants as $u) {
-                    foreach ($passVariants as $p) {
-                        foreach ($authTypes as $auth) {
-                            try {
-                                $diagMail = new PHPMailer(true);
-                                $diagMail->isSMTP();
-                                $diagMail->Host        = $h;
-                                $diagMail->SMTPAuth    = true;
-                                $diagMail->AuthType    = $auth;
-                                $diagMail->Username    = $u;
-                                $diagMail->Password    = $p;
-                                $diagMail->SMTPSecure  = $mailEnc;
-                                $diagMail->Port        = (int)$mailPort;
-                                $diagMail->Timeout     = 5;
-                                $diagMail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-
-                                $diagMail->setFrom($mailFrom, $mailName);
-                                $diagMail->addAddress($toEmail ?: $mailUser);
-                                $diagMail->Subject = 'GAMBIA 2026 — Diagnostic Auto-Fix Success';
-                                $diagMail->Body    = 'SMTP authentication succeeded with auto-detected settings.';
-                                $diagMail->send();
-
-                                $foundWorking = true;
-                                $result = 'success';
-                                $detail .= "✓ WORKING COMBINATION FOUND!\n";
-                                $detail .= "  Host: $h\n  User: $u\n  AuthType: $auth\n  Port: $mailPort\n\n";
-
-                                // Update current form variables to working settings
-                                $mailHost = $h;
-                                $mailUser = $u;
-                                break 4;
-                            } catch (\Throwable $ex) {
-                                $detail .= "Tried Host: $h | User: $u | Auth: $auth => Failed (" . strtok($ex->getMessage(), "\n") . ")\n";
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!$foundWorking) {
-                $detail .= "\nAll combination attempts failed. Please verify in cPanel -> Email Accounts that the account '$mailUser' exists and that the password was saved properly without typos or extra spaces.";
-            }
+            $detail .= "\nAuthentication was refused by the server. Check, in order:\n"
+                     . "  1. The username is the FULL email address, and the mailbox exists.\n"
+                     . "  2. The password is correct (retype it — do not paste with trailing spaces).\n"
+                     . "  3. Port and encryption match: 465 needs SSL, 587 needs TLS/STARTTLS.\n"
+                     . "  4. The provider allows SMTP sending for this mailbox.\n"
+                     . "  5. If 'From' differs from the username, the provider may be refusing to\n"
+                     . "     send on behalf of another domain. Try setting From = the username.\n";
         }
     } catch (\Throwable $e) {
         $smtpDebugLog = ob_get_clean();
