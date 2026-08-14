@@ -339,11 +339,33 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <?php if ($result): ?>
     <div class="result-box <?= $result ?>">
-      <strong><?= $result === 'success' ? '✓ Success!' : '✕ Error Occurred' ?></strong>
+      <?php if ($result === 'success' && $saveConfig): ?>
+        <strong>✓ Settings saved</strong>
+      <?php elseif ($result === 'success'): ?>
+        <strong>✓ Accepted by the mail server &mdash; not yet delivered</strong>
+      <?php else: ?>
+        <strong>✕ Error Occurred</strong>
+      <?php endif; ?>
       <pre><?= htmlspecialchars($detail) ?></pre>
       <?php if ($smtpDebugLog): ?>
         <strong style="margin-top:12px;display:block;">SMTP Server Log:</strong>
         <pre><?= htmlspecialchars($smtpDebugLog) ?></pre>
+      <?php endif; ?>
+
+      <?php if ($result === 'success' && !$saveConfig): ?>
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(0,0,0,.05);border-radius:6px;font-size:13px;line-height:1.65;">
+          <strong>This does not mean the email arrived.</strong>
+          The log above is the mail server accepting the message into its queue
+          (<code>250 OK</code>). Relaying it onward to the recipient happens afterwards, once
+          this page has already finished loading &mdash; so a failure at that stage cannot appear
+          here.
+          <br><br>
+          To see whether it was actually delivered, open
+          <strong>cPanel &rarr; Email &rarr; Track Delivery</strong> and look up this recipient.
+          A row showing <code>Transport: remote_smtp</code> with a real Delivery Host means it
+          left the server. <code>Transport: fail</code> with an empty Delivery Host means it was
+          discarded here and never sent.
+        </div>
       <?php endif; ?>
     </div>
   <?php endif; ?>
