@@ -1,31 +1,42 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/mail_config.php';
+require_once __DIR__ . '/mail_transport.php';
 require_once __DIR__ . '/confirmation_pdf.php';
 require_once __DIR__ . '/nomination_letter_pdf.php';
 require_once __DIR__ . '/invitation_letter_pdf.php';
 require_once __DIR__ . '/invitation_letter_pdf_v2.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// ── Attach both logos as inline CID images (call before setting Body) ─────────
-function attach_email_logos(PHPMailer $mail): void {
-    $orgPath  = __DIR__ . '/asset/organizationLOGO.png';
-    $sealPath = __DIR__ . '/asset/GambiaNationalSeal.png';
-    if (file_exists($orgPath))  $mail->addEmbeddedImage($orgPath,  'org_logo',  'organizationLOGO.png',  'base64', 'image/png');
-    if (file_exists($sealPath)) $mail->addEmbeddedImage($sealPath, 'nat_seal',  'GambiaNationalSeal.png', 'base64', 'image/png');
-}
+// Delivery is handled by deliver() in mail_transport.php, which posts to Brevo's REST
+// API over HTTPS. This server's firewall redirects all outbound SMTP to the local mail
+// server, so SMTP cannot reach an external provider — see mail_transport.php.
 
 // ── Shared two-logo email header HTML (logos only, no text) ──────────────────
 function email_header_html(): string {
+    $seal = email_logo_src('seal');
+    $org  = email_logo_src('org');
+
     return "
   <tr>
     <td style='background:#f4f7fb;padding:18px 24px;border-bottom:3px solid #0a2540;text-align:center;'>
-      <img src='cid:nat_seal' alt='National Seal' width='52' height='52' style='width:52px;height:52px;display:inline-block;vertical-align:middle;margin-right:20px;'>
-      <img src='cid:org_logo' alt='Organization' width='110' height='31' style='width:110px;height:31px;display:inline-block;vertical-align:middle;'>
+      <img src='{$seal}' alt='National Seal' width='52' height='52' style='width:52px;height:52px;display:inline-block;vertical-align:middle;margin-right:20px;'>
+      <img src='{$org}' alt='Organization' width='110' height='31' style='width:110px;height:31px;display:inline-block;vertical-align:middle;'>
     </td>
   </tr>";
+}
+
+/** Reference number shown on attachments, e.g. GAM26-00042. */
+function mail_ref(array $data): string {
+    return 'GAM26-' . str_pad((string) ($data['id'] ?? 0), 5, '0', STR_PAD_LEFT);
+}
+
+/** Recipient display name, tolerating missing name parts. */
+function mail_recipient_name(array $data, bool $withTitle = false): string {
+    $parts = $withTitle ? [$data['title'] ?? ''] : [];
+    $parts[] = $data['first_name'] ?? '';
+    $parts[] = $data['last_name'] ?? '';
+
+    return trim(preg_replace('/\s+/', ' ', implode(' ', $parts)));
 }
 
 function email_footer_html(): string {
@@ -42,93 +53,38 @@ function email_footer_html(): string {
 }
 
 function send_confirmation_email(array $data): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) {
-        return false; // credentials not configured yet
+    $attachments = [];
+
+    // Confirmation slip — skipped silently if PDF generation is unavailable.
+    $pdf = build_confirmation_pdf($data);
+    if ($pdf !== '') {
+        $attachments[] = [
+            'name' => 'Registration_Confirmation_' . mail_ref($data) . '.pdf',
+            'data' => $pdf,
+        ];
     }
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($data['email'], $data['first_name'] . ' ' . $data['last_name']);
-        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
-        attach_email_logos($mail);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'GAMBIA 2026 - Registration Received: ' . $data['first_name'] . ' ' . $data['last_name'];
-        $mail->Body    = email_body_html($data);
-        $mail->AltBody = email_body_plain($data);
-
-        // Attach generated confirmation slip (requires TCPDF — skipped if not set up)
-        $pdf = build_confirmation_pdf($data);
-        if ($pdf !== '') {
-            $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
-            $mail->addStringAttachment($pdf, "Registration_Confirmation_{$ref}.pdf", 'base64', 'application/pdf');
-        }
-
-        $mail->send();
-        error_log('Mailer sent confirmation to: ' . $data['email']);
-        return true;
-    } catch (Exception $e) {
-        error_log('Mailer error: ' . $mail->ErrorInfo);
-        return false;
-    } catch (\Throwable $e) {
-        error_log('Mailer unexpected error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-        return false;
-    }
+    return deliver([
+        'to_email'     => $data['email'],
+        'to_name'      => mail_recipient_name($data),
+        'subject'      => 'GAMBIA 2026 - Registration Received: ' . mail_recipient_name($data),
+        'html'         => email_body_html($data),
+        'text'         => email_body_plain($data),
+        'attachments'  => $attachments,
+        'embed_logos'  => true,
+    ]);
 }
 
-// ── Approval email ────────────────────────────────────────
 // ── Rejection email ───────────────────────────────────────
 function send_rejection_email(array $data, string $reason = ''): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
-
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($data['email'], $data['first_name'] . ' ' . $data['last_name']);
-        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
-        attach_email_logos($mail);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'GAMBIA 2026 - Registration Update: ' . $data['first_name'] . ' ' . $data['last_name'];
-        $mail->Body    = rejection_email_html($data, $reason);
-        $mail->AltBody = rejection_email_plain($data, $reason);
-
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        error_log('Rejection mailer error: ' . $mail->ErrorInfo);
-        return false;
-    } catch (\Throwable $e) {
-        error_log('Rejection mailer unexpected error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-        return false;
-    }
+    return deliver([
+        'to_email'    => $data['email'],
+        'to_name'     => mail_recipient_name($data),
+        'subject'     => 'GAMBIA 2026 - Registration Update: ' . mail_recipient_name($data),
+        'html'        => rejection_email_html($data, $reason),
+        'text'        => rejection_email_plain($data, $reason),
+        'embed_logos' => true,
+    ]);
 }
 
 function rejection_email_html(array $data, string $reason): string {
@@ -198,48 +154,25 @@ function rejection_email_plain(array $data, string $reason): string {
 }
 
 function send_approval_email(array $data): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
+    $attachments = [];
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($data['email'], $data['first_name'] . ' ' . $data['last_name']);
-        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
-        attach_email_logos($mail);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'GAMBIA 2026 - Registration Approved: ' . $data['first_name'] . ' ' . $data['last_name'];
-        $mail->Body    = approval_email_html($data, make_badge_url($data));
-        $mail->AltBody = approval_email_plain($data);
-
-        $nominationPdf = build_nomination_letter_pdf($data);
-        if ($nominationPdf) {
-            $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
-            $mail->addStringAttachment($nominationPdf, "Award_Nomination_Letter_{$ref}.pdf", 'base64', 'application/pdf');
-        }
-
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        error_log('Approval mailer error: ' . $mail->ErrorInfo);
-        return false;
-    } catch (\Throwable $e) {
-        error_log('Approval mailer unexpected error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-        return false;
+    $nominationPdf = build_nomination_letter_pdf($data);
+    if ($nominationPdf) {
+        $attachments[] = [
+            'name' => 'Award_Nomination_Letter_' . mail_ref($data) . '.pdf',
+            'data' => $nominationPdf,
+        ];
     }
+
+    return deliver([
+        'to_email'    => $data['email'],
+        'to_name'     => mail_recipient_name($data),
+        'subject'     => 'GAMBIA 2026 - Registration Approved: ' . mail_recipient_name($data),
+        'html'        => approval_email_html($data, make_badge_url($data)),
+        'text'        => approval_email_plain($data),
+        'attachments' => $attachments,
+        'embed_logos' => true,
+    ]);
 }
 
 function approval_email_html(array $data, string $badgeUrl = ''): string {
@@ -488,46 +421,23 @@ function email_body_plain(array $data): string {
 
 // ── Invitation email ──────────────────────────────────────
 function send_invitation_email(array $data): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
+    $ref         = mail_ref($data);
+    $attachments = [];
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host        = MAIL_HOST;
-        $mail->SMTPAuth    = true;
-        $mail->Username    = MAIL_USERNAME;
-        $mail->Password    = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($data['email'], trim(($data['title'] ?? '') . ' ' . $data['first_name'] . ' ' . $data['last_name']));
-        $mail->addReplyTo(MAIL_FROM, MAIL_FROM_NAME);
-        attach_email_logos($mail);
-
-        $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'Official Invitation — GAMBIA 2026 NGO Summit | ' . $ref;
-        $mail->Body    = invitation_email_html($data);
-        $mail->AltBody = invitation_email_plain($data);
-
-        $pdf = build_invitation_letter_pdf($data);
-        if ($pdf !== '') {
-            $mail->addStringAttachment($pdf, "InvitationLetter_{$ref}.pdf", 'base64', 'application/pdf');
-        }
-
-        $mail->send();
-        return true;
-    } catch (Exception) {
-        error_log('Invitation mailer error: ' . $mail->ErrorInfo);
-        return false;
+    $pdf = build_invitation_letter_pdf($data);
+    if ($pdf !== '') {
+        $attachments[] = ['name' => "InvitationLetter_{$ref}.pdf", 'data' => $pdf];
     }
+
+    return deliver([
+        'to_email'    => $data['email'],
+        'to_name'     => mail_recipient_name($data, true),
+        'subject'     => 'Official Invitation — GAMBIA 2026 NGO Summit | ' . $ref,
+        'html'        => invitation_email_html($data),
+        'text'        => invitation_email_plain($data),
+        'attachments' => $attachments,
+        'embed_logos' => true,
+    ]);
 }
 
 function invitation_email_html(array $data): string {
@@ -663,45 +573,27 @@ function invitation_email_plain(array $data): string {
 
 // ── Official Invitation email (v2 — VISA letter) ─────────────────────────────
 function send_official_invitation_email(array $data): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
+    $ref         = mail_ref($data);
+    $attachments = [];
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host        = MAIL_HOST;
-        $mail->SMTPAuth    = true;
-        $mail->Username    = MAIL_USERNAME;
-        $mail->Password    = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($data['email'], trim($data['first_name'] . ' ' . $data['last_name']));
-        $mail->addReplyTo('m.wajiri@ngocsocd.org', 'Melvine Wajiri');
-
-        $ref = 'GAM26-' . str_pad($data['id'], 5, '0', STR_PAD_LEFT);
-
-        $mail->isHTML(true);
-        $mail->Subject = 'Official Invitation & VISA Letter — GAMBIA 2026 NGO Summit | ' . $ref;
-        $mail->Body    = official_invitation_email_html($data);
-        $mail->AltBody = official_invitation_email_plain($data);
-
-        $pdf = build_invitation_letter_pdf_v2($data);
-        if ($pdf !== '') {
-            $mail->addStringAttachment($pdf, "OfficialInvitation_{$ref}.pdf", 'base64', 'application/pdf');
-        }
-
-        $mail->send();
-        return true;
-    } catch (Exception) {
-        error_log('Official invitation mailer error: ' . $mail->ErrorInfo);
-        return false;
+    $pdf = build_invitation_letter_pdf_v2($data);
+    if ($pdf !== '') {
+        $attachments[] = ['name' => "OfficialInvitation_{$ref}.pdf", 'data' => $pdf];
     }
+
+    return deliver([
+        'to_email'       => $data['email'],
+        'to_name'        => mail_recipient_name($data),
+        'subject'        => 'Official Invitation & VISA Letter — GAMBIA 2026 NGO Summit | ' . $ref,
+        'html'           => official_invitation_email_html($data),
+        'text'           => official_invitation_email_plain($data),
+        'attachments'    => $attachments,
+        // This template calls email_header_html(), but the old SMTP version never embedded
+        // the logos, so they rendered broken. Embedding them here fixes that.
+        'embed_logos'    => true,
+        'reply_to_email' => 'm.wajiri@ngocsocd.org',
+        'reply_to_name'  => 'Melvine Wajiri',
+    ]);
 }
 
 function official_invitation_email_html(array $data): string {
@@ -804,34 +696,13 @@ function make_badge_url(array $data): string {
 // ── Admin password reset ──────────────────────────────────────────────────────
 
 function send_password_reset_email(string $toEmail, string $toName, string $resetUrl): bool {
-    if (empty(MAIL_USERNAME) || empty(MAIL_PASSWORD)) return false;
-
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure  = MAIL_ENCRYPTION;
-        $mail->Port        = MAIL_PORT;
-        $mail->Timeout     = 15;
-        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
-        $mail->CharSet     = 'UTF-8';
-        $mail->Encoding    = 'base64';
-        $mail->XMailer     = ' ';
-
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($toEmail, $toName);
-        $mail->isHTML(true);
-        $mail->Subject = 'GAMBIA 2026 Admin — Password Reset Request';
-        $mail->Body    = password_reset_email_html($toName, $resetUrl);
-        $mail->AltBody = password_reset_email_plain($toName, $resetUrl);
-        $mail->send();
-        return true;
-    } catch (Exception) {
-        return false;
-    }
+    return deliver([
+        'to_email' => $toEmail,
+        'to_name'  => $toName,
+        'subject'  => 'GAMBIA 2026 Admin — Password Reset Request',
+        'html'     => password_reset_email_html($toName, $resetUrl),
+        'text'     => password_reset_email_plain($toName, $resetUrl),
+    ]);
 }
 
 function password_reset_email_html(string $name, string $url): string {
