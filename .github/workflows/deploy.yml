@@ -15,11 +15,45 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Reuse downloaded packages so a flaky GitHub API does not block a deploy.
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      # GitHub's zipball API intermittently returns 504, and Composer aborts the whole
+      # run rather than falling back to source — which silently blocks the deploy steps
+      # below. Retry, then fall back to --prefer-source before giving up.
       - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            if composer install --no-dev --optimize-autoloader --no-interaction; then
+              break
+            fi
+            if [ "$attempt" = 3 ]; then
+              echo "::warning::composer install failed 3x on dist, trying --prefer-source"
+              composer install --no-dev --optimize-autoloader --no-interaction --prefer-source
+              break
+            fi
+            echo "composer install failed (attempt $attempt) — retrying in 15s"
+            sleep 15
+          done
+
+      # Never let a half-finished install reach the servers.
+      - name: Verify dependencies installed
+        run: |
+          test -f vendor/autoload.php || { echo "::error::vendor/autoload.php missing — aborting deploy"; exit 1; }
+          test -d vendor/phpmailer || { echo "::error::phpmailer missing — aborting deploy"; exit 1; }
+          test -d vendor/dompdf   || { echo "::error::dompdf missing — aborting deploy"; exit 1; }
+          echo "Dependencies OK"
 
       - name: Install lftp
-        run: sudo apt-get install -y lftp
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lftp
 
       # ── Server 1: gambia2026.earthhouraward.org (one.com) ──────────────
       - name: Deploy → gambia2026.earthhouraward.org
