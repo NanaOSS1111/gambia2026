@@ -24,9 +24,62 @@ require_once __DIR__ . '/mail_config.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
-if (!defined('MAIL_PROVIDER')) define('MAIL_PROVIDER', strtolower(trim((string) env('MAIL_PROVIDER', 'smtp'))));
-if (!defined('BREVO_API_KEY')) define('BREVO_API_KEY', (string) env('BREVO_API_KEY', ''));
-if (!defined('SITE_URL'))      define('SITE_URL', rtrim((string) env('SITE_URL', 'https://gambia2026.ngocsocd.org'), '/'));
+/**
+ * Read a setting, without assuming mail_config.php provides env().
+ *
+ * mail_config.php is excluded from deployment, so the server keeps its own copy — and an
+ * older version of test_mailer.php's "Save Config" wrote that file as bare define()s with
+ * no env() helper. Calling env() unconditionally here took the whole site down with
+ * "Call to undefined function env()", since mailer.php is required by admin.php.
+ *
+ * Precedence: a real environment variable, then .env, then the default.
+ */
+function mail_env(string $name, string $default = ''): string {
+    if (function_exists('env')) {
+        $viaConfig = env($name, null);
+        if ($viaConfig !== null && $viaConfig !== '') {
+            return (string) $viaConfig;
+        }
+    }
+
+    $fromEnv = getenv($name);
+    if ($fromEnv !== false && $fromEnv !== '') {
+        return (string) $fromEnv;
+    }
+
+    static $dotenv = null;
+    if ($dotenv === null) {
+        $dotenv = [];
+        $path = __DIR__ . '/.env';
+        if (is_readable($path)) {
+            foreach ((array) file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                $line = trim($line);
+                if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+                    continue;
+                }
+                [$k, $v] = explode('=', $line, 2);
+                $dotenv[trim($k)] = trim(trim($v), "'\"");
+            }
+        }
+    }
+
+    return isset($dotenv[$name]) && $dotenv[$name] !== '' ? $dotenv[$name] : $default;
+}
+
+if (!defined('MAIL_PROVIDER')) define('MAIL_PROVIDER', strtolower(trim(mail_env('MAIL_PROVIDER', 'smtp'))));
+if (!defined('BREVO_API_KEY')) define('BREVO_API_KEY', mail_env('BREVO_API_KEY'));
+if (!defined('SITE_URL'))      define('SITE_URL', rtrim(mail_env('SITE_URL', 'https://gambia2026.ngocsocd.org'), '/'));
+
+// mail_config.php is expected to define these, but it is excluded from deployment and its
+// contents on the server cannot be verified from here. A missing constant must degrade
+// mail, not fatal every page that includes mailer.php (admin.php among them).
+if (!defined('MAIL_FROM'))       define('MAIL_FROM',       mail_env('MAIL_FROM', 'registration@ngocsocd.org'));
+if (!defined('MAIL_FROM_NAME'))  define('MAIL_FROM_NAME',  mail_env('MAIL_FROM_NAME', 'GAMBIA 2026 Secretariat'));
+if (!defined('MAIL_USERNAME'))   define('MAIL_USERNAME',   mail_env('MAIL_USERNAME'));
+if (!defined('MAIL_PASSWORD'))   define('MAIL_PASSWORD',   mail_env('MAIL_PASSWORD'));
+if (!defined('MAIL_HOST'))       define('MAIL_HOST',       mail_env('MAIL_HOST', 'localhost'));
+if (!defined('MAIL_PORT'))       define('MAIL_PORT',  (int) mail_env('MAIL_PORT', '587'));
+if (!defined('MAIL_ENCRYPTION')) define('MAIL_ENCRYPTION', mail_env('MAIL_ENCRYPTION', 'tls'));
 
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
