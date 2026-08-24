@@ -52,39 +52,68 @@ function email_footer_html(): string {
   </tr>";
 }
 
-function send_confirmation_email(array $data): bool {
-    $attachments = [];
-
-    // Confirmation slip — skipped silently if PDF generation is unavailable.
-    $pdf = build_confirmation_pdf($data);
-    if ($pdf !== '') {
-        $attachments[] = [
-            'name' => 'Registration_Confirmation_' . mail_ref($data) . '.pdf',
-            'data' => $pdf,
-        ];
+/**
+ * Run one send, converting any failure into a logged false.
+ *
+ * A bulk send loops over many delegates inside a single request. Without this, one bad
+ * record — a PDF builder throwing on malformed data, a memory spike — aborts the whole
+ * request, and every delegate after it goes silently unsent while the UI has already
+ * reported success. Each send must fail alone.
+ */
+function safe_send(string $label, array $data, callable $send): bool {
+    try {
+        return $send();
+    } catch (\Throwable $e) {
+        error_log(sprintf(
+            'Mailer error: %s to %s (id %s) — %s in %s:%d',
+            $label,
+            $data['email'] ?? '(none)',
+            (string) ($data['id'] ?? '?'),
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine()
+        ));
+        return false;
     }
+}
 
-    return deliver([
-        'to_email'     => $data['email'],
-        'to_name'      => mail_recipient_name($data),
-        'subject'      => 'GAMBIA 2026 - Registration Received: ' . mail_recipient_name($data),
-        'html'         => email_body_html($data),
-        'text'         => email_body_plain($data),
-        'attachments'  => $attachments,
-        'embed_logos'  => true,
-    ]);
+function send_confirmation_email(array $data): bool {
+    return safe_send('confirmation', $data, function () use ($data) {
+        $attachments = [];
+
+        // Confirmation slip — skipped silently if PDF generation is unavailable.
+        $pdf = build_confirmation_pdf($data);
+        if ($pdf !== '') {
+            $attachments[] = [
+                'name' => 'Registration_Confirmation_' . mail_ref($data) . '.pdf',
+                'data' => $pdf,
+            ];
+        }
+
+        return deliver([
+            'to_email'     => $data['email'],
+            'to_name'      => mail_recipient_name($data),
+            'subject'      => 'GAMBIA 2026 - Registration Received: ' . mail_recipient_name($data),
+            'html'         => email_body_html($data),
+            'text'         => email_body_plain($data),
+            'attachments'  => $attachments,
+            'embed_logos'  => true,
+        ]);
+    });
 }
 
 // ── Rejection email ───────────────────────────────────────
 function send_rejection_email(array $data, string $reason = ''): bool {
-    return deliver([
-        'to_email'    => $data['email'],
-        'to_name'     => mail_recipient_name($data),
-        'subject'     => 'GAMBIA 2026 - Registration Update: ' . mail_recipient_name($data),
-        'html'        => rejection_email_html($data, $reason),
-        'text'        => rejection_email_plain($data, $reason),
-        'embed_logos' => true,
-    ]);
+    return safe_send('rejection', $data, function () use ($data, $reason) {
+        return deliver([
+            'to_email'    => $data['email'],
+            'to_name'     => mail_recipient_name($data),
+            'subject'     => 'GAMBIA 2026 - Registration Update: ' . mail_recipient_name($data),
+            'html'        => rejection_email_html($data, $reason),
+            'text'        => rejection_email_plain($data, $reason),
+            'embed_logos' => true,
+        ]);
+    });
 }
 
 function rejection_email_html(array $data, string $reason): string {
@@ -154,25 +183,27 @@ function rejection_email_plain(array $data, string $reason): string {
 }
 
 function send_approval_email(array $data): bool {
-    $attachments = [];
+    return safe_send('approval', $data, function () use ($data) {
+        $attachments = [];
 
-    $nominationPdf = build_nomination_letter_pdf($data);
-    if ($nominationPdf) {
-        $attachments[] = [
-            'name' => 'Award_Nomination_Letter_' . mail_ref($data) . '.pdf',
-            'data' => $nominationPdf,
-        ];
-    }
+        $nominationPdf = build_nomination_letter_pdf($data);
+        if ($nominationPdf) {
+            $attachments[] = [
+                'name' => 'Award_Nomination_Letter_' . mail_ref($data) . '.pdf',
+                'data' => $nominationPdf,
+            ];
+        }
 
-    return deliver([
-        'to_email'    => $data['email'],
-        'to_name'     => mail_recipient_name($data),
-        'subject'     => 'GAMBIA 2026 - Registration Approved: ' . mail_recipient_name($data),
-        'html'        => approval_email_html($data, make_badge_url($data)),
-        'text'        => approval_email_plain($data),
-        'attachments' => $attachments,
-        'embed_logos' => true,
-    ]);
+        return deliver([
+            'to_email'    => $data['email'],
+            'to_name'     => mail_recipient_name($data),
+            'subject'     => 'GAMBIA 2026 - Registration Approved: ' . mail_recipient_name($data),
+            'html'        => approval_email_html($data, make_badge_url($data)),
+            'text'        => approval_email_plain($data),
+            'attachments' => $attachments,
+            'embed_logos' => true,
+        ]);
+    });
 }
 
 function approval_email_html(array $data, string $badgeUrl = ''): string {
@@ -421,23 +452,25 @@ function email_body_plain(array $data): string {
 
 // ── Invitation email ──────────────────────────────────────
 function send_invitation_email(array $data): bool {
-    $ref         = mail_ref($data);
-    $attachments = [];
+    return safe_send('invitation', $data, function () use ($data) {
+        $ref         = mail_ref($data);
+        $attachments = [];
 
-    $pdf = build_invitation_letter_pdf($data);
-    if ($pdf !== '') {
-        $attachments[] = ['name' => "InvitationLetter_{$ref}.pdf", 'data' => $pdf];
-    }
+        $pdf = build_invitation_letter_pdf($data);
+        if ($pdf !== '') {
+            $attachments[] = ['name' => "InvitationLetter_{$ref}.pdf", 'data' => $pdf];
+        }
 
-    return deliver([
-        'to_email'    => $data['email'],
-        'to_name'     => mail_recipient_name($data, true),
-        'subject'     => 'Official Invitation — GAMBIA 2026 NGO Summit | ' . $ref,
-        'html'        => invitation_email_html($data),
-        'text'        => invitation_email_plain($data),
-        'attachments' => $attachments,
-        'embed_logos' => true,
-    ]);
+        return deliver([
+            'to_email'    => $data['email'],
+            'to_name'     => mail_recipient_name($data, true),
+            'subject'     => 'Official Invitation — GAMBIA 2026 NGO Summit | ' . $ref,
+            'html'        => invitation_email_html($data),
+            'text'        => invitation_email_plain($data),
+            'attachments' => $attachments,
+            'embed_logos' => true,
+        ]);
+    });
 }
 
 function invitation_email_html(array $data): string {
@@ -573,27 +606,29 @@ function invitation_email_plain(array $data): string {
 
 // ── Official Invitation email (v2 — VISA letter) ─────────────────────────────
 function send_official_invitation_email(array $data): bool {
-    $ref         = mail_ref($data);
-    $attachments = [];
+    return safe_send('official invitation', $data, function () use ($data) {
+        $ref         = mail_ref($data);
+        $attachments = [];
 
-    $pdf = build_invitation_letter_pdf_v2($data);
-    if ($pdf !== '') {
-        $attachments[] = ['name' => "OfficialInvitation_{$ref}.pdf", 'data' => $pdf];
-    }
+        $pdf = build_invitation_letter_pdf_v2($data);
+        if ($pdf !== '') {
+            $attachments[] = ['name' => "OfficialInvitation_{$ref}.pdf", 'data' => $pdf];
+        }
 
-    return deliver([
-        'to_email'       => $data['email'],
-        'to_name'        => mail_recipient_name($data),
-        'subject'        => 'Official Invitation & VISA Letter — GAMBIA 2026 NGO Summit | ' . $ref,
-        'html'           => official_invitation_email_html($data),
-        'text'           => official_invitation_email_plain($data),
-        'attachments'    => $attachments,
-        // This template calls email_header_html(), but the old SMTP version never embedded
-        // the logos, so they rendered broken. Embedding them here fixes that.
-        'embed_logos'    => true,
-        'reply_to_email' => 'm.wajiri@ngocsocd.org',
-        'reply_to_name'  => 'Melvine Wajiri',
-    ]);
+        return deliver([
+            'to_email'       => $data['email'],
+            'to_name'        => mail_recipient_name($data),
+            'subject'        => 'Official Invitation & VISA Letter — GAMBIA 2026 NGO Summit | ' . $ref,
+            'html'           => official_invitation_email_html($data),
+            'text'           => official_invitation_email_plain($data),
+            'attachments'    => $attachments,
+            // This template calls email_header_html(), but the old SMTP version never embedded
+            // the logos, so they rendered broken. Embedding them here fixes that.
+            'embed_logos'    => true,
+            'reply_to_email' => 'm.wajiri@ngocsocd.org',
+            'reply_to_name'  => 'Melvine Wajiri',
+        ]);
+    });
 }
 
 function official_invitation_email_html(array $data): string {
@@ -696,13 +731,15 @@ function make_badge_url(array $data): string {
 // ── Admin password reset ──────────────────────────────────────────────────────
 
 function send_password_reset_email(string $toEmail, string $toName, string $resetUrl): bool {
-    return deliver([
-        'to_email' => $toEmail,
-        'to_name'  => $toName,
-        'subject'  => 'GAMBIA 2026 Admin — Password Reset Request',
-        'html'     => password_reset_email_html($toName, $resetUrl),
-        'text'     => password_reset_email_plain($toName, $resetUrl),
-    ]);
+    return safe_send('password reset', ['email' => $toEmail], function () use ($toEmail, $toName, $resetUrl) {
+        return deliver([
+            'to_email' => $toEmail,
+            'to_name'  => $toName,
+            'subject'  => 'GAMBIA 2026 Admin — Password Reset Request',
+            'html'     => password_reset_email_html($toName, $resetUrl),
+            'text'     => password_reset_email_plain($toName, $resetUrl),
+        ]);
+    });
 }
 
 function password_reset_email_html(string $name, string $url): string {
