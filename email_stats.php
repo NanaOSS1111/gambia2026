@@ -143,6 +143,9 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
   .rangebar{display:flex;gap:6px;margin-bottom:22px;}
   .rangebar a{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;color:var(--ink-2);background:#fff;border:1px solid #e2eaf4;}
   .rangebar a.active{background:#0a2540;color:#fff;border-color:#0a2540;}
+  .autorefresh{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;border:1px solid #e2eaf4;border-radius:20px;padding:6px 14px;cursor:pointer;margin-left:6px;}
+  .autorefresh input{cursor:pointer;}
+  .updated{display:flex;align-items:center;font-size:12px;color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums;}
 
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
   .tile{background:var(--surface);border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
@@ -205,6 +208,10 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
     <?php foreach ($ranges as $d => $lbl): ?>
       <a href="?days=<?= $d ?>" class="<?= $d === $days ? 'active' : '' ?>"><?= htmlspecialchars($lbl) ?></a>
     <?php endforeach; ?>
+    <label class="autorefresh" title="Reload every 30 seconds">
+      <input type="checkbox" id="autoRefresh"> Auto-refresh
+    </label>
+    <span class="updated">Updated <?= date('H:i:s') ?><span id="countdown"></span></span>
   </div>
 
   <?php if ($apiErrors): ?>
@@ -380,6 +387,34 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
       tip.style.top  = y + 'px';
     });
     bar.addEventListener('mouseleave', function () { tip.style.opacity = '0'; });
+  });
+
+  // Opt-in polling. Each reload costs three Brevo API calls, so it is off by default
+  // and the choice is remembered rather than re-toggled every visit.
+  var box  = document.getElementById('autoRefresh');
+  var note = document.getElementById('countdown');
+  var timer = null;
+  var left = 30;
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } note.textContent = ''; }
+
+  function start() {
+    left = 30;
+    note.textContent = ' · reloading in 30s';
+    timer = setInterval(function () {
+      left--;
+      note.textContent = ' · reloading in ' + left + 's';
+      if (left <= 0) { clearInterval(timer); location.reload(); }
+    }, 1000);
+  }
+
+  try {
+    if (localStorage.getItem('emailStatsAutoRefresh') === '1') { box.checked = true; start(); }
+  } catch (e) { /* storage unavailable — the toggle still works for this visit */ }
+
+  box.addEventListener('change', function () {
+    try { localStorage.setItem('emailStatsAutoRefresh', box.checked ? '1' : '0'); } catch (e) {}
+    box.checked ? start() : stop();
   });
 })();
 </script>
