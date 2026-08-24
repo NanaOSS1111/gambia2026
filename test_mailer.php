@@ -47,7 +47,11 @@ $mailHost   = $_POST['mail_host']   ?? (defined('MAIL_HOST')       ? MAIL_HOST  
 $mailPort   = $_POST['mail_port']   ?? (defined('MAIL_PORT')       ? MAIL_PORT       : 587);
 $mailEnc    = $_POST['mail_enc']    ?? (defined('MAIL_ENCRYPTION') ? MAIL_ENCRYPTION : 'tls');
 $mailUser   = $_POST['mail_user']   ?? (defined('MAIL_USERNAME')   ? MAIL_USERNAME   : '');
-$mailPass   = $_POST['mail_pass']   ?? (defined('MAIL_PASSWORD')   ? MAIL_PASSWORD   : '');
+// Never rendered back to the page — see the password field below. An empty submission
+// falls back to the configured password, so the tool stays usable without exposing it.
+$mailPass   = ($_POST['mail_pass'] ?? '') !== ''
+    ? $_POST['mail_pass']
+    : (defined('MAIL_PASSWORD') ? MAIL_PASSWORD : '');
 $mailFrom   = $_POST['mail_from']   ?? (defined('MAIL_FROM')       ? MAIL_FROM       : '');
 $mailName   = $_POST['mail_name']   ?? (defined('MAIL_FROM_NAME')  ? MAIL_FROM_NAME  : 'GAMBIA 2026 Secretariat');
 $toEmail    = trim($_POST['to_email'] ?? '');
@@ -309,7 +313,8 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <div class="field full">
         <label>SMTP Password</label>
-        <input type="password" name="mail_pass" value="<?= htmlspecialchars($mailPass) ?>" placeholder="Enter password for registration@ngocsocd.org" required>
+        <input type="password" name="mail_pass" value="" autocomplete="new-password"
+               placeholder="Leave blank to use the password already configured on the server">
       </div>
       <div class="field">
         <label>From Email Address</label>
