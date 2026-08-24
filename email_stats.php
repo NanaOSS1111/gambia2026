@@ -55,9 +55,40 @@ $endDate   = date('Y-m-d');
 
 $agg    = brevo_stats('/smtp/statistics/aggregatedReport', ['startDate' => $startDate, 'endDate' => $endDate]);
 
-// Brevo rejects `days` alongside startDate/endDate — they are mutually exclusive, and
-// sending both returns HTTP 400.
-$daily  = brevo_stats('/smtp/statistics/reports', ['startDate' => $startDate, 'endDate' => $endDate]);
+/**
+ * Daily reports for an arbitrary range.
+ *
+ * The endpoint caps a single call at 30 records and rejects wider ranges with HTTP 400,
+ * so anything longer is fetched in 30-day windows and merged. Note also that `days` and
+ * startDate/endDate are mutually exclusive — sending both is itself a 400.
+ */
+function brevo_daily_reports(string $start, string $end): array {
+    $rows   = [];
+    $cursor = $start;
+
+    while (strtotime($cursor) <= strtotime($end)) {
+        $chunkEnd = date('Y-m-d', min(strtotime($end), strtotime($cursor . ' +29 days')));
+
+        $res = brevo_stats('/smtp/statistics/reports', [
+            'startDate' => $cursor,
+            'endDate'   => $chunkEnd,
+            'limit'     => 30,
+            'sort'      => 'asc',
+        ]);
+        if (!$res['ok']) {
+            return ['ok' => false, 'body' => ['reports' => $rows], 'error' => $res['error']];
+        }
+
+        foreach ($res['body']['reports'] ?? [] as $r) {
+            $rows[] = $r;
+        }
+        $cursor = date('Y-m-d', strtotime($chunkEnd . ' +1 day'));
+    }
+
+    return ['ok' => true, 'body' => ['reports' => $rows], 'error' => ''];
+}
+
+$daily = brevo_daily_reports($startDate, $endDate);
 
 $bounce = brevo_stats('/smtp/statistics/events', [
     'startDate' => $startDate, 'endDate' => $endDate, 'event' => 'bounces', 'limit' => 50, 'sort' => 'desc',
