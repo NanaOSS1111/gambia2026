@@ -54,12 +54,22 @@ $startDate = date('Y-m-d', strtotime("-" . ($days - 1) . " days"));
 $endDate   = date('Y-m-d');
 
 $agg    = brevo_stats('/smtp/statistics/aggregatedReport', ['startDate' => $startDate, 'endDate' => $endDate]);
-$daily  = brevo_stats('/smtp/statistics/reports', ['startDate' => $startDate, 'endDate' => $endDate, 'days' => $days]);
+
+// Brevo rejects `days` alongside startDate/endDate — they are mutually exclusive, and
+// sending both returns HTTP 400.
+$daily  = brevo_stats('/smtp/statistics/reports', ['startDate' => $startDate, 'endDate' => $endDate]);
+
 $bounce = brevo_stats('/smtp/statistics/events', [
     'startDate' => $startDate, 'endDate' => $endDate, 'event' => 'bounces', 'limit' => 50, 'sort' => 'desc',
 ]);
 
-$apiError = $agg['error'] ?: $daily['error'] ?: $bounce['error'];
+// Name the failing call. A bare "HTTP 400" gives no clue which of three requests broke.
+$apiErrors = [];
+foreach (['Totals' => $agg, 'Daily chart' => $daily, 'Bounce list' => $bounce] as $what => $res) {
+    if ($res['error']) {
+        $apiErrors[] = $what . ': ' . $res['error'];
+    }
+}
 
 // ── Aggregate figures ────────────────────────────────────────────────────────
 $a           = $agg['body'] ?? [];
@@ -197,8 +207,12 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
     <?php endforeach; ?>
   </div>
 
-  <?php if ($apiError): ?>
-    <div class="err"><strong>Could not load statistics.</strong> <?= htmlspecialchars($apiError) ?></div>
+  <?php if ($apiErrors): ?>
+    <div class="err">
+      <strong>Some data could not be loaded.</strong>
+      <?= htmlspecialchars(implode(' · ', $apiErrors)) ?>.
+      Everything else on this page is still accurate.
+    </div>
   <?php endif; ?>
 
   <div class="tiles">
