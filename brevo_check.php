@@ -214,7 +214,10 @@ $checks[] = [
     'name'   => 'DMARC policy',
     // Alignment depends on a key that actually resolves, not on Brevo's dashboard flag.
     'pass'   => $dnsAvailable && (!$strict || $dkimLive),
-    'warn'   => !$dnsAvailable,
+    // When the only reason this fails is DKIM still propagating, it is the same problem
+    // already flagged above and nothing the operator can act on — so warn rather than block,
+    // or the test button gets disabled precisely while someone is waiting to retest.
+    'warn'   => !$dnsAvailable || $dkimPending,
     'detail' => $dmarc === ''
         ? 'No DMARC record published'
         : ($strict
