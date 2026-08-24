@@ -38,6 +38,11 @@ $params = [];
 $actionGroups = [
     'auth'         => ['login', 'logout'],
     'registrations'=> ['approve', 'reject', 'delete', 'bulk_approve', 'bulk_reject', 'bulk_delete'],
+    // Invitation activity is the main bulk workflow — keep it findable on its own tab,
+    // including the result entries written after a batch finishes sending.
+    'invitations'  => ['bulk_invite', 'bulk_official_invite',
+                       'bulk_invite_result', 'bulk_official_invite_result',
+                       'bulk_approve_result', 'bulk_reject_result'],
     'users'        => ['add_admin', 'edit_admin', 'delete_admin', 'clear_logs'],
 ];
 if ($filter !== 'all' && isset($actionGroups[$filter])) {
@@ -94,6 +99,14 @@ $badgeCfg = [
     'edit_admin'   => ['bg'=>'#e0e7ff','color'=>'#3730a3','label'=>'Edit Admin'],
     'delete_admin' => ['bg'=>'#fce7f3','color'=>'#9d174d','label'=>'Remove Admin'],
     'clear_logs'   => ['bg'=>'#f1f5f9','color'=>'#475569','label'=>'Clear Logs'],
+    'bulk_invite'                 => ['bg'=>'#cffafe','color'=>'#155e75','label'=>'Bulk Invite'],
+    'bulk_official_invite'        => ['bg'=>'#a5f3fc','color'=>'#164e63','label'=>'Official Invite'],
+    // Result entries are written after sending finishes, so they report what actually
+    // happened rather than what was attempted.
+    'bulk_approve_result'         => ['bg'=>'#dcfce7','color'=>'#166534','label'=>'Approve Result'],
+    'bulk_reject_result'          => ['bg'=>'#fde68a','color'=>'#78350f','label'=>'Reject Result'],
+    'bulk_invite_result'          => ['bg'=>'#cffafe','color'=>'#155e75','label'=>'Invite Result'],
+    'bulk_official_invite_result' => ['bg'=>'#a5f3fc','color'=>'#164e63','label'=>'Official Invite Result'],
 ];
 ?>
 <!DOCTYPE html>
@@ -240,7 +253,7 @@ $badgeCfg = [
     <form method="GET" class="toolbar">
       <div class="filter-tabs">
         <?php
-        $tabs = ['all'=>'All','auth'=>'Auth','registrations'=>'Registrations','users'=>'User Mgmt'];
+        $tabs = ['all'=>'All','auth'=>'Auth','registrations'=>'Registrations','invitations'=>'Invitations','users'=>'User Mgmt'];
         foreach ($tabs as $k => $v):
           $qs = http_build_query(['filter'=>$k,'period'=>$period,'search'=>$search]);
         ?>
