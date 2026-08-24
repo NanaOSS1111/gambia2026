@@ -131,22 +131,41 @@ $checks[] = [
 
 // Brevo publishes DKIM as two CNAMEs (brevo1/brevo2._domainkey) pointing at its own
 // key hosts, so check for the alias — falling back to TXT, which resolves through it.
-$dkimFound = [];
+// Two distinct states matter here. The CNAME is ours to publish; the key it points at is
+// Brevo's, and is provisioned a little after authentication. A CNAME that resolves to a
+// host with no key yet means signing will not validate, so do not report that as PASS.
+$dkimAliased = [];
+$dkimKeyed   = [];
 foreach (['brevo1', 'brevo2'] as $selector) {
-    $host  = $selector . '._domainkey.' . $sendingDomain;
-    $cname = function_exists('dns_get_record') ? (@dns_get_record($host, DNS_CNAME) ?: []) : [];
-    if ($cname !== [] || txt_records($host) !== []) {
-        $dkimFound[] = $selector;
+    $host = $selector . '._domainkey.' . $sendingDomain;
+
+    $hasKey = false;
+    foreach (txt_records($host) as $txt) {
+        if (str_contains($txt, 'v=DKIM1') || str_contains($txt, 'p=')) {
+            $hasKey = true;
+            break;
+        }
     }
+    $hasAlias = function_exists('dns_get_record') && (@dns_get_record($host, DNS_CNAME) ?: []) !== [];
+
+    if ($hasAlias || $hasKey) { $dkimAliased[] = $selector; }
+    if ($hasKey)              { $dkimKeyed[]   = $selector; }
 }
+$dkimLive    = count($dkimKeyed) === 2;
+$dkimPending = !$dkimLive && count($dkimAliased) === 2;
 $checks[] = [
-    'name'   => 'DKIM records in DNS',
-    'pass'   => count($dkimFound) === 2,
-    'detail' => count($dkimFound) === 2
-        ? 'Both brevo1._domainkey and brevo2._domainkey resolve'
-        : ($dkimFound === []
-            ? 'Neither brevo1._domainkey nor brevo2._domainkey resolves — add both CNAMEs'
-            : 'Only ' . implode(', ', $dkimFound) . '._domainkey resolves — Brevo needs both'),
+    'name'   => 'DKIM keys resolving',
+    'pass'   => $dkimLive,
+    'detail' => $dkimLive
+        ? 'Both selectors return a signing key'
+        : ($dkimPending
+            ? 'Both CNAMEs are correct, but Brevo has not published the key behind them yet. '
+              . 'This is on Brevo and usually clears within a couple of hours — recheck before sending real mail.'
+            : ($dkimAliased === []
+                ? 'Neither brevo1._domainkey nor brevo2._domainkey resolves — add both CNAMEs'
+                : 'Only ' . implode(', ', $dkimAliased) . '._domainkey resolves — Brevo needs both')),
+    // Pending provisioning is Brevo's to finish and resolves itself; a missing CNAME is ours.
+    'warn'   => $dkimPending,
 ];
 
 $rootTxt  = implode(' ', txt_records($sendingDomain));
