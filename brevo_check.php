@@ -141,13 +141,18 @@ $checks[] = [
 // host with no key yet means signing will not validate, so do not report that as PASS.
 $dkimAliased = [];
 $dkimKeyed   = [];
+$dkimSeen    = [];
 foreach (['brevo1', 'brevo2'] as $selector) {
     $host = $selector . '._domainkey.' . $sendingDomain;
 
+    // Match only a real DKIM key. An earlier version accepted any TXT containing "p=",
+    // which also matches DMARC's p=quarantine and produced a false PASS while no key was
+    // published — the worst possible failure for a check whose job is to prevent that.
     $hasKey = false;
     foreach (txt_records($host) as $txt) {
-        if (str_contains($txt, 'v=DKIM1') || str_contains($txt, 'p=')) {
+        if (preg_match('~p\s*=\s*[A-Za-z0-9+/]{40,}={0,2}~', $txt)) {
             $hasKey = true;
+            $dkimSeen[$selector] = substr($txt, 0, 60);
             break;
         }
     }
@@ -162,7 +167,7 @@ $checks[] = [
     'name'   => 'DKIM keys resolving',
     'pass'   => $dkimLive,
     'detail' => $dkimLive
-        ? 'Both selectors return a signing key'
+        ? 'Both selectors return a signing key — ' . implode(' | ', $dkimSeen)
         : (!$dnsAvailable
             ? 'Cannot check — dns_get_record() is disabled on this server. Verify in Brevo instead.'
             : ($dkimPending
