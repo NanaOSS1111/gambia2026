@@ -59,6 +59,11 @@ function txt_records(string $host): array {
 // The domain we actually send as — every check below tests this domain.
 $sendingDomain = substr(strrchr(MAIL_FROM, '@') ?: '@', 1);
 
+// Some shared hosts disable dns_get_record(). Without it the DNS checks below cannot run,
+// and must report "unknown" rather than "failed" — a false FAIL here would disable the test
+// button and send someone hunting a DNS problem that does not exist.
+$dnsAvailable = function_exists('dns_get_record');
+
 // ── Send a test, only when asked ─────────────────────────────────────────────
 $testResult = null;
 $testTo     = trim($_POST['to'] ?? '');
@@ -158,14 +163,16 @@ $checks[] = [
     'pass'   => $dkimLive,
     'detail' => $dkimLive
         ? 'Both selectors return a signing key'
-        : ($dkimPending
-            ? 'Both CNAMEs are correct, but Brevo has not published the key behind them yet. '
-              . 'This is on Brevo and usually clears within a couple of hours — recheck before sending real mail.'
-            : ($dkimAliased === []
-                ? 'Neither brevo1._domainkey nor brevo2._domainkey resolves — add both CNAMEs'
-                : 'Only ' . implode(', ', $dkimAliased) . '._domainkey resolves — Brevo needs both')),
+        : (!$dnsAvailable
+            ? 'Cannot check — dns_get_record() is disabled on this server. Verify in Brevo instead.'
+            : ($dkimPending
+                ? 'Both CNAMEs are correct, but Brevo has not published the key behind them yet. '
+                  . 'This is on Brevo and usually clears within a couple of hours — recheck before sending real mail.'
+                : ($dkimAliased === []
+                    ? 'Neither brevo1._domainkey nor brevo2._domainkey resolves — add both CNAMEs'
+                    : 'Only ' . implode(', ', $dkimAliased) . '._domainkey resolves — Brevo needs both'))),
     // Pending provisioning is Brevo's to finish and resolves itself; a missing CNAME is ours.
-    'warn'   => $dkimPending,
+    'warn'   => $dkimPending || !$dnsAvailable,
 ];
 
 $rootTxt  = implode(' ', txt_records($sendingDomain));
@@ -175,7 +182,10 @@ $checks[] = [
     'pass'   => $hasCode,
     'detail' => $hasCode
         ? 'brevo-code TXT present at the domain root'
-        : 'Add the brevo-code TXT record at the root (@) of ' . $sendingDomain,
+        : ($dnsAvailable
+            ? 'Add the brevo-code TXT record at the root (@) of ' . $sendingDomain
+            : 'Cannot check — dns_get_record() is disabled on this server. Verify in Brevo instead.'),
+    'warn'   => !$dnsAvailable,
 ];
 
 $spf         = $rootTxt;
@@ -197,7 +207,8 @@ $dmarc  = implode(' ', txt_records('_dmarc.' . $sendingDomain));
 $strict = str_contains($dmarc, 'p=quarantine') || str_contains($dmarc, 'p=reject');
 $checks[] = [
     'name'   => 'DMARC policy',
-    'pass'   => !$strict || $domainAuthed,
+    'pass'   => $dnsAvailable && (!$strict || $domainAuthed),
+    'warn'   => !$dnsAvailable,
     'detail' => $dmarc === ''
         ? 'No DMARC record published'
         : ($strict
