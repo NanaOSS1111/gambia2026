@@ -128,16 +128,38 @@ $checks[] = [
 ];
 
 // DNS checked directly, rather than trusting the dashboard.
-$dkim = txt_records('brevo._domainkey.' . $sendingDomain);
+
+// Brevo publishes DKIM as two CNAMEs (brevo1/brevo2._domainkey) pointing at its own
+// key hosts, so check for the alias — falling back to TXT, which resolves through it.
+$dkimFound = [];
+foreach (['brevo1', 'brevo2'] as $selector) {
+    $host  = $selector . '._domainkey.' . $sendingDomain;
+    $cname = function_exists('dns_get_record') ? (@dns_get_record($host, DNS_CNAME) ?: []) : [];
+    if ($cname !== [] || txt_records($host) !== []) {
+        $dkimFound[] = $selector;
+    }
+}
 $checks[] = [
-    'name'   => 'DKIM record in DNS',
-    'pass'   => $dkim !== [],
-    'detail' => $dkim !== []
-        ? 'Found at brevo._domainkey.' . $sendingDomain
-        : 'Nothing at brevo._domainkey.' . $sendingDomain . ' — add the TXT record Brevo gives you',
+    'name'   => 'DKIM records in DNS',
+    'pass'   => count($dkimFound) === 2,
+    'detail' => count($dkimFound) === 2
+        ? 'Both brevo1._domainkey and brevo2._domainkey resolve'
+        : ($dkimFound === []
+            ? 'Neither brevo1._domainkey nor brevo2._domainkey resolves — add both CNAMEs'
+            : 'Only ' . implode(', ', $dkimFound) . '._domainkey resolves — Brevo needs both'),
 ];
 
-$spf         = implode(' ', txt_records($sendingDomain));
+$rootTxt  = implode(' ', txt_records($sendingDomain));
+$hasCode  = str_contains($rootTxt, 'brevo-code:');
+$checks[] = [
+    'name'   => 'Brevo verification code',
+    'pass'   => $hasCode,
+    'detail' => $hasCode
+        ? 'brevo-code TXT present at the domain root'
+        : 'Add the brevo-code TXT record at the root (@) of ' . $sendingDomain,
+];
+
+$spf         = $rootTxt;
 $spfExists   = str_contains($spf, 'v=spf1');
 $spfHasBrevo = str_contains($spf, 'spf.brevo.com') || str_contains($spf, 'spf.sendinblue.com');
 $checks[] = [
