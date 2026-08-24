@@ -722,6 +722,10 @@ $regStatusInfo = is_registration_open($pdo);
         <div class="nav-dd-email"><?= htmlspecialchars($_SESSION['admin_email'] ?? '') ?></div>
       </div>
       <div class="nav-dd-divider"></div>
+      <a href="email_stats.php" class="nav-dd-item">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v12H5.17L4 17.17V4z"/><line x1="8" y1="9" x2="8" y2="12"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="16" y1="10" x2="16" y2="12"/></svg>
+        Email Statistics
+      </a>
       <a href="logs.php" class="nav-dd-item">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Activity Logs
