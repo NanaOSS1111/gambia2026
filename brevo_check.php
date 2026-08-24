@@ -212,14 +212,15 @@ $dmarc  = implode(' ', txt_records('_dmarc.' . $sendingDomain));
 $strict = str_contains($dmarc, 'p=quarantine') || str_contains($dmarc, 'p=reject');
 $checks[] = [
     'name'   => 'DMARC policy',
-    'pass'   => $dnsAvailable && (!$strict || $domainAuthed),
+    // Alignment depends on a key that actually resolves, not on Brevo's dashboard flag.
+    'pass'   => $dnsAvailable && (!$strict || $dkimLive),
     'warn'   => !$dnsAvailable,
     'detail' => $dmarc === ''
         ? 'No DMARC record published'
         : ($strict
-            ? ($domainAuthed
-                ? 'Strict policy, but DKIM is authenticated so mail will align'
-                : 'Strict policy (p=quarantine/reject). Until DKIM is authenticated above, mail WILL be filtered.')
+            ? ($dkimLive
+                ? 'Strict policy, but DKIM keys resolve so mail will align'
+                : 'Strict policy (p=quarantine/reject). Until the DKIM keys above resolve, mail WILL be filtered.')
             : 'Permissive policy'),
 ];
 
