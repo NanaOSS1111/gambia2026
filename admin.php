@@ -135,10 +135,17 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $toEmail = $stmt->fetchAll();
             $n = count($toEmail);
             log_action($pdo, 'bulk_approve', "Bulk approved $n registration(s). IDs: " . implode(', ', $ids));
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' approved. Confirmation email' . ($n > 1 ? 's' : '') . ' sent.'];
-            flush_and_continue($retUrl);
-            $r = send_bulk($pdo, $toEmail, 'approval_sent_at', 'send_approval_email');
-            log_action($pdo, 'bulk_approve_result', 'Approval emails: ' . bulk_result_summary($r));
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' approved.'];
+            // Hand off to send_queue.php. Sending after flush_and_continue() relied on the
+            // process surviving the response, which it does not on this server.
+            $_SESSION['mail_job'] = [
+                'type'   => 'approval',
+                'ids'    => $ids,
+                'total'  => $n,
+                'return' => $retUrl,
+            ];
+            header('Location: send_queue.php');
+            exit;
         } elseif ($_POST['bulk_action'] === 'reject') {
             $reason = trim($_POST['reject_reason'] ?? '');
             $pdo->prepare("UPDATE registrations SET status='rejected' WHERE id IN ($ph)")->execute($ids);
@@ -147,11 +154,18 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $toEmail = $stmt2->fetchAll();
             $n = count($ids);
             log_action($pdo, 'bulk_reject', "Bulk rejected $n registration(s). IDs: " . implode(', ', $ids));
-            $_SESSION['flash'] = ['type' => 'info', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' rejected. Notification email' . ($n > 1 ? 's' : '') . ' sent.'];
-            flush_and_continue($retUrl);
-            $r = send_bulk($pdo, $toEmail, 'rejection_sent_at',
-                static fn(array $row): bool => send_rejection_email($row, $reason));
-            log_action($pdo, 'bulk_reject_result', 'Rejection emails: ' . bulk_result_summary($r));
+            $_SESSION['flash'] = ['type' => 'info', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' rejected.'];
+            // Hand off to send_queue.php. Sending after flush_and_continue() relied on the
+            // process surviving the response, which it does not on this server.
+            $_SESSION['mail_job'] = [
+                'type'   => 'rejection',
+                'ids'    => $ids,
+                'total'  => $n,
+                'return' => $retUrl,
+                'reason' => $reason,
+            ];
+            header('Location: send_queue.php');
+            exit;
         } elseif ($_POST['bulk_action'] === 'invite') {
             $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
             $stmt->execute($ids);
@@ -159,9 +173,16 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $n = count($toInvite);
             log_action($pdo, 'bulk_invite', "Sent invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Invitation letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
-            flush_and_continue($retUrl);
-            $r = send_bulk($pdo, $toInvite, 'invite_sent_at', 'send_invitation_email');
-            log_action($pdo, 'bulk_invite_result', 'Invitation emails: ' . bulk_result_summary($r));
+            // Hand off to send_queue.php. Sending after flush_and_continue() relied on the
+            // process surviving the response, which it does not on this server.
+            $_SESSION['mail_job'] = [
+                'type'   => 'invitation',
+                'ids'    => $ids,
+                'total'  => $n,
+                'return' => $retUrl,
+            ];
+            header('Location: send_queue.php');
+            exit;
         } elseif ($_POST['bulk_action'] === 'official_invite') {
             $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
             $stmt->execute($ids);
@@ -169,9 +190,16 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             $n = count($toInvite);
             log_action($pdo, 'bulk_official_invite', "Sent Official Invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Official Invitation & VISA Letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
-            flush_and_continue($retUrl);
-            $r = send_bulk($pdo, $toInvite, 'official_invite_sent_at', 'send_official_invitation_email');
-            log_action($pdo, 'bulk_official_invite_result', 'Official invitations: ' . bulk_result_summary($r));
+            // Hand off to send_queue.php. Sending after flush_and_continue() relied on the
+            // process surviving the response, which it does not on this server.
+            $_SESSION['mail_job'] = [
+                'type'   => 'official_invitation',
+                'ids'    => $ids,
+                'total'  => $n,
+                'return' => $retUrl,
+            ];
+            header('Location: send_queue.php');
+            exit;
         } elseif ($_POST['bulk_action'] === 'delete') {
             $pdo->prepare("DELETE FROM registrations WHERE id IN ($ph)")->execute($ids);
             $n = count($ids);
@@ -199,18 +227,24 @@ if (isset($_POST['update_status'])) {
         $fullName = $row['first_name'] . ' ' . $row['last_name'];
         if ($newStatus === 'approved') {
             log_action($pdo, 'approve', "Approved registration for $fullName (ID: $rid)");
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => htmlspecialchars($fullName) . ' approved. Confirmation email sent.'];
-            flush_and_continue($retUrl);
-            send_approval_email($row);
+            // Sent inline. Sending after flush_and_continue() relied on the process
+            // surviving the response, which it does not here — one message is quick
+            // enough that the admin can wait for a truthful result.
+            $ok = send_approval_email($row);
+            if ($ok) { mark_mail_sent($pdo, (int) $rid, 'approval_sent_at'); }
+            $_SESSION['flash'] = $ok
+                ? ['type' => 'success', 'msg' => htmlspecialchars($fullName) . ' approved. Approval email sent.']
+                : ['type' => 'warning', 'msg' => htmlspecialchars($fullName) . ' approved, but the email failed to send. See Activity Logs.'];
         } elseif ($newStatus === 'rejected') {
             $reason = trim($_POST['reject_reason'] ?? '');
             log_action($pdo, 'reject', "Rejected registration for $fullName (ID: $rid)");
-            $_SESSION['flash'] = ['type' => 'info', 'msg' => htmlspecialchars($fullName) . ' rejected. Notification email sent.'];
-            flush_and_continue($retUrl);
-            send_rejection_email($row, $reason);
-        } else {
-            header('Location: ' . $retUrl);
+            $ok = send_rejection_email($row, $reason);
+            if ($ok) { mark_mail_sent($pdo, (int) $rid, 'rejection_sent_at'); }
+            $_SESSION['flash'] = $ok
+                ? ['type' => 'info', 'msg' => htmlspecialchars($fullName) . ' rejected. Notification email sent.']
+                : ['type' => 'warning', 'msg' => htmlspecialchars($fullName) . ' rejected, but the email failed to send. See Activity Logs.'];
         }
+        header('Location: ' . $retUrl);
     } else {
         header('Location: ' . $retUrl);
     }
