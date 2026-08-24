@@ -261,8 +261,11 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
     </div>
     <div class="chart-wrap">
       <?php
-      $chartW = max(600, count($series) * ($barW + $barGap) + 40);
+      // Leave room on the right so the final date label is not clipped by the viewBox.
+      $chartW = max(600, count($series) * ($barW + $barGap) + 80);
       $topPad = 18;
+      // A date label is ~34px wide; require 48px of pitch so they never touch.
+      $labelStep = max(1, (int) ceil(48 / ($barW + $barGap)));
       ?>
       <svg width="100%" viewBox="0 0 <?= $chartW ?> <?= $chartH + 44 ?>" role="img"
            aria-label="Daily delivered and bounced email volume" style="min-width:<?= $chartW ?>px;">
@@ -311,7 +314,8 @@ $barW   = $days > 30 ? 8 : ($days > 7 ? 18 : 46);
                     style="font-weight:700;fill:var(--ink-2);"><?= $s['total'] ?></text>
             <?php endif; ?>
           </g>
-          <?php if ($days <= 30 || $i % 7 === 0): ?>
+          <?php // Count back from the end so today is always labelled. ?>
+          <?php if ((count($series) - 1 - $i) % $labelStep === 0): ?>
             <text class="axis-lbl" x="<?= $x + $barW / 2 ?>" y="<?= $topPad + $chartH + 16 ?>"
                   text-anchor="middle"><?= htmlspecialchars($label) ?></text>
           <?php endif; ?>
