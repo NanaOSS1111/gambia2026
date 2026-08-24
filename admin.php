@@ -3,6 +3,7 @@ session_start();
 require_once 'session_guard.php';
 require_once 'db.php';
 require_once 'mailer.php';
+require_once 'mail_tracking.php';
 require_once 'logger.php';
 require_once 'settings.php';
 
@@ -136,7 +137,8 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             log_action($pdo, 'bulk_approve', "Bulk approved $n registration(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' approved. Confirmation email' . ($n > 1 ? 's' : '') . ' sent.'];
             flush_and_continue($retUrl);
-            foreach ($toEmail as $row) send_approval_email($row);
+            $r = send_bulk($pdo, $toEmail, 'approval_sent_at', 'send_approval_email');
+            log_action($pdo, 'bulk_approve_result', 'Approval emails: ' . bulk_result_summary($r));
         } elseif ($_POST['bulk_action'] === 'reject') {
             $reason = trim($_POST['reject_reason'] ?? '');
             $pdo->prepare("UPDATE registrations SET status='rejected' WHERE id IN ($ph)")->execute($ids);
@@ -147,7 +149,9 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             log_action($pdo, 'bulk_reject', "Bulk rejected $n registration(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'info', 'msg' => $n . ' registration' . ($n > 1 ? 's' : '') . ' rejected. Notification email' . ($n > 1 ? 's' : '') . ' sent.'];
             flush_and_continue($retUrl);
-            foreach ($toEmail as $rrow) send_rejection_email($rrow, $reason);
+            $r = send_bulk($pdo, $toEmail, 'rejection_sent_at',
+                static fn(array $row): bool => send_rejection_email($row, $reason));
+            log_action($pdo, 'bulk_reject_result', 'Rejection emails: ' . bulk_result_summary($r));
         } elseif ($_POST['bulk_action'] === 'invite') {
             $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
             $stmt->execute($ids);
@@ -156,7 +160,8 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             log_action($pdo, 'bulk_invite', "Sent invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Invitation letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
             flush_and_continue($retUrl);
-            foreach ($toInvite as $row) send_invitation_email($row);
+            $r = send_bulk($pdo, $toInvite, 'invite_sent_at', 'send_invitation_email');
+            log_action($pdo, 'bulk_invite_result', 'Invitation emails: ' . bulk_result_summary($r));
         } elseif ($_POST['bulk_action'] === 'official_invite') {
             $stmt = $pdo->prepare("SELECT * FROM registrations WHERE id IN ($ph) AND status = 'approved'");
             $stmt->execute($ids);
@@ -165,7 +170,8 @@ if (isset($_POST['bulk_action']) && !empty($_POST['selected_ids'])) {
             log_action($pdo, 'bulk_official_invite', "Sent Official Invitation to $n approved delegate(s). IDs: " . implode(', ', $ids));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Official Invitation & VISA Letter sent to ' . $n . ' approved delegate' . ($n !== 1 ? 's' : '') . '.' . ($n < count($ids) ? ' (Only approved delegates receive invitations.)' : '')];
             flush_and_continue($retUrl);
-            foreach ($toInvite as $row) send_official_invitation_email($row);
+            $r = send_bulk($pdo, $toInvite, 'official_invite_sent_at', 'send_official_invitation_email');
+            log_action($pdo, 'bulk_official_invite_result', 'Official invitations: ' . bulk_result_summary($r));
         } elseif ($_POST['bulk_action'] === 'delete') {
             $pdo->prepare("DELETE FROM registrations WHERE id IN ($ph)")->execute($ids);
             $n = count($ids);
