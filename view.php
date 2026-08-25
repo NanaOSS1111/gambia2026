@@ -6,6 +6,7 @@ if (!isset($_SESSION['admin'])) { header('Location: admin.php'); exit; }
 require_once 'db.php';
 require_once 'mail_config.php';
 require_once 'mailer.php';
+require_once 'mail_tracking.php';
 require_once 'logger.php';
 
 // Ensure admin_notes column exists (added on first use)
@@ -40,18 +41,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email'])) {
     $type = $_POST['resend_email'];
     $sent = false;
     $lbl  = '';
+    $col = '';
     if ($type === 'confirmation') {
         $sent = send_confirmation_email($row);
         $lbl  = 'confirmation';
+        $col  = 'confirmation_sent_at';
     } elseif ($type === 'approval' && $row['status'] === 'approved') {
         $sent = send_approval_email($row);
         $lbl  = 'approval';
+        $col  = 'approval_sent_at';
     } elseif ($type === 'invitation' && $row['status'] === 'approved') {
         $sent = send_invitation_email($row);
         $lbl  = 'invitation';
+        $col  = 'invite_sent_at';
     } elseif ($type === 'official_invitation' && $row['status'] === 'approved') {
         $sent = send_official_invitation_email($row);
         $lbl  = 'official_invitation';
+        $col  = 'official_invitation' === $type ? 'official_invite_sent_at' : '';
+    }
+
+    // Record it so the page can show what has been sent, and when.
+    if ($sent && $col !== '') {
+        mark_mail_sent($pdo, (int) $id, $col);
     }
 
     if ($lbl !== '') {
@@ -76,14 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $fullName = $row['first_name'] . ' ' . $row['last_name'];
     if ($newStatus === 'approved') {
         log_action($pdo, 'approve', "Approved registration for $fullName (ID: $id)");
-        $_SESSION['flash'] = ['type' => 'success', 'msg' => htmlspecialchars($fullName) . ' approved. Confirmation email sent.'];
-        flush_and_continue("view.php?id=$id");
-        send_approval_email($row);
+        // Sent inline: after flush_and_continue() the process does not survive on this
+        // server, so the mail was never actually sent.
+        $ok = send_approval_email($row);
+        if ($ok) { mark_mail_sent($pdo, (int) $id, 'approval_sent_at'); }
+        $_SESSION['flash'] = $ok
+            ? ['type' => 'success', 'msg' => htmlspecialchars($fullName) . ' approved. Approval email sent.']
+            : ['type' => 'warning', 'msg' => htmlspecialchars($fullName) . ' approved, but the email failed. See Activity Logs.'];
+        header("Location: view.php?id=$id");
     } elseif ($newStatus === 'rejected') {
         log_action($pdo, 'reject', "Rejected registration for $fullName (ID: $id)");
-        $_SESSION['flash'] = ['type' => 'info', 'msg' => htmlspecialchars($fullName) . ' rejected. Notification email sent.'];
-        flush_and_continue("view.php?id=$id");
-        send_rejection_email($row, $reason);
+        $ok = send_rejection_email($row, $reason);
+        if ($ok) { mark_mail_sent($pdo, (int) $id, 'rejection_sent_at'); }
+        $_SESSION['flash'] = $ok
+            ? ['type' => 'info', 'msg' => htmlspecialchars($fullName) . ' rejected. Notification email sent.']
+            : ['type' => 'warning', 'msg' => htmlspecialchars($fullName) . ' rejected, but the email failed. See Activity Logs.'];
+        header("Location: view.php?id=$id");
     } else {
         header("Location: view.php?id=$id");
     }
@@ -177,6 +196,27 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
   .hero-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .hero-ref{font-size:12px;font-weight:700;color:#0d6e8c;background:#eef6ff;padding:4px 12px;border-radius:20px;}
   .hero-date{font-size:12px;color:#9aaabf;}
+
+  .mailgrid{display:flex;flex-direction:column;gap:1px;background:#eef2f7;border:1px solid #eef2f7;border-radius:10px;overflow:hidden;}
+  .mailrow{display:flex;align-items:center;gap:12px;background:#fff;padding:11px 14px;}
+  .mailrow .dot{width:20px;height:20px;border-radius:50%;background:#eef2f7;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .mailrow.is-sent .dot{background:#166534;}
+  .mt-lbl{font-size:13px;font-weight:600;color:#0a2540;}
+  .mailrow:not(.is-sent) .mt-lbl{color:#9aaabf;font-weight:500;}
+  .mt-when{margin-left:auto;font-size:12px;color:#6b7280;font-variant-numeric:tabular-nums;}
+  .mailrow:not(.is-sent) .mt-when{color:#b8c4d0;}
+
+  .tl-hd{margin:22px 0 12px;font-size:13px;font-weight:700;color:#0a2540;}
+  .tl-hd span{font-weight:500;color:#9aaabf;font-size:12px;}
+  .timeline{display:flex;flex-direction:column;}
+  .tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative;}
+  .tl-item:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:2px;background:#eef2f7;}
+  .tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;z-index:1;}
+  .tl-ev{font-size:13px;font-weight:700;}
+  .tl-sub{font-size:12px;color:#4a6080;margin-top:1px;}
+  .tl-reason{font-size:12px;color:#a3231f;margin-top:2px;}
+  .tl-when{font-size:11px;color:#9aaabf;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .tl-empty{margin-top:18px;font-size:13px;color:#9aaabf;}
 
   .hero-actions{padding:0 28px 24px;border-top:1px solid #f0f4f8;margin-top:20px;padding-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .badge{
@@ -389,6 +429,81 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       <span style="font-size:12px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:5px 12px;">
         ✕ Email delivery failed. Please check SMTP settings.
       </span>
+      <?php endif; ?>
+    </div>
+  </div>
+
+  <!-- ── Email status ──────────────────────────────────── -->
+  <?php
+  ensure_mail_tracking_columns($pdo);
+  // Re-read so timestamps written earlier in this request are reflected.
+  $mailRow = $pdo->prepare("SELECT * FROM registrations WHERE id=?");
+  $mailRow->execute([$id]);
+  $mr = $mailRow->fetch() ?: $r;
+
+  $events = brevo_events_for((string) $r['email']);
+
+  // Icon, colour and wording per Brevo event type.
+  $evStyles = [
+      'requests'   => ['Sent',      '#eef2f7', '#4a6080'],
+      'delivered'  => ['Delivered', '#eef4fb', '#1d6fa5'],
+      'opened'     => ['Opened',    '#e8f5ef', '#166534'],
+      'clicks'     => ['Clicked',   '#e8f5ef', '#166534'],
+      'hardBounces'=> ['Hard bounce','#fdecea', '#a3231f'],
+      'softBounces'=> ['Soft bounce','#fdf4e3', '#8a5a12'],
+      'blocked'    => ['Blocked',   '#fdecea', '#a3231f'],
+      'spam'       => ['Spam report','#fdecea','#a3231f'],
+      'deferred'   => ['Deferred',  '#fdf4e3', '#8a5a12'],
+      'unsubscribed'=> ['Unsubscribed','#fdecea','#a3231f'],
+  ];
+  ?>
+  <div class="section">
+    <div class="section-hd">
+      <div class="section-hd-icon">✉️</div>
+      <h3>Email status</h3>
+    </div>
+    <div class="section-body">
+      <div class="mailgrid">
+        <?php foreach (MAIL_TYPES as $col => $meta):
+            $when = $mr[$col] ?? null;
+            $done = !empty($when) && $when !== '0000-00-00 00:00:00';
+            // A rejection notice is only meaningful for a rejected delegate, and vice versa.
+            if ($col === 'rejection_sent_at' && !$done && $r['status'] !== 'rejected') { continue; }
+        ?>
+          <div class="mailrow <?= $done ? 'is-sent' : '' ?>">
+            <span class="dot"><?= $done ? '&#10003;' : '' ?></span>
+            <span class="mt-lbl"><?= htmlspecialchars($meta['label']) ?></span>
+            <span class="mt-when">
+              <?= $done ? htmlspecialchars(date('j M Y, H:i', strtotime($when))) : 'Not sent' ?>
+            </span>
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+      <?php if ($events): ?>
+        <div class="tl-hd">Delivery history <span>from Brevo, last 90 days</span></div>
+        <div class="timeline">
+          <?php foreach ($events as $ev):
+              $type  = $ev['event'] ?? '';
+              $style = $evStyles[$type] ?? [ucfirst($type ?: 'Event'), '#eef2f7', '#4a6080'];
+          ?>
+            <div class="tl-item">
+              <span class="tl-dot" style="background:<?= $style[1] ?>;color:<?= $style[2] ?>;">&#9679;</span>
+              <div class="tl-body">
+                <div class="tl-ev" style="color:<?= $style[2] ?>;"><?= htmlspecialchars($style[0]) ?></div>
+                <?php if (!empty($ev['subject'])): ?>
+                  <div class="tl-sub"><?= htmlspecialchars($ev['subject']) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($ev['reason'])): ?>
+                  <div class="tl-reason"><?= htmlspecialchars($ev['reason']) ?></div>
+                <?php endif; ?>
+                <div class="tl-when"><?= htmlspecialchars(date('j M Y, H:i', strtotime($ev['date'] ?? 'now'))) ?></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php elseif (defined('BREVO_API_KEY') && BREVO_API_KEY !== ''): ?>
+        <div class="tl-empty">No delivery events recorded by Brevo for this address yet.</div>
       <?php endif; ?>
     </div>
   </div>

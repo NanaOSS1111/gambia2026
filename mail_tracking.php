@@ -13,10 +13,23 @@
 
 /** Timestamp columns, keyed by the bulk action that writes them. */
 const MAIL_SENT_COLUMNS = [
+    'confirmation_sent_at',
     'approval_sent_at',
     'rejection_sent_at',
     'invite_sent_at',
     'official_invite_sent_at',
+];
+
+/**
+ * The mail types shown on a delegate's page, in the order they occur.
+ * Keyed by the column that records them.
+ */
+const MAIL_TYPES = [
+    'confirmation_sent_at'    => ['label' => 'Registration confirmation', 'resend' => 'confirmation'],
+    'approval_sent_at'        => ['label' => 'Approval',                  'resend' => 'approval'],
+    'rejection_sent_at'       => ['label' => 'Rejection notice',          'resend' => null],
+    'invite_sent_at'          => ['label' => 'Invitation letter',         'resend' => 'invitation'],
+    'official_invite_sent_at' => ['label' => 'Official invitation & VISA','resend' => 'official_invitation'],
 ];
 
 /**
@@ -123,4 +136,39 @@ function bulk_result_summary(array $r): string {
         }
     }
     return $summary;
+}
+
+/**
+ * Delivery events Brevo recorded for one address, newest first.
+ *
+ * This is the same history Brevo shows per message — sent, delivered, opened, clicked,
+ * bounced — so a delegate's page can answer "did it actually arrive" rather than only
+ * "did we try to send it".
+ */
+function brevo_events_for(string $email, int $limit = 25): array {
+    if (!defined('BREVO_API_KEY') || BREVO_API_KEY === '' || $email === '') {
+        return [];
+    }
+
+    $url = 'https://api.brevo.com/v3/smtp/statistics/events?' . http_build_query([
+        'email' => $email,
+        'limit' => $limit,
+        'sort'  => 'desc',
+        'days'  => 90,
+    ]);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 12,
+        CURLOPT_HTTPHEADER     => ['accept: application/json', 'api-key: ' . BREVO_API_KEY],
+    ]);
+    $raw    = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    unset($ch);
+
+    if ($status < 200 || $status >= 300) {
+        return [];
+    }
+    return json_decode((string) $raw, true)['events'] ?? [];
 }

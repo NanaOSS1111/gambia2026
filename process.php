@@ -333,7 +333,11 @@ try {
     ignore_user_abort(true);
     set_time_limit(120);
 
-    send_confirmation_email($emailData);
+    // Record it so the delegate's page can show what has actually been sent.
+    if (send_confirmation_email($emailData)) {
+        require_once __DIR__ . '/mail_tracking.php';
+        mark_mail_sent($pdo, (int) $emailData['id'], 'confirmation_sent_at');
+    }
     exit;
 
 } catch (PDOException $e) {
