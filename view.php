@@ -166,7 +166,16 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
   .nav-btn-logout:hover{background:#fee2e2;color:#dc2626;}
 
   /* ── Main ──────────────────────────────────── */
-  .main{max-width:1000px;margin:0 auto;padding:32px 24px;display:flex;flex-direction:column;gap:24px;}
+  .main{max-width:1480px;margin:0 auto;padding:32px 28px;display:grid;
+        grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start;}
+  .col-main{display:flex;flex-direction:column;gap:24px;min-width:0;}
+  /* Sticky so the email status stays in view while the record is scrolled. */
+  .col-side{position:sticky;top:88px;display:flex;flex-direction:column;gap:24px;}
+  .col-side .section{margin:0;}
+  @media(max-width:1080px){
+    .main{grid-template-columns:1fr;}
+    .col-side{position:static;}
+  }
 
   /* ── Hero card ─────────────────────────────── */
   .hero{
@@ -208,7 +217,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
 
   .tl-hd{margin:22px 0 12px;font-size:13px;font-weight:700;color:#0a2540;}
   .tl-hd span{font-weight:500;color:#9aaabf;font-size:12px;}
-  .timeline{display:flex;flex-direction:column;}
+  .timeline{display:flex;flex-direction:column;max-height:340px;overflow-y:auto;padding-right:4px;}
   .tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative;}
   .tl-item:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:2px;background:#eef2f7;}
   .tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;z-index:1;}
@@ -341,6 +350,7 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
 
 <!-- ── Main ───────────────────────────────────────────── -->
 <div class="main">
+<div class="col-main">
 
   <!-- ── Hero ─────────────────────────────────────────── -->
   <div class="hero">
@@ -429,81 +439,6 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       <span style="font-size:12px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:5px 12px;">
         ✕ Email delivery failed. Please check SMTP settings.
       </span>
-      <?php endif; ?>
-    </div>
-  </div>
-
-  <!-- ── Email status ──────────────────────────────────── -->
-  <?php
-  ensure_mail_tracking_columns($pdo);
-  // Re-read so timestamps written earlier in this request are reflected.
-  $mailRow = $pdo->prepare("SELECT * FROM registrations WHERE id=?");
-  $mailRow->execute([$id]);
-  $mr = $mailRow->fetch() ?: $r;
-
-  $events = brevo_events_for((string) $r['email']);
-
-  // Icon, colour and wording per Brevo event type.
-  $evStyles = [
-      'requests'   => ['Sent',      '#eef2f7', '#4a6080'],
-      'delivered'  => ['Delivered', '#eef4fb', '#1d6fa5'],
-      'opened'     => ['Opened',    '#e8f5ef', '#166534'],
-      'clicks'     => ['Clicked',   '#e8f5ef', '#166534'],
-      'hardBounces'=> ['Hard bounce','#fdecea', '#a3231f'],
-      'softBounces'=> ['Soft bounce','#fdf4e3', '#8a5a12'],
-      'blocked'    => ['Blocked',   '#fdecea', '#a3231f'],
-      'spam'       => ['Spam report','#fdecea','#a3231f'],
-      'deferred'   => ['Deferred',  '#fdf4e3', '#8a5a12'],
-      'unsubscribed'=> ['Unsubscribed','#fdecea','#a3231f'],
-  ];
-  ?>
-  <div class="section">
-    <div class="section-hd">
-      <div class="section-hd-icon">✉️</div>
-      <h3>Email status</h3>
-    </div>
-    <div class="section-body">
-      <div class="mailgrid">
-        <?php foreach (MAIL_TYPES as $col => $meta):
-            $when = $mr[$col] ?? null;
-            $done = !empty($when) && $when !== '0000-00-00 00:00:00';
-            // A rejection notice is only meaningful for a rejected delegate, and vice versa.
-            if ($col === 'rejection_sent_at' && !$done && $r['status'] !== 'rejected') { continue; }
-        ?>
-          <div class="mailrow <?= $done ? 'is-sent' : '' ?>">
-            <span class="dot"><?= $done ? '&#10003;' : '' ?></span>
-            <span class="mt-lbl"><?= htmlspecialchars($meta['label']) ?></span>
-            <span class="mt-when">
-              <?= $done ? htmlspecialchars(date('j M Y, H:i', strtotime($when))) : 'Not sent' ?>
-            </span>
-          </div>
-        <?php endforeach; ?>
-      </div>
-
-      <?php if ($events): ?>
-        <div class="tl-hd">Delivery history <span>from Brevo, last 90 days</span></div>
-        <div class="timeline">
-          <?php foreach ($events as $ev):
-              $type  = $ev['event'] ?? '';
-              $style = $evStyles[$type] ?? [ucfirst($type ?: 'Event'), '#eef2f7', '#4a6080'];
-          ?>
-            <div class="tl-item">
-              <span class="tl-dot" style="background:<?= $style[1] ?>;color:<?= $style[2] ?>;">&#9679;</span>
-              <div class="tl-body">
-                <div class="tl-ev" style="color:<?= $style[2] ?>;"><?= htmlspecialchars($style[0]) ?></div>
-                <?php if (!empty($ev['subject'])): ?>
-                  <div class="tl-sub"><?= htmlspecialchars($ev['subject']) ?></div>
-                <?php endif; ?>
-                <?php if (!empty($ev['reason'])): ?>
-                  <div class="tl-reason"><?= htmlspecialchars($ev['reason']) ?></div>
-                <?php endif; ?>
-                <div class="tl-when"><?= htmlspecialchars(date('j M Y, H:i', strtotime($ev['date'] ?? 'now'))) ?></div>
-              </div>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      <?php elseif (defined('BREVO_API_KEY') && BREVO_API_KEY !== ''): ?>
-        <div class="tl-empty">No delivery events recorded by Brevo for this address yet.</div>
       <?php endif; ?>
     </div>
   </div>
@@ -685,6 +620,86 @@ function docext($f) { return strtolower(pathinfo($f ?? '', PATHINFO_EXTENSION));
       </div>
     </form>
   </div>
+
+</div><!-- /.col-main -->
+
+<aside class="col-side">
+  <!-- ── Email status (right column) ─────────────────────── -->
+  <?php
+  ensure_mail_tracking_columns($pdo);
+  // Re-read so timestamps written earlier in this request are reflected.
+  $mailRow = $pdo->prepare("SELECT * FROM registrations WHERE id=?");
+  $mailRow->execute([$id]);
+  $mr = $mailRow->fetch() ?: $r;
+
+  $events = brevo_events_for((string) $r['email']);
+
+  // Icon, colour and wording per Brevo event type.
+  $evStyles = [
+      'requests'   => ['Sent',      '#eef2f7', '#4a6080'],
+      'delivered'  => ['Delivered', '#eef4fb', '#1d6fa5'],
+      'opened'     => ['Opened',    '#e8f5ef', '#166534'],
+      'clicks'     => ['Clicked',   '#e8f5ef', '#166534'],
+      'hardBounces'=> ['Hard bounce','#fdecea', '#a3231f'],
+      'softBounces'=> ['Soft bounce','#fdf4e3', '#8a5a12'],
+      'blocked'    => ['Blocked',   '#fdecea', '#a3231f'],
+      'spam'       => ['Spam report','#fdecea','#a3231f'],
+      'deferred'   => ['Deferred',  '#fdf4e3', '#8a5a12'],
+      'unsubscribed'=> ['Unsubscribed','#fdecea','#a3231f'],
+  ];
+  ?>
+  <div class="section">
+    <div class="section-hd">
+      <div class="section-hd-icon">✉️</div>
+      <h3>Email status</h3>
+    </div>
+    <div class="section-body">
+      <div class="mailgrid">
+        <?php foreach (MAIL_TYPES as $col => $meta):
+            $when = $mr[$col] ?? null;
+            $done = !empty($when) && $when !== '0000-00-00 00:00:00';
+            // A rejection notice is only meaningful for a rejected delegate, and vice versa.
+            if ($col === 'rejection_sent_at' && !$done && $r['status'] !== 'rejected') { continue; }
+        ?>
+          <div class="mailrow <?= $done ? 'is-sent' : '' ?>">
+            <span class="dot"><?= $done ? '&#10003;' : '' ?></span>
+            <span class="mt-lbl"><?= htmlspecialchars($meta['label']) ?></span>
+            <span class="mt-when">
+              <?= $done ? htmlspecialchars(date('j M Y, H:i', strtotime($when))) : 'Not sent' ?>
+            </span>
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+      <?php if ($events): ?>
+        <div class="tl-hd">Delivery history <span>from Brevo, last 90 days</span></div>
+        <div class="timeline">
+          <?php foreach ($events as $ev):
+              $type  = $ev['event'] ?? '';
+              $style = $evStyles[$type] ?? [ucfirst($type ?: 'Event'), '#eef2f7', '#4a6080'];
+          ?>
+            <div class="tl-item">
+              <span class="tl-dot" style="background:<?= $style[1] ?>;color:<?= $style[2] ?>;">&#9679;</span>
+              <div class="tl-body">
+                <div class="tl-ev" style="color:<?= $style[2] ?>;"><?= htmlspecialchars($style[0]) ?></div>
+                <?php if (!empty($ev['subject'])): ?>
+                  <div class="tl-sub"><?= htmlspecialchars($ev['subject']) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($ev['reason'])): ?>
+                  <div class="tl-reason"><?= htmlspecialchars($ev['reason']) ?></div>
+                <?php endif; ?>
+                <div class="tl-when"><?= htmlspecialchars(date('j M Y, H:i', strtotime($ev['date'] ?? 'now'))) ?></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php elseif (defined('BREVO_API_KEY') && BREVO_API_KEY !== ''): ?>
+        <div class="tl-empty">No delivery events recorded by Brevo for this address yet.</div>
+      <?php endif; ?>
+    </div>
+  </div>
+
+</aside>
 
 </div><!-- /.main -->
 
