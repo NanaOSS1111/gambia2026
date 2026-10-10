@@ -354,6 +354,23 @@ $countryCounts = array_map('intval', array_column($countryRows, 'n'));
 $regNowOpen    = get_setting($pdo, 'registration_open', '1') === '1';
 $regDeadline   = get_setting($pdo, 'registration_deadline', '');
 $regStatusInfo = is_registration_open($pdo);
+
+function get_time_remaining_string(string $deadline): string {
+    $ts = strtotime($deadline);
+    if (!$ts) return '';
+    $diff = $ts - time();
+    if ($diff <= 0) return '';
+    $days  = floor($diff / 86400);
+    $hours = floor(($diff % 86400) / 3600);
+    $mins  = floor(($diff % 3600) / 60);
+    if ($days > 0) {
+        return "closes in {$days} day" . ($days > 1 ? 's' : '') . ($hours > 0 ? ", {$hours} hr" . ($hours > 1 ? 's' : '') : '');
+    }
+    if ($hours > 0) {
+        return "closes in {$hours} hr" . ($hours > 1 ? 's' : '') . ($mins > 0 ? ", {$mins} min" . ($mins > 1 ? 's' : '') : '');
+    }
+    return "closes in {$mins} min" . ($mins > 1 ? 's' : '');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -673,8 +690,73 @@ $regStatusInfo = is_registration_open($pdo);
     .stat-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
     .stat-val{font-size:28px;}
     .nav{padding:0 16px;}
+  /* ── Registration alert banner ─────────────────── */
+  .reg-alert-banner {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
   }
-
+  .reg-alert-banner.info {
+    background: #fffbeb;
+    border: 1.5px solid #fef3c7;
+    border-left: 5px solid #d97706;
+    color: #92400e;
+  }
+  .reg-alert-banner.closed {
+    background: #fef2f2;
+    border: 1.5px solid #fee2e2;
+    border-left: 5px solid #dc2626;
+    color: #991b1b;
+  }
+  .reg-alert-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .reg-alert-banner-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .reg-alert-banner-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .reg-alert-banner-sub {
+    font-size: 12.5px;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+  .reg-alert-banner-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    flex-shrink: 0;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .reg-alert-banner.info .reg-alert-banner-btn {
+    background: #d97706;
+    color: #fff;
+  }
+  .reg-alert-banner.info .reg-alert-banner-btn:hover {
+    background: #b45309;
+  }
+  .reg-alert-banner.closed .reg-alert-banner-btn {
+    background: #dc2626;
+    color: #fff;
+  }
+  .reg-alert-banner.closed .reg-alert-banner-btn:hover {
+    background: #b91c1c;
+  }
 </style>
 </head>
 <body>
@@ -762,6 +844,41 @@ $regStatusInfo = is_registration_open($pdo);
 
 <!-- ── Dashboard ───────────────────────────────────────── -->
 <div class="main">
+
+  <?php if (!$regStatusInfo['open']): ?>
+    <div class="reg-alert-banner closed">
+      <div class="reg-alert-banner-content">
+        <div class="reg-alert-banner-icon">🔒</div>
+        <div>
+          <div class="reg-alert-banner-title">Registration is Closed</div>
+          <div class="reg-alert-banner-sub">
+            <?php if (($regStatusInfo['reason'] ?? '') === 'deadline'): ?>
+              The deadline of <strong><?= date('l, j F Y \a\t H:i', strtotime($regStatusInfo['deadline'])) ?></strong> has passed. The public registration portal is locked and displaying the closure screen.
+            <?php else: ?>
+              Registration has been manually locked. The public registration portal is currently displaying the closure screen.
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+      <button class="reg-alert-banner-btn" onclick="openRegModal()">Registration Control</button>
+    </div>
+  <?php elseif (!empty($regDeadline)): ?>
+    <div class="reg-alert-banner info">
+      <div class="reg-alert-banner-content">
+        <div class="reg-alert-banner-icon">⏳</div>
+        <div>
+          <div class="reg-alert-banner-title">Registration Auto-Close Deadline Set</div>
+          <div class="reg-alert-banner-sub">
+            Registration is scheduled to close automatically on <strong><?= date('l, j F Y \a\t H:i', strtotime($regDeadline)) ?></strong>
+            <?php $rem = get_time_remaining_string($regDeadline); if ($rem): ?>
+              <span style="font-weight:700;margin-left:4px;">(<?= $rem ?>)</span>
+            <?php endif; ?>.
+          </div>
+        </div>
+      </div>
+      <button class="reg-alert-banner-btn" onclick="openRegModal()">Registration Control</button>
+    </div>
+  <?php endif; ?>
 
   <!-- Stat cards -->
   <div class="stat-grid">
