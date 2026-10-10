@@ -690,72 +690,102 @@ function get_time_remaining_string(string $deadline): string {
     .stat-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
     .stat-val{font-size:28px;}
     .nav{padding:0 16px;}
+  }
+
   /* ── Registration alert banner ─────────────────── */
   .reg-alert-banner {
-    border-radius: 12px;
-    padding: 16px 20px;
+    border-radius: 14px;
+    padding: 18px 24px;
     margin-bottom: 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    gap: 18px;
+    box-shadow: 0 4px 20px rgba(220,38,38,.12);
   }
   .reg-alert-banner.info {
-    background: #fffbeb;
-    border: 1.5px solid #fef3c7;
-    border-left: 5px solid #d97706;
-    color: #92400e;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+    border: 1.5px solid #fca5a5;
+    border-left: 6px solid #dc2626;
+    color: #991b1b;
   }
   .reg-alert-banner.closed {
-    background: #fef2f2;
-    border: 1.5px solid #fee2e2;
-    border-left: 5px solid #dc2626;
-    color: #991b1b;
+    background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+    border: 1.5px solid #991b1b;
+    border-left: 6px solid #ef4444;
+    color: #ffffff;
   }
   .reg-alert-banner-content {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
   .reg-alert-banner-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 22px;
     flex-shrink: 0;
   }
+  .reg-alert-banner.info .reg-alert-banner-icon {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+  }
+  .reg-alert-banner.closed .reg-alert-banner-icon {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.2);
+  }
   .reg-alert-banner-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 2px;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 3px;
+    letter-spacing: -.01em;
+  }
+  .reg-alert-banner.info .reg-alert-banner-title {
+    color: #991b1b;
+  }
+  .reg-alert-banner.closed .reg-alert-banner-title {
+    color: #ffffff;
   }
   .reg-alert-banner-sub {
-    font-size: 12.5px;
-    opacity: 0.9;
+    font-size: 13px;
     line-height: 1.5;
+    opacity: 0.95;
   }
   .reg-alert-banner-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 12.5px;
+    padding: 10px 20px;
+    border-radius: 9px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     border: none;
     flex-shrink: 0;
     transition: all .15s;
     font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
   }
   .reg-alert-banner.info .reg-alert-banner-btn {
-    background: #d97706;
-    color: #fff;
+    background: #dc2626;
+    color: #ffffff;
   }
   .reg-alert-banner.info .reg-alert-banner-btn:hover {
-    background: #b45309;
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220,38,38,.25);
   }
   .reg-alert-banner.closed .reg-alert-banner-btn {
-    background: #dc2626;
-    color: #fff;
+    background: #ffffff;
+    color: #991b1b;
   }
   .reg-alert-banner.closed .reg-alert-banner-btn:hover {
-    background: #b91c1c;
+    background: #fef2f2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
   }
 </style>
 </head>
