@@ -138,10 +138,18 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
     justify-content: space-between;
     gap: 2mm;
   }
-  .badge-header-logo {
+  .badge-header-logo-org {
+    width: 22mm;
+    height: 11mm;
+    object-fit: contain;
+    object-position: left center;
+    flex-shrink: 0;
+  }
+  .badge-header-logo-seal {
     width: 11mm;
     height: 11mm;
     object-fit: contain;
+    object-position: right center;
     flex-shrink: 0;
   }
   .badge-header-center {
@@ -369,13 +377,13 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
   <!-- Header -->
   <div class="badge-header">
     <div class="badge-header-row">
-      <img src="asset/organizationLOGO.png" class="badge-header-logo" alt="Organization Logo">
+      <img src="asset/organizationLOGO.png" class="badge-header-logo-org" alt="Organization Logo">
       <div class="badge-header-center">
         <div class="badge-org-label">OFFICIAL DELEGATE BADGE</div>
         <div class="badge-event-name">GAMBIA 2026</div>
         <div class="badge-event-sub">NGO SUMMIT &bull; BANJUL, THE GAMBIA</div>
       </div>
-      <img src="asset/GambiaNationalSeal.png" class="badge-header-logo" alt="Gambia National Seal">
+      <img src="asset/GambiaNationalSeal.png" class="badge-header-logo-seal" alt="Gambia National Seal">
     </div>
     <div class="badge-gold-bar"></div>
   </div>
