@@ -139,15 +139,15 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
     gap: 2mm;
   }
   .badge-header-logo-org {
-    width: 22mm;
-    height: 11mm;
+    width: 27mm;
+    height: 13.5mm;
     object-fit: contain;
     object-position: left center;
     flex-shrink: 0;
   }
   .badge-header-logo-seal {
-    width: 11mm;
-    height: 11mm;
+    width: 12.5mm;
+    height: 12.5mm;
     object-fit: contain;
     object-position: right center;
     flex-shrink: 0;
