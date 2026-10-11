@@ -71,13 +71,15 @@ if ($action === 'zip') {
     if (!class_exists('ZipArchive')) {
         die('ZipArchive extension is not available on this server.');
     }
+    $tempDir = is_writable(sys_get_temp_dir()) ? sys_get_temp_dir() : (__DIR__ . '/uploads');
+    $zipFilename = $tempDir . '/GAMBIA2026_Badges_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.zip';
+
     $zip = new ZipArchive();
-    $zipFilename = sys_get_temp_dir() . '/GAMBIA2026_Badges_' . date('Ymd_His') . '.zip';
     if ($zip->open($zipFilename, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
         die('Unable to create temporary zip archive.');
     }
 
-    // Build self-contained HTML file
+    // Build self-contained HTML file (using web image URLs for lightweight memory usage)
     ob_start();
     $isExport = true;
     include __DIR__ . '/_badge_template.php';
@@ -102,6 +104,10 @@ if ($action === 'zip') {
     $zip->addFromString('delegates_list.csv', $csv);
     $zip->close();
 
+    while (ob_get_level() > 0) ob_end_clean();
+    header('Pragma: public');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="GAMBIA2026_Badges_' . date('Ymd_His') . '.zip"');
     header('Content-Length: ' . filesize($zipFilename));

@@ -1177,63 +1177,80 @@ function get_time_remaining_string(string $deadline): string {
 
 <!-- ── Bulk Badges Selector Modal ────────────────────────── -->
 <div class="xmodal-overlay" id="badgesModal">
-  <div class="xmodal">
+  <div class="xmodal" style="max-width:540px;">
     <div class="xmodal-hd">
       <h3>🪪 Bulk Accreditation Badges</h3>
       <button class="xmodal-close" onclick="closeBulkBadgesModal()">&times;</button>
     </div>
-    <div class="xmodal-body" style="display:flex;flex-direction:column;gap:18px;">
+    <div class="xmodal-body" style="display:flex;flex-direction:column;gap:20px;">
       
-      <!-- Scope Selection -->
+      <!-- Section 1: Who to generate -->
       <div>
-        <label style="font-size:12.5px;font-weight:700;color:#0a2540;display:block;margin-bottom:8px;">Which badges would you like to generate?</label>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label id="badgeScopeSelectedWrap" style="display:none;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;background:#f8fbff;">
+        <label style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px;">1. Target Delegates</label>
+        
+        <!-- Shown when rows ARE checked on table -->
+        <div id="badgeScopeSelectedWrap" style="display:none;gap:10px;">
+          <label id="scopeBtnSelected" onclick="setScopeChoice('selected')" style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #0284c7;background:#f0f9ff;border-radius:10px;cursor:pointer;">
             <input type="radio" name="badge_scope" id="badgeScopeSelected" value="selected" style="accent-color:#0284c7;">
             <div>
-              <strong style="font-size:13px;color:#0a2540;">Selected Delegates Only (<span id="badgeSelectedCount">0</span> selected)</strong>
-              <div style="font-size:11.5px;color:#6b7280;">Only print/download badges for the rows currently checked</div>
+              <strong style="font-size:13px;color:#0a2540;display:block;">Selected (<span id="badgeSelectedCount">0</span>)</strong>
+              <span style="font-size:11.5px;color:#0369a1;">Only checked rows</span>
             </div>
           </label>
-          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;background:#f8fbff;">
-            <input type="radio" name="badge_scope" id="badgeScopeAll" value="all" checked style="accent-color:#0284c7;">
+          <label id="scopeBtnAll" onclick="setScopeChoice('all')" style="flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e2e8f0;background:#fff;border-radius:10px;cursor:pointer;">
+            <input type="radio" name="badge_scope" id="badgeScopeAll" value="all" style="accent-color:#0284c7;">
             <div>
-              <strong style="font-size:13px;color:#0a2540;">All Approved Delegates (<?= $approved ?> approved total)</strong>
-              <div style="font-size:11.5px;color:#6b7280;">Generate badges for all approved applicants at once</div>
+              <strong style="font-size:13px;color:#0a2540;display:block;">All Approved (<?= $approved ?>)</strong>
+              <span style="font-size:11.5px;color:#6b7280;">Entire attendee list</span>
             </div>
           </label>
         </div>
+
+        <!-- Shown when NO checkboxes are checked: Clean confirmation card -->
+        <div id="badgeScopeAllOnlyNotice" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;">
+          <div style="font-size:24px;line-height:1;">👥</div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:700;color:#166534;">All Approved Delegates (<?= $approved ?> Total)</div>
+            <div style="font-size:12px;color:#15803d;margin-top:2px;">Badges will be generated for all <?= $approved ?> approved delegates.</div>
+          </div>
+          <span style="background:#dcfce7;color:#166534;font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:6px;">Ready</span>
+        </div>
       </div>
 
-      <!-- Layout Selection -->
+      <!-- Section 2: Layout Selection (Clear visual cards) -->
       <div>
-        <label style="font-size:12.5px;font-weight:700;color:#0a2540;display:block;margin-bottom:8px;">Print &amp; Download Layout</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;">
-            <input type="radio" name="badge_layout" value="badge" checked style="accent-color:#0284c7;">
-            <div>
-              <strong style="font-size:13px;color:#0a2540;">Single Card</strong>
-              <div style="font-size:11px;color:#6b7280;">86×118mm (1 per page)</div>
+        <label style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px;">2. Print &amp; Page Layout</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          
+          <div id="cardLayoutBadge" onclick="selectBadgeLayout('badge')" style="display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:2px solid #0284c7;background:#f0f9ff;border-radius:10px;cursor:pointer;transition:all .15s;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:22px;">🪪</span>
+              <input type="radio" name="badge_layout" id="radioLayoutBadge" value="badge" checked style="accent-color:#0284c7;">
             </div>
-          </label>
-          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;">
-            <input type="radio" name="badge_layout" value="a4" style="accent-color:#0284c7;">
-            <div>
-              <strong style="font-size:13px;color:#0a2540;">A4 Sheet Grid</strong>
-              <div style="font-size:11px;color:#6b7280;">4 badges per A4 page</div>
+            <strong style="font-size:13.5px;color:#0a2540;margin-top:4px;">Single Card</strong>
+            <span style="font-size:11.5px;color:#475569;line-height:1.4;">86×118mm (1 per page). Best for card/badge printers &amp; standard PDF.</span>
+          </div>
+
+          <div id="cardLayoutA4" onclick="selectBadgeLayout('a4')" style="display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:2px solid #e2e8f0;background:#fff;border-radius:10px;cursor:pointer;transition:all .15s;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:22px;">📄</span>
+              <input type="radio" name="badge_layout" id="radioLayoutA4" value="a4" style="accent-color:#0284c7;">
             </div>
-          </label>
+            <strong style="font-size:13.5px;color:#0a2540;margin-top:4px;">A4 Sheet Grid</strong>
+            <span style="font-size:11.5px;color:#475569;line-height:1.4;">4 badges per A4 sheet with cut lines. Best for printing on cardstock.</span>
+          </div>
+
         </div>
       </div>
 
     </div>
-    <div class="xmodal-ft" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="xmodal-ft" style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;">
       <button class="xmodal-cancel" onclick="closeBulkBadgesModal()">Cancel</button>
       <div style="display:flex;gap:10px;">
-        <button type="button" class="btn" style="background:#0d6e8c;color:#fff;" onclick="doBulkBadges('zip')">
+        <button type="button" class="btn" style="background:#0d6e8c;color:#fff;padding:10px 18px;" onclick="doBulkBadges('zip')">
           📦 Download ZIP
         </button>
-        <button type="button" class="btn" style="background:#c9a84c;color:#0a2540;font-weight:800;" onclick="doBulkBadges('print')">
+        <button type="button" class="btn" style="background:#c9a84c;color:#0a2540;font-weight:800;padding:10px 22px;" onclick="doBulkBadges('print')">
           🖨️ Print / Save as PDF →
         </button>
       </div>
@@ -1420,26 +1437,61 @@ function doExport() {
 /* ── Bulk Badges Modal Handlers ─────────────────────────── */
 var _badgesMode = 'all';
 
+function setScopeChoice(scope) {
+  var isSel = scope === 'selected';
+  var selRadio = document.getElementById('badgeScopeSelected');
+  var allRadio = document.getElementById('badgeScopeAll');
+  if (selRadio) selRadio.checked = isSel;
+  if (allRadio) allRadio.checked = !isSel;
+  var selBtn = document.getElementById('scopeBtnSelected');
+  var allBtn = document.getElementById('scopeBtnAll');
+  if (selBtn) {
+    selBtn.style.borderColor = isSel ? '#0284c7' : '#e2e8f0';
+    selBtn.style.background  = isSel ? '#f0f9ff' : '#fff';
+  }
+  if (allBtn) {
+    allBtn.style.borderColor = !isSel ? '#0284c7' : '#e2e8f0';
+    allBtn.style.background  = !isSel ? '#f0f9ff' : '#fff';
+  }
+}
+
+function selectBadgeLayout(layout) {
+  var isBadge = layout === 'badge';
+  var rBadge = document.getElementById('radioLayoutBadge');
+  var rA4    = document.getElementById('radioLayoutA4');
+  if (rBadge) rBadge.checked = isBadge;
+  if (rA4)    rA4.checked    = !isBadge;
+
+  var cardBadge = document.getElementById('cardLayoutBadge');
+  var cardA4    = document.getElementById('cardLayoutA4');
+  if (cardBadge) {
+    cardBadge.style.borderColor = isBadge ? '#0284c7' : '#e2e8f0';
+    cardBadge.style.background  = isBadge ? '#f0f9ff' : '#fff';
+  }
+  if (cardA4) {
+    cardA4.style.borderColor    = !isBadge ? '#0284c7' : '#e2e8f0';
+    cardA4.style.background     = !isBadge ? '#f0f9ff' : '#fff';
+  }
+}
+
 function openBulkBadgesModal(mode) {
   _badgesMode = mode || 'all';
   var selChecks = document.querySelectorAll('.row-check:checked');
   var selWrap   = document.getElementById('badgeScopeSelectedWrap');
-  var selInput  = document.getElementById('badgeScopeSelected');
-  var allInput  = document.getElementById('badgeScopeAll');
+  var noticeAll = document.getElementById('badgeScopeAllOnlyNotice');
   var countEl   = document.getElementById('badgeSelectedCount');
 
   if (selChecks.length > 0) {
-    selWrap.style.display = 'flex';
-    countEl.textContent   = selChecks.length;
-    if (mode === 'selected') {
-      selInput.checked = true;
-    } else {
-      allInput.checked = true;
-    }
+    selWrap.style.display   = 'flex';
+    noticeAll.style.display = 'none';
+    countEl.textContent     = selChecks.length;
+    setScopeChoice(mode === 'selected' ? 'selected' : 'all');
   } else {
-    selWrap.style.display = 'none';
-    allInput.checked      = true;
+    selWrap.style.display   = 'none';
+    noticeAll.style.display = 'flex';
+    setScopeChoice('all');
   }
+  selectBadgeLayout('badge');
   document.getElementById('badgesModal').classList.add('open');
 }
 

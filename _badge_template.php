@@ -13,25 +13,11 @@
  */
 $loadedCount = count($delegates);
 
-// Helper function to encode local images as base64 for reliable offline printing & export
-function get_badge_img_src(string $relPath): string {
-    $fullPath = __DIR__ . '/' . ltrim($relPath, '/');
-    if (file_exists($fullPath) && is_file($fullPath)) {
-        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-        $mime = match($ext) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'webp' => 'image/webp',
-            'gif' => 'image/gif',
-            default => 'image/png'
-        };
-        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
-    }
-    return htmlspecialchars($relPath);
-}
+$baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'gambia2026.ngocsocd.org');
+$imgBase = !empty($isExport) ? ($baseUrl . '/') : '';
 
-$orgLogoSrc  = get_badge_img_src('asset/organizationLOGO.png');
-$natSealSrc  = get_badge_img_src('asset/GambiaNationalSeal.png');
+$orgLogoSrc = $imgBase . 'asset/organizationLOGO.png';
+$natSealSrc = $imgBase . 'asset/GambiaNationalSeal.png';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -587,7 +573,7 @@ $natSealSrc  = get_badge_img_src('asset/GambiaNationalSeal.png');
 <div class="badge-container">
 <?php
 // Function to render a single badge HTML block
-function render_single_badge(array $r, string $orgLogoSrc, string $natSealSrc): void {
+function render_single_badge(array $r, string $orgLogoSrc, string $natSealSrc, string $imgBase = ''): void {
     $rid       = (int)$r['id'];
     $firstName = htmlspecialchars($r['first_name']);
     $lastName  = htmlspecialchars($r['last_name']);
@@ -600,7 +586,7 @@ function render_single_badge(array $r, string $orgLogoSrc, string $natSealSrc): 
     $picFile   = (preg_match('/^[a-zA-Z0-9_\-\.]+$/', $picFile) && strpos($picFile, '..') === false) ? $picFile : '';
     $photoPath = $picFile ? 'uploads/' . $picFile : '';
     $hasPhoto  = $photoPath && file_exists(__DIR__ . '/' . $photoPath);
-    $photoSrc  = $hasPhoto ? get_badge_img_src($photoPath) : '';
+    $photoSrc  = $hasPhoto ? ($imgBase . $photoPath) : '';
     $qrUrl     = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=6&data=" . urlencode($ref);
     ?>
     <div class="badge" data-ref="<?= $ref ?>">
@@ -673,14 +659,14 @@ if ($layout === 'a4') {
     foreach ($chunks as $chunk) {
         echo '<div class="a4-page">';
         foreach ($chunk as $d) {
-            render_single_badge($d, $orgLogoSrc, $natSealSrc);
+            render_single_badge($d, $orgLogoSrc, $natSealSrc, $imgBase);
         }
         echo '</div>';
     }
 } else {
     // 1 card per page
     foreach ($delegates as $d) {
-        render_single_badge($d, $orgLogoSrc, $natSealSrc);
+        render_single_badge($d, $orgLogoSrc, $natSealSrc, $imgBase);
     }
 }
 ?>
