@@ -464,8 +464,12 @@ $natSealSrc  = get_badge_img_src('asset/GambiaNationalSeal.png');
 
   /* ── Print Media Query ──────────────────────────────────── */
   @media print {
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     .bulk-top-bar { display: none !important; }
-    body { background: #fff !important; }
+    body { background: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
     <?php if ($layout === 'a4'): ?>
       @page {

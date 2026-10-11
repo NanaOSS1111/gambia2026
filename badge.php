@@ -341,6 +341,10 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
 
   /* ── Print — locks to exactly one page ──────── */
   @media print {
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     @page {
       size: 86mm 118mm;
       margin: 0;
@@ -352,6 +356,8 @@ $initials = strtoupper(substr($r['first_name'], 0, 1) . substr($r['last_name'], 
       background: #fff;
       padding: 0;
       margin: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .controls { display: none !important; }
     .badge {
