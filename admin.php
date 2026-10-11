@@ -990,6 +990,10 @@ function get_time_remaining_string(string $deadline): string {
         <?php endif; ?>
       </form>
       <div style="flex:1;"></div>
+      <button type="button" class="btn" style="background:#0284c7;color:#fff;" onclick="openBulkBadgesModal('all')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        🪪 Bulk Badges
+      </button>
       <button type="button" class="btn btn-green" onclick="openExportModal('all')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export CSV
@@ -1171,6 +1175,72 @@ function get_time_remaining_string(string $deadline): string {
   </div>
 </div>
 
+<!-- ── Bulk Badges Selector Modal ────────────────────────── -->
+<div class="xmodal-overlay" id="badgesModal">
+  <div class="xmodal">
+    <div class="xmodal-hd">
+      <h3>🪪 Bulk Accreditation Badges</h3>
+      <button class="xmodal-close" onclick="closeBulkBadgesModal()">&times;</button>
+    </div>
+    <div class="xmodal-body" style="display:flex;flex-direction:column;gap:18px;">
+      
+      <!-- Scope Selection -->
+      <div>
+        <label style="font-size:12.5px;font-weight:700;color:#0a2540;display:block;margin-bottom:8px;">Which badges would you like to generate?</label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label id="badgeScopeSelectedWrap" style="display:none;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;background:#f8fbff;">
+            <input type="radio" name="badge_scope" id="badgeScopeSelected" value="selected" style="accent-color:#0284c7;">
+            <div>
+              <strong style="font-size:13px;color:#0a2540;">Selected Delegates Only (<span id="badgeSelectedCount">0</span> selected)</strong>
+              <div style="font-size:11.5px;color:#6b7280;">Only print/download badges for the rows currently checked</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;background:#f8fbff;">
+            <input type="radio" name="badge_scope" id="badgeScopeAll" value="all" checked style="accent-color:#0284c7;">
+            <div>
+              <strong style="font-size:13px;color:#0a2540;">All Approved Delegates (<?= $approved ?> approved total)</strong>
+              <div style="font-size:11.5px;color:#6b7280;">Generate badges for all approved applicants at once</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Layout Selection -->
+      <div>
+        <label style="font-size:12.5px;font-weight:700;color:#0a2540;display:block;margin-bottom:8px;">Print &amp; Download Layout</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;">
+            <input type="radio" name="badge_layout" value="badge" checked style="accent-color:#0284c7;">
+            <div>
+              <strong style="font-size:13px;color:#0a2540;">Single Card</strong>
+              <div style="font-size:11px;color:#6b7280;">86×118mm (1 per page)</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;cursor:pointer;">
+            <input type="radio" name="badge_layout" value="a4" style="accent-color:#0284c7;">
+            <div>
+              <strong style="font-size:13px;color:#0a2540;">A4 Sheet Grid</strong>
+              <div style="font-size:11px;color:#6b7280;">4 badges per A4 page</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </div>
+    <div class="xmodal-ft" style="display:flex;justify-content:space-between;align-items:center;">
+      <button class="xmodal-cancel" onclick="closeBulkBadgesModal()">Cancel</button>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn" style="background:#0d6e8c;color:#fff;" onclick="doBulkBadges('zip')">
+          📦 Download ZIP
+        </button>
+        <button type="button" class="btn" style="background:#c9a84c;color:#0a2540;font-weight:800;" onclick="doBulkBadges('print')">
+          🖨️ Print / Save as PDF →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── Scroll-to-top button ───────────────────────────────── -->
 <button id="scroll-top" title="Back to top" aria-label="Back to top">&#8679;</button>
 
@@ -1180,6 +1250,7 @@ function get_time_remaining_string(string $deadline): string {
   <div class="bulk-sep"></div>
   <button class="bbtn bbtn-approve" onclick="triggerBulk('Approve')">✓ Approve</button>
   <button class="bbtn bbtn-reject"  onclick="triggerBulk('Reject')">✕ Reject</button>
+  <button class="bbtn" style="background:#0284c7;" onclick="openBulkBadgesModal('selected')">🪪 Badges</button>
   <button class="bbtn" style="background:#7c3aed;" onclick="triggerBulk('Invite')">✉ Send Invitation</button>
   <button class="bbtn" style="background:#d97706;" onclick="triggerBulk('OfficialInvite')">✉ Official Invitation</button>
   <button class="bbtn bbtn-delete"  onclick="triggerBulk('Delete')">🗑 Delete</button>
@@ -1344,6 +1415,68 @@ function doExport() {
   form.submit();
   document.body.removeChild(form);
   closeExportModal();
+}
+
+/* ── Bulk Badges Modal Handlers ─────────────────────────── */
+var _badgesMode = 'all';
+
+function openBulkBadgesModal(mode) {
+  _badgesMode = mode || 'all';
+  var selChecks = document.querySelectorAll('.row-check:checked');
+  var selWrap   = document.getElementById('badgeScopeSelectedWrap');
+  var selInput  = document.getElementById('badgeScopeSelected');
+  var allInput  = document.getElementById('badgeScopeAll');
+  var countEl   = document.getElementById('badgeSelectedCount');
+
+  if (selChecks.length > 0) {
+    selWrap.style.display = 'flex';
+    countEl.textContent   = selChecks.length;
+    if (mode === 'selected') {
+      selInput.checked = true;
+    } else {
+      allInput.checked = true;
+    }
+  } else {
+    selWrap.style.display = 'none';
+    allInput.checked      = true;
+  }
+  document.getElementById('badgesModal').classList.add('open');
+}
+
+function closeBulkBadgesModal() {
+  document.getElementById('badgesModal').classList.remove('open');
+}
+
+function doBulkBadges(actionType) {
+  var scopeEl  = document.querySelector('input[name="badge_scope"]:checked');
+  var scope    = scopeEl ? scopeEl.value : 'all';
+  var layoutEl = document.querySelector('input[name="badge_layout"]:checked');
+  var layout   = layoutEl ? layoutEl.value : 'badge';
+
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'bulk_badges.php' + (actionType === 'zip' ? '?action=zip' : '');
+  form.target = actionType === 'zip' ? '_self' : '_blank';
+
+  function addField(name, val) {
+    var inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = name; inp.value = val;
+    form.appendChild(inp);
+  }
+
+  addField('scope', scope);
+  addField('layout', layout);
+
+  if (scope === 'selected') {
+    var checked = document.querySelectorAll('.row-check:checked');
+    var ids = Array.from(checked).map(function(cb) { return cb.value; });
+    addField('ids', ids.join(','));
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  closeBulkBadgesModal();
 }
 
 function triggerBulk(action) {
